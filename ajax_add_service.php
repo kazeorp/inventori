@@ -39,12 +39,14 @@ $default_catatan = 'Aset masuk service via scan mandiri.';
 // Memastikan service baru dapat dicatat hanya jika service sebelumnya SUDAH SELESAI (finish_status = 'Selesai')
 $sql_check = "SELECT id_service FROM service_list 
               WHERE id_inventori = ? 
-              AND DATE(tanggal_masuk) = CURDATE() 
               
               -- Kunci Pengecekan Duplikasi BARU:
-              -- Cek jika ada yang 'On Service' TAPI finish_status-nya belum 'Selesai'
-              AND claim_status = 'On Service' 
-              AND (finish_status IS NULL OR finish_status <> 'Selesai') 
+              -- 1. Cek jika service finish_status-nya masih NULL (aktif/on service)
+              AND finish_status IS NULL 
+              
+              -- 2. Memastikan claim_status adalah status aktif (belum diklaim ATAU sudah diklaim)
+              AND (claim_status IS NULL OR claim_status = 'On Service') 
+              
               LIMIT 1";
 
 if ($stmt_check = $koneksi->prepare($sql_check)) {
@@ -81,12 +83,32 @@ if ($stmt = $koneksi->prepare($sql_insert)) {
         $default_catatan
     );
     
-    if ($stmt->execute()) {
+if ($stmt->execute()) {
+        
+        // --- LOGIKA BARU: HAPUS RIWAYAT SCAN DARI SESI ---
+        
+        // Hapus item yang baru saja di-service dari array riwayat
+                if (isset($_SESSION['scan_history']) && is_array($_SESSION['scan_history'])) {
+                    $hostname_to_remove = $hostname; 
+                    $updated_history = [];
+                    
+                    foreach ($_SESSION['scan_history'] as $item) {
+                        // HANYA pertahankan item yang TIDAK SAMA
+                        if (isset($item['hostname']) && $item['hostname'] !== $hostname_to_remove) {
+                            $updated_history[] = $item;
+                        }
+                    }
+                    $_SESSION['scan_history'] = $updated_history;
+                }
+                
+                // Hapus last_scan setelah data berhasil dimasukkan ke DB
+                unset($_SESSION['last_scan']);
+
         echo json_encode([
             'status' => 'success',
             'message' => "Service aset {$hostname} berhasil dicatat. Admin kini dapat memprosesnya."
         ]);
-    } else {
+    }else {
         http_response_code(500);
         echo json_encode([
             'status' => 'error',

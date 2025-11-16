@@ -82,21 +82,21 @@ try {
         admin_claim_name = COALESCE(admin_claim_name, ?),
         loan_hostname = ?,
         claim_timestamp = NOW()
-        WHERE id_service = ? AND finish_status IS NULL AND claim_status IS NULL" // Tambah cek claim_status IS NULL
+        WHERE id_service = ? AND finish_status IS NULL AND claim_status IS NULL"
     );
 
     if ($stmt_update_service === false) {
         throw new Exception("Prepare 3 Gagal (Cek Nama Kolom di service_list!): " . mysqli_error($koneksi));
     }
 
-    mysqli_stmt_bind_param($stmt_update_service, 'sissisi',
-        $claim_status_val,
-        $admin_id,
-        $admin_namalengkap,
-        $admin_id,        // COALESCE admin_claim_id
-        $admin_namalengkap,  // COALESCE admin_claim_name
-        $loan_hostname,   // <-- VARIABEL KE-6 (s) YANG HILANG
-        $id_service       // VARIABEL KE-7 (i) untuk WHERE clause
+    mysqli_stmt_bind_param($stmt_update_service, 'sisissi',
+        $claim_status_val,          // 1. s (claim_status: String 'On Service')
+        $admin_id,                  // 2. i (current_admin_id: Integer)
+        $admin_namalengkap,         // 3. s (current_admin_name: String)
+        $admin_id,                  // 4. i (COALESCE admin_claim_id: Integer)
+        $admin_namalengkap,         // 5. s (COALESCE admin_claim_name: String)
+        $loan_hostname,             // 6. s (loan_hostname: String)
+        $id_service                 // 7. i (id_service: Integer, untuk WHERE clause)
     );
     $result_update = mysqli_stmt_execute($stmt_update_service);
 

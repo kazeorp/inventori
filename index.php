@@ -43,57 +43,49 @@ if ($is_admin_logged_in && ($user_role === 'admin' || $user_role === 'superadmin
     exit();
 }
 
-// --- LOGIKA CEK MANUAL (Dipertahankan untuk kasus refresh) ---
-if (isset($_POST['cek'])) {
-    if (!$koneksi) {
-        $_SESSION['scan_error'] = "Gagal terhubung ke database.";
-        header("Location: index.php"); exit();
+$service_list_pending = [];
+
+if ($koneksi) {
+    // Query Pending Claim: Sudah masuk service_list (telah di-scan dan dicatat) 
+    // TAPI claim_status BELUM 'On Service' DAN BELUM 'Selesai'
+    $sql_pending = "SELECT sl.id_service, sl.hostname, sl.tanggal_masuk, 
+                            sl.claim_status, sl.admin_claim_name,
+                            i.nama AS nama_user, i.divisi
+                     FROM service_list sl
+                     LEFT JOIN inventori i ON sl.id_inventori = i.id
+                     WHERE sl.claim_status IS NULL AND sl.finish_status IS NULL 
+                     ORDER BY sl.tanggal_masuk DESC 
+                     LIMIT 20";
+    
+    $result_pending = mysqli_query($koneksi, $sql_pending);
+
+    if ($result_pending && mysqli_num_rows($result_pending) > 0) {
+        while ($row = mysqli_fetch_assoc($result_pending)) {
+            $service_list_pending[] = $row;
+        }
     }
-
-    $hostname = mysqli_real_escape_string($koneksi, $_POST['hostname']);
-
-    // Query aset
-    $sql_aset = "SELECT id, hostname, nama, divisi, status FROM inventori WHERE hostname = '$hostname' LIMIT 1";
-    $result_aset = mysqli_query($koneksi, $sql_aset);
-
-    if ($result_aset === FALSE) {
-        $_SESSION['scan_error'] = "Error Query SQL: " . mysqli_error($koneksi);
-        unset($_SESSION['last_scan']);
-    } else if (mysqli_num_rows($result_aset) > 0) {
-        $last_scan_data = mysqli_fetch_assoc($result_aset);
-        
-        // TAMBAHAN 1: Menyimpan waktu scan saat check manual
-        $last_scan_data['waktu_scan'] = date('Y-m-d H:i:s'); 
-        
-        // Simpan data untuk tampilan manual check
-        $_SESSION['last_scan'] = $last_scan_data;
-        unset($_SESSION['scan_error']);
-    } else {
-        $_SESSION['scan_error'] = "Aset dengan Hostname '{$hostname}' TIDAK DITEMUKAN.";
-        unset($_SESSION['last_scan']);
-    }
-    header("Location: index.php");
-    exit();
 }
-// Ambil hasil scan terakhir (jika ada)
-$last_scan = $_SESSION['last_scan'] ?? null;
 
 
 // TAMBAHAN 2: Logika mengambil Histori Service yang sudah selesai
-$service_list_done = [];
+// >>> REVISI INI: Mengambil data Aset yang SEDANG DALAM SERVICE (On Service)
+$service_list_on_service = [];
 if ($koneksi) {
-// REVISI QUERY: Menggunakan finish_status
-    $sql_service = "SELECT id_service, hostname, tanggal_masuk, finish_status
-                    FROM service_list 
-                    WHERE finish_status = 'Selesai' 
-                    ORDER BY tanggal_masuk DESC 
+// Query On Service: Sudah diklaim (claim_status='On Service') DAN Belum Selesai (finish_status IS NULL)
+    $sql_service = "SELECT sl.id_service, sl.hostname, sl.tanggal_masuk, 
+                           sl.claim_status, sl.admin_claim_name,
+                           i.nama AS nama_user, i.divisi
+                    FROM service_list sl
+                    LEFT JOIN inventori i ON sl.id_inventori = i.id
+                    WHERE sl.claim_status = 'On Service' AND sl.finish_status IS NULL
+                    ORDER BY sl.tanggal_masuk ASC 
                     LIMIT 20";
     
     $result_service = mysqli_query($koneksi, $sql_service);
 
     if ($result_service && mysqli_num_rows($result_service) > 0) {
         while ($row = mysqli_fetch_assoc($result_service)) {
-            $service_list_done[] = $row;
+            $service_list_on_service[] = $row;
         }
     }
 }
@@ -108,7 +100,7 @@ if ($koneksi) {
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-    /* ✅ Dipertahankan: Batasi lebar form agar bisa ditengahkan */
+    /* Dipertahankan: Batasi lebar form agar bisa ditengahkan */
     #manual-check-form-container {
         max-width: 400px; /* Batas lebar agar input tidak terlalu lebar */
         margin: 0 auto; /* Menengahkan container */
@@ -159,10 +151,172 @@ if ($koneksi) {
     
     <div class="row justify-content-center mt-4">
         
-        <div class="col-md-6">
-            <h5 class="mb-3 text-center">🛠️ Informasi Aset Terakhir</h5>
+<div class="col-md-6">
+            <h5 class="mb-3 text-center"> Riwayat Scan Aset (Terakhir)</h5>
+            
+            <?php $scan_chunks = array_chunk($service_list_pending, 5); // Bagi data menjadi potongan 5 ?>
+            
+            <div id="assetScanCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner" id="scanHistoryInner">
+                
+                <?php if (empty($service_list_pending)): ?>
+                    <div class="carousel-item active">
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm table-bordered table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr><th colspan="4">Riwayat Scan Aset</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="4" class="text-center">Tidak ada aset yang menunggu di pick up.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                <?php else: ?>
+                
+                    <?php foreach ($scan_chunks as $index => $chunk): ?>
+                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm table-bordered table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Hostname</th>
+                                        <th>Nama User</th>
+                                        <th>Divisi</th>
+                                        <th>Waktu Scan</th> 
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($chunk as $data): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($data['hostname'] ?? '-') ?></td>
+                                        <td><?= htmlspecialchars($data['nama_user'] ?? '-') ?></td>
+                                        <td><?= htmlspecialchars($data['divisi'] ?? '-') ?></td>
+                                        <td><?= htmlspecialchars($data['tanggal_masuk'] ?? '-') ?></td> 
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                    
+                <?php endif; ?>
+                
+                </div>
+                
+                <?php if (count($scan_chunks) > 1): // Tampilkan kontrol jika lebih dari 1 halaman ?>
+                <button class="carousel-control-prev" type="button" data-bs-target="#assetScanCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#assetScanCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+                <?php endif; ?>
+                
+            </div>
+        </div>
 
-            <div class="table-responsive mb-4" id="asset-info-table">
+<div class="col-md-6">
+            <h5 class="mb-3 text-center"> Daftar Aset On Service</h5>
+            
+            <?php $service_chunks = array_chunk($service_list_on_service, 5); // Bagi data menjadi potongan 5 ?>
+            
+            <div id="serviceOnCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                
+                <?php if (empty($service_list_on_service)): ?>
+                    <div class="carousel-item active">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered table-striped table-hover">
+                                <thead class="table-warning">
+                                    <tr><th colspan="4">Daftar Aset On Service</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="4" class="text-center">Tidak ada aset yang sedang dalam service (On Service).</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                <?php else: ?>
+                
+                    <?php foreach ($service_chunks as $index => $chunk): ?>
+                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered table-striped table-hover">
+                                <thead class="table-warning">
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Hostname</th>
+                                        <th>Nama User</th>
+                                        <th>Admin Klaim</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $no = ($index * 5) + 1; foreach ($chunk as $service): ?>
+                                    <tr>
+                                        <td><?= $no++ ?></td>
+                                        <td><?= htmlspecialchars($service['hostname'] ?? '-') ?></td>
+                                        <td><?= htmlspecialchars($service['nama_user'] ?? '-') ?></td>
+                                        <td><?= htmlspecialchars($service['admin_claim_name'] ?? 'Belum Diklaim') ?></td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                    
+                <?php endif; ?>
+                
+                </div>
+                
+                <?php if (count($service_chunks) > 1): // Tampilkan kontrol jika lebih dari 1 halaman ?>
+                <button class="carousel-control-prev" type="button" data-bs-target="#serviceOnCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#serviceOnCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+                <?php endif; ?>
+                
+            </div>
+        </div>
+</main>
+
+<script>
+    
+    // Hanya menggunakan elemen yang diperlukan untuk manual input / scanner fisik
+    const scanStatusElement = document.getElementById("scan-status");
+    const alertContainer = document.getElementById('status-alert-container');
+    const mainHeaderElement = document.querySelector('.main-content h2'); 
+    
+    const manualInput = document.getElementById('manual-hostname-input');
+    const manualButton = document.getElementById('manual-check-button');
+    // const manualForm = document.getElementById('manual-check-form'); // Tidak perlu form object
+    
+    // Fungsi untuk menambahkan item riwayat scan baru ke carousel
+function appendHistoryItem(data) {
+    const historyContainer = document.getElementById('scanHistoryInner');
+    
+    // 1. Buat baris baru (<tr>) untuk data yang baru di-scan
+    const newRow = `
+        <tr>
+            <td>${data.hostname ?? '-'}</td>
+            <td>${data.nama ?? '-'}</td>
+            <td>${data.divisi ?? '-'}</td>
+            <td>${data.waktu_scan ?? '-'}</td>
+        </tr>
+    `;
+
+    // 2. Buat seluruh struktur tabel/carousel item
+    const newCarouselItem = `
+        <div class="carousel-item active">
+            <div class="table-responsive mb-4">
                 <table class="table table-sm table-bordered table-striped table-hover">
                     <thead class="table-dark">
                         <tr>
@@ -173,75 +327,61 @@ if ($koneksi) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if ($last_scan): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($last_scan['hostname']) ?></td>
-                            <td><?= htmlspecialchars($last_scan['nama']) ?></td>
-                            <td><?= htmlspecialchars($last_scan['divisi']) ?></td>
-                            <td><?= htmlspecialchars($last_scan['waktu_scan'] ?? '-') ?></td> 
-                        </tr>
-                        <?php else: ?>
-                        <tr>
-                            <td colspan="4" class="text-center">Silahkan scan aset untuk menampilkan data.</td>
-                        </tr>
-                        <?php endif; ?>
-                    </tbody>
+                        ${newRow}
+                        </tbody>
                 </table>
             </div>
         </div>
+    `;
 
-        <div class="col-md-6">
-            <h5 class="mb-3 text-center">✅ Histori Service Selesai (Terakhir)</h5>
-            <div class="table-responsive">
-                <table class="table table-sm table-bordered table-striped table-hover">
-                    <thead class="table-info">
-                        <tr>
-                            <th>ID</th>
-                            <th>Hostname</th>
-                            <th>Tgl. Masuk</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php if (!empty($service_list_done)): ?>
-                        <?php foreach ($service_list_done as $service): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($service['id_service']) ?></td>
-                            <td><?= htmlspecialchars($service['hostname']) ?></td>
-                            <td><?= htmlspecialchars($service['tanggal_masuk']) ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="5" class="text-center">Tidak ada histori service yang sudah selesai.</td>
-                        </tr>
-                    <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</main>
-
-<script>
-    // Hanya menggunakan elemen yang diperlukan untuk manual input / scanner fisik
-    const scanStatusElement = document.getElementById("scan-status");
-    const alertContainer = document.getElementById('status-alert-container');
-    const mainHeaderElement = document.querySelector('.main-content h2'); 
+    // 3. Hapus kelas 'active' dari item yang sekarang aktif
+    const activeItem = historyContainer.querySelector('.carousel-item.active');
+    if (activeItem) {
+        activeItem.classList.remove('active');
+    }
     
-    const manualInput = document.getElementById('manual-hostname-input');
-    const manualButton = document.getElementById('manual-check-button');
-    // const manualForm = document.getElementById('manual-check-form'); // Tidak perlu form object
+    // 4. Sisipkan item baru sebagai yang aktif (di awal)
+    // Untuk menyederhanakan, kita hanya membuat item baru. Jika sebelumnya kosong:
+    if (historyContainer.innerHTML.includes('Tidak ada aset')) {
+        historyContainer.innerHTML = ''; // Kosongkan pesan "Tidak ada aset"
+    }
+
+    // Karena logika Riwayat Scan Anda di-chunk per 5, 
+    // cara paling sederhana adalah mengganti seluruh inner HTML saat ada scan baru 
+    // agar data scan terbaru terlihat di slide pertama.
+    // Namun, itu terlalu kompleks. Kita akan buat entry baru muncul di slide pertama.
+
+    // *Modifikasi Sederhana:* Hanya menampilkan entri terbaru di DOM tanpa mengurus chunking.
+    
+    const tempTable = document.createElement('table');
+    tempTable.innerHTML = `<thead class="table-dark"><tr><th>Hostname</th><th>Nama User</th><th>Divisi</th><th>Waktu Scan</th></tr></thead><tbody>${newRow}</tbody>`;
+    
+    const scanContainer = document.querySelector('.main-content .col-md-6:first-child');
+    if(scanContainer) {
+        // Hapus elemen lama (yang mungkin berisi pesan "Tidak ada aset")
+        const oldCarousel = document.getElementById('assetScanCarousel');
+        if (oldCarousel) oldCarousel.remove();
+
+        // Tampilkan hanya item yang baru di-scan dalam bentuk tabel sederhana (bukan carousel)
+        const instantAlert = document.createElement('div');
+        instantAlert.classList.add('alert', 'alert-info', 'mb-3');
+        instantAlert.innerHTML = `**Aset ${data.hostname} berhasil di-scan.** Data Service sedang dicatat...`;
+        scanContainer.prepend(instantAlert);
+    }
+}
+
+
 
     // --- FUNGSI UTAMA HANDLER AJAX (Mencari Aset dan Mencatat Service) ---
     function handleAssetCheck(code) {
         const processedCode = code ? code.trim() : '';
 
         if (!processedCode) {
-             scanStatusElement.innerText = "⚠️ Hostname kosong. Masukkan data.";
+             scanStatusElement.innerText = " Hostname kosong. Masukkan data.";
              return;
         }
 
-        scanStatusElement.innerText = "✅ Hostname/Barcode terdeteksi: " + processedCode + ". Mencari data aset...";
+        scanStatusElement.innerText = " Hostname/Barcode terdeteksi: " + processedCode + ". Mencari data aset...";
         
         // --- FETCH AJAX KE HANDLER SCAN AWAL (ajax_scan_handler.php) ---
         fetch('ajax_scan_handler.php', {
@@ -258,19 +398,24 @@ if ($koneksi) {
             return response.json();
         })
         .then(data => {
-            alertContainer.innerHTML = ''; 
-            scanStatusElement.classList.remove('text-danger', 'text-primary');
-            scanStatusElement.classList.add('text-success');
+      alertContainer.innerHTML = ''; 
+      scanStatusElement.classList.remove('text-danger', 'text-primary');
+      scanStatusElement.classList.add('text-success');
 
-            if (data.status === 'success') {
-                // ASET DITEMUKAN: Lanjut ke addServiceEntry
-                scanStatusElement.innerText = `✅ Aset ${data.hostname} ditemukan. Mencatat service...`;
-                addServiceEntry(data.id_aset, data.hostname);
+      if (data.status === 'success') {
+        
+                // >>> BARU: PERBARUI TAMPILAN SECARA INSTAN DI BROWSER <<<
+                appendHistoryItem(data);
+                // >>> END BARU <<<
+                
+        // ASET DITEMUKAN: Lanjut ke addServiceEntry (Alur otomatis dikembalikan)
+        scanStatusElement.innerText = ` Aset ${data.hostname} ditemukan. Mencatat service...`;
+        addServiceEntry(data.id_aset, data.hostname); // KEMBALIKAN PANGGILAN INI
 
-            } else {
+      } else{
                 // ASET TIDAK DITEMUKAN
                 const errorMessage = data.message || "Aset tidak ditemukan atau respon server tidak valid.";
-                scanStatusElement.innerText = "❌ " + errorMessage;
+                scanStatusElement.innerText = " " + errorMessage;
                 scanStatusElement.classList.remove('text-success');
                 scanStatusElement.classList.add('text-danger');
                 alertContainer.innerHTML = `<div class="alert alert-danger mt-3">${errorMessage}</div>`;
@@ -280,7 +425,7 @@ if ($koneksi) {
             // ERROR KONEKSI/SERVER
             console.error('AJAX Scan Error:', error);
             const displayError = error.message.includes('HTTP status') ? 'Gagal koneksi server.' : 'Gagal koneksi server. Coba lagi.';
-            scanStatusElement.innerText = "⚠️ " + displayError;
+            scanStatusElement.innerText = " " + displayError;
             scanStatusElement.classList.remove('text-success');
             scanStatusElement.classList.add('text-danger');
             alertContainer.innerHTML = `<div class="alert alert-danger mt-3">Koneksi gagal atau server bermasalah.</div>`;
@@ -302,11 +447,11 @@ if ($koneksi) {
             
             if (data.status === 'success' || data.status === 'warning') {
                 
-                mainHeaderElement.innerHTML = "✅ Setelah scan silahkan tunggu PIC datang";
+                mainHeaderElement.innerHTML = " Setelah scan silahkan tunggu PIC datang";
                 mainHeaderElement.classList.remove('text-danger', 'text-primary');
                 mainHeaderElement.classList.add('text-success'); 
                 
-                scanStatusElement.innerText = `✅ Aset ${hostname} berhasil dicatat.`;
+                scanStatusElement.innerText = ` Aset ${hostname} berhasil dicatat.`;
                 alertContainer.innerHTML = `<div class="alert alert-success mt-3">${message}. Halaman akan di-refresh dalam 3 detik.</div>`;
                 
                 // Bersihkan input setelah berhasil
@@ -316,14 +461,14 @@ if ($koneksi) {
                 
             } else {
                 console.error("Gagal menambahkan service entry:", message);
-                scanStatusElement.innerText = `❌ Gagal mencatat service aset ${hostname}.`;
-                alertContainer.innerHTML = `<div class="alert alert-danger mt-3">⚠️ Gagal mencatat service aset ${hostname}: ${message}</div>`;
+                scanStatusElement.innerText = ` Gagal mencatat service aset ${hostname}.`;
+                alertContainer.innerHTML = `<div class="alert alert-danger mt-3"> Gagal mencatat service aset ${hostname}: ${message}</div>`;
             }
         })
         .catch(error => {
             console.error('AJAX Service Error:', error);
-            scanStatusElement.innerText = `⚠️ Error koneksi saat mencatat service.`;
-            alertContainer.innerHTML = `<div class="alert alert-danger mt-3">⚠️ Error koneksi saat mencatat service.</div>`;
+            scanStatusElement.innerText = ` Error koneksi saat mencatat service.`;
+            alertContainer.innerHTML = `<div class="alert alert-danger mt-3"> Error koneksi saat mencatat service.</div>`;
         });
     }
 
