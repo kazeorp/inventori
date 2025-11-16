@@ -1,0 +1,9 @@
+  <option value="">-- Pilih Status --</option>
+  <option value="Spare">Spare</option>
+  <option value="Grace Period">Grace Period</option>
+  <option value="Pending Service">Pending Service</option>
+  <option value="Scrap">Scrap</option>
+  <option value="MT">MT</option>
+  <option value="Ready To Assign">Ready To Assign</option>
+  <option value="Assign">Assign</option>
+  <option value="Loan">Loan</option>

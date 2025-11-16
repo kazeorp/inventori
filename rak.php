@@ -1,0 +1,10 @@
+<option value="">-- Pilih Rak --</option>
+<option value="GD-R11">GD-R11</option>
+<option value="GD-R12">GD-R12</option>
+<option value="GD-R13">GD-R13</option>
+<option value="GD-R2">GD-R2</option>
+<option value="GD-R4">GD-R4</option>
+<option value="GD-R8">GD-R8</option>
+<option value="GD-R9">GD-R9</option>
+<option value="Assign">Assign</option>
+<option value="Loan">Loan</option>

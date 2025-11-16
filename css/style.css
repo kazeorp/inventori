@@ -1,0 +1,160 @@
+/* ======================================================= */
+/* GLOBAL STYLING UNTUK APLIKASI INVENTORI (MODERN & KORPORAT) */
+/* ======================================================= */
+
+:root {
+    /* Warna Brand berdasarkan Logo Sinarmas APP */
+    --app-red: #E51A22; /* Merah Utama untuk Aksen/Brand */
+    --app-dark: #212529; /* Hitam/Dark Gray untuk Teks dan Sidebar */
+    --app-blue: #004899; /* Biru Korporat untuk Link Sekunder/Primary Action */
+    --bg-light: #f8f9fa;
+    --text-muted: #6c757d;
+
+    /* Styling Modern */
+    --radius-md: 8px;
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* --- Global Styles --- */
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif; /* Menggunakan font modern */
+    background-color: var(--bg-light);
+    color: var(--app-dark);
+    margin: 0;
+    padding-top: 0; /* Hilangkan padding body */
+}
+
+/* --- Header Styling --- */
+.logo-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* Gunakan z-index tinggi agar tidak tertutup */
+    z-index: 1001; 
+    /* Style sudah ditangani oleh Bootstrap di header.php */
+    /* Tambahkan tinggi eksplisit agar sidebar dan main-content bisa mengacu */
+    height: 120px; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Efek shadow modern */
+    background-color: #ffffff;
+    display: flex; /* Tambahkan flex untuk memastikan konten terpusat vertikal */
+    align-items: center;
+}
+
+.logo-img {
+    max-height: 120px; 
+    display: block;
+}
+
+/* --- Sidebar Styling --- */
+.sidebar {
+    position: fixed;
+    top: 120px; /* DIMULAI TEPAT DI BAWAH HEADER 120PX */
+    left: 0;
+    width: 220px;
+    height: calc(100vh - 120px); /* Kurangi tinggi header 120px */
+    background-color: var(--app-dark); /* Sidebar gelap */
+    color: white;
+    padding: 20px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.sidebar a {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 8px 12px; /* Padding lebih baik */
+    margin-bottom: 8px;
+    font-weight: 500;
+    border-radius: var(--radius-md); /* Sudut membulat */
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+    text-decoration: none;
+    background-color: var(--app-red); /* Aksen Merah Korporat (tetap untuk sidebar aktif) */
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* --- Main Content Styling --- */
+.main-content {
+    margin-left: 240px; /* Ruang untuk sidebar + sedikit margin */
+    margin-top: 120px; /* DIMULAI DARI 120PX DI BAWAH HEADER FIXED */
+    padding: 30px;
+}
+
+/* --- Utility Class & Komponen Modern --- */
+.container-full {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* ======================================================= */
+/* STYLING TOMBOL BOOTSTRAP */
+/* ======================================================= */
+
+/* Tombol Primary (Aksi Utama), Success (Simpan/Tambah), Info, Secondary, Warning -> Biru Korporat (Blue Brand) */
+.btn-primary, .btn-success, .btn-info, .btn-secondary, .btn-warning {
+    background-color: var(--app-blue);
+    border-color: var(--app-blue);
+    color: white; /* Pastikan teks putih untuk btn-warning */
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-primary:hover, .btn-success:hover, .btn-info:hover, .btn-secondary:hover, .btn-warning:hover {
+    background-color: #00377A; /* Biru sedikit lebih gelap */
+    border-color: #00377A;
+}
+
+
+/* Tombol Danger (Aksi Hapus/Bahaya) -> Merah Standar Bootstrap */
+.btn-danger {
+    background-color: #dc3545; /* Merah Standar Bootstrap untuk bahaya (Hapus) */
+    border-color: #dc3545;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+
+/* Styling Card & Kontainer */
+.card {
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* Styling Tabel */
+.table thead th {
+    background-color: var(--app-dark);
+    color: #ffffff;
+    font-weight: 600;
+    border-bottom: 2px solid var(--app-red);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(229, 26, 34, 0.05); /* Highlight baris dengan warna merah transparan */
+}
