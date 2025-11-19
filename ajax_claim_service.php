@@ -106,7 +106,7 @@ try {
 
         echo json_encode([
             'success' => true,
-            'message' => "Servis berhasil diklaim oleh {$admin_namalengkap}. Status Inventori Tetap: {$current_inventori_status}",
+            'message' => "Servis berhasil dipick up oleh {$admin_namalengkap}. Status Inventori Tetap: {$current_inventori_status}",
             'redirect_url' => "detail-aset.php?hostname=" . urlencode($hostname) . "&action=service_claim"
         ]);
 
@@ -114,19 +114,19 @@ try {
 
     } else {
         mysqli_rollback($koneksi);
-        echo json_encode(['success' => false, 'message' => 'Gagal mengklaim servis. Servis mungkin sudah diklaim atau sudah selesai.']);
+        echo json_encode(['success' => false, 'message' => 'Gagal mempick up servis. Servis mungkin sudah dipick up atau sudah selesai.']);
     }
 
 } catch (Exception $e) {
     // Tangani semua error SQL/Logic dalam transaksi
     mysqli_rollback($koneksi);
-    error_log("AJAX Claim Error: " . $e->getMessage());
+    error_log("AJAX Pick Up Error: " . $e->getMessage());
 
     $error_msg = strpos($e->getMessage(), 'SQL Prepare Gagal') !== false
                  ? "FATAL SQL ERROR (Prepare): " . $e->getMessage()
                  : $e->getMessage();
 
-    echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan sistem saat mengklaim: ' . $error_msg]);
+    echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan sistem saat mempick up ' . $error_msg]);
 
 } finally {
     // Tutup statement

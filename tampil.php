@@ -1,7 +1,7 @@
-<?php 
+<?php
 // Pastikan session sudah dimulai di file session.php
-include 'session.php'; 
-include "koneksi.php"; 
+include 'session.php';
+include "koneksi.php";
 
 // Mengambil role dari session
 $role = isset($_SESSION['role']) ? $_SESSION['role'] : 'normal';
@@ -54,39 +54,39 @@ $where_clause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
 
 // Query utama yang akan di-include di table-inventori.php
 $query = "
-    SELECT 
+    SELECT
         i.*,
         t_loan.oleh AS pic_loan_name_display  -- Mengambil nama PIC dari tabel histori_aset (t_loan)
-    FROM 
+    FROM
         inventori i
-    
+
     -- LEFT JOIN untuk menemukan nama PIC yang terakhir melakukan aksi 'Loan'
     LEFT JOIN (
-        SELECT 
-            t1.inventori_id, 
+        SELECT
+            t1.inventori_id,
             t1.oleh,
             t1.tanggal
-        FROM 
+        FROM
             histori_aset t1
         INNER JOIN (
             -- Cari ID Log Transaksi TERBARU untuk aksi 'Loan'
-            SELECT 
-                inventori_id, 
+            SELECT
+                inventori_id,
                 MAX(tanggal) AS max_tanggal
-            FROM 
+            FROM
                 histori_aset
-            WHERE 
-                aksi = 'Loan' 
-            GROUP BY 
+            WHERE
+                aksi = 'Loan'
+            GROUP BY
                 inventori_id
         ) t2 ON t1.inventori_id = t2.inventori_id AND t1.tanggal = t2.max_tanggal
-        WHERE 
+        WHERE
             t1.aksi = 'Loan'
     ) AS t_loan ON i.id = t_loan.inventori_id  -- JOIN berdasarkan ID Inventori
-    
-    $where_clause 
+
+    $where_clause
     ORDER BY i.id ASC
-"; 
+";
 
 $result = mysqli_query($koneksi, $query);
 
@@ -137,9 +137,9 @@ $notifikasi_grace = [];
 
         <div class="mb-4 p-3 bg-white rounded shadow-sm filter-container">
             <p class="fw-bold mb-2">Filter Data:</p>
-            
+
             <form method="GET" class="row align-items-end g-3">
-                
+
                 <div class="col-12 mb-3">
                     <?php foreach ($status_options as $status_key => $label):
                         $is_active = $status_filter === $status_key;
@@ -156,31 +156,31 @@ $notifikasi_grace = [];
                         </a>
                     <?php endforeach; ?>
                 </div>
-                
+
                 <div class="col-12">
                     <div class="row g-3 align-items-end">
-                        
-                        <div class="col-12 col-md-5"> 
+
+                        <div class="col-12 col-md-5">
                             <label for="cari_input" class="form-label fw-bold mb-0">Pencarian Hostname/Nama/NIK</label>
                             <input type="text" name="cari" id="cari_input" class="form-control" placeholder="Hostname / Nama / NIK" value="<?= isset($_GET['cari']) ? htmlspecialchars($_GET['cari']) : ''; ?>">
                         </div>
-                        
-                        <div class="col-auto"> 
+
+                        <div class="col-auto">
                             <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Cari</button>
                         </div>
-                        <div class="col-auto"> 
+                        <div class="col-auto">
                             <a href="tampil.php" class="btn btn-secondary">Reset Filter</a>
                         </div>
-                        
+
                     </div>
                 </div>
-                
+
                 <input type="hidden" name="status" value="<?= e($status_filter); ?>">
 
             </form>
         </div>
 			<div class="d-flex mb-4">
-					
+
 					<?php if ($role !== 'normal'): ?>
 						<button type="button" class="btn btn-primary me-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
 							<i class="bi bi-plus-circle"></i> Tambah Data
@@ -195,7 +195,7 @@ $notifikasi_grace = [];
 							<i class="bi bi-file-earmark-spreadsheet"></i> Export Excel
 						</a>
 					<?php endif; ?>
-					
+
 					<?php if ($role === 'superadmin'): ?>
 						<button type="button" class="btn btn-warning text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#tipeLaptopModal">
 							<i class="bi bi-laptop-fill"></i> Kelola Tipe Laptop
@@ -203,7 +203,7 @@ $notifikasi_grace = [];
 					<?php endif; ?>
 
 				</div>
-					
+
 				<div class="card shadow-sm">
 
 			<div class="card shadow-sm">
@@ -212,20 +212,20 @@ $notifikasi_grace = [];
 						<table class="table table-bordered table-striped table-hover mb-0">
 							<thead class="table-dark">
 								<tr>
-									<th>Domain</th> 
-									<th>Rak</th> 
+									<th>Domain</th>
+									<th>Rak</th>
 									<th>Status</th>
-									<th>Hostname & Tipe</th> 
+									<th>Hostname & Tipe</th>
 									<th>Spesifikasi (RAM/Storage/OS)</th>
-									<th>Tgl. Masuk</th> 
-									<th>Tgl. Keluar</th>
+                                    <th>Tgl. Register</th>
+									<th>Tgl. (Masuk / Keluar)</th>
 									<th>User & Divisi</th>
 									<th>Kelengkapan & Keterangan</th>
 								</tr>
 							</thead>
 							<tbody>
-								<?php 
-								include 'table-inventori.php'; 
+								<?php
+								include 'table-inventori.php';
 								?>
 							</tbody>
 						</table>

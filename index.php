@@ -46,17 +46,17 @@ if ($is_admin_logged_in && ($user_role === 'admin' || $user_role === 'superadmin
 $service_list_pending = [];
 
 if ($koneksi) {
-    // Query Pending Claim: Sudah masuk service_list (telah di-scan dan dicatat) 
+    // Query Pending Claim: Sudah masuk service_list (telah di-scan dan dicatat)
     // TAPI claim_status BELUM 'On Service' DAN BELUM 'Selesai'
-    $sql_pending = "SELECT sl.id_service, sl.hostname, sl.tanggal_masuk, 
+    $sql_pending = "SELECT sl.id_service, sl.hostname, sl.tanggal_masuk,
                             sl.claim_status, sl.admin_claim_name,
                             i.nama AS nama_user, i.divisi
                      FROM service_list sl
                      LEFT JOIN inventori i ON sl.id_inventori = i.id
-                     WHERE sl.claim_status IS NULL AND sl.finish_status IS NULL 
-                     ORDER BY sl.tanggal_masuk DESC 
+                     WHERE sl.claim_status IS NULL AND sl.finish_status IS NULL
+                     ORDER BY sl.tanggal_masuk DESC
                      LIMIT 20";
-    
+
     $result_pending = mysqli_query($koneksi, $sql_pending);
 
     if ($result_pending && mysqli_num_rows($result_pending) > 0) {
@@ -72,15 +72,15 @@ if ($koneksi) {
 $service_list_on_service = [];
 if ($koneksi) {
 // Query On Service: Sudah diklaim (claim_status='On Service') DAN Belum Selesai (finish_status IS NULL)
-    $sql_service = "SELECT sl.id_service, sl.hostname, sl.tanggal_masuk, 
+    $sql_service = "SELECT sl.id_service, sl.hostname, sl.tanggal_masuk,
                            sl.claim_status, sl.admin_claim_name,
                            i.nama AS nama_user, i.divisi
                     FROM service_list sl
                     LEFT JOIN inventori i ON sl.id_inventori = i.id
                     WHERE sl.claim_status = 'On Service' AND sl.finish_status IS NULL
-                    ORDER BY sl.tanggal_masuk ASC 
+                    ORDER BY sl.tanggal_masuk ASC
                     LIMIT 20";
-    
+
     $result_service = mysqli_query($koneksi, $sql_service);
 
     if ($result_service && mysqli_num_rows($result_service) > 0) {
@@ -128,18 +128,18 @@ if ($koneksi) {
         <div class="col-md-8">
             <div id="manual-check-form-container" class="text-center mb-5">
                 <h5 class="mb-3">Input Hostname</h5>
-                
+
                 <div id="scan-status" class="fw-bold mb-3 text-primary"></div>
 
                 <form method="POST" id="manual-check-form">
                     <input type="text" name="hostname" id="manual-hostname-input" class="form-control form-control-lg mb-3" placeholder="Input Hostname di sini" required autofocus>
-                    
+
                     <button type="button" id="manual-check-button" class="btn btn-success btn-lg">Cek Aset</button>
                 </form>
             </div>
-            
+
             <hr class="mb-5">
-            
+
             <div id="status-alert-container">
                 <?php if (isset($_SESSION['scan_error'])): ?>
                     <div class="alert alert-danger mt-3"><?= htmlspecialchars($_SESSION['scan_error']) ?></div>
@@ -148,17 +148,17 @@ if ($koneksi) {
             </div>
         </div>
     </div>
-    
+
     <div class="row justify-content-center mt-4">
-        
+
 <div class="col-md-6">
             <h5 class="mb-3 text-center"> Riwayat Scan Aset (Terakhir)</h5>
-            
+
             <?php $scan_chunks = array_chunk($service_list_pending, 5); // Bagi data menjadi potongan 5 ?>
-            
+
             <div id="assetScanCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner" id="scanHistoryInner">
-                
+
                 <?php if (empty($service_list_pending)): ?>
                     <div class="carousel-item active">
                         <div class="table-responsive mb-4">
@@ -167,13 +167,13 @@ if ($koneksi) {
                                     <tr><th colspan="4">Riwayat Scan Aset</th></tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td colspan="4" class="text-center">Tidak ada aset yang menunggu di pick up.</td></tr>
+                                    <tr><td colspan="4" class="text-center">Tidak ada aset yang menunggu dipick up.</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 <?php else: ?>
-                
+
                     <?php foreach ($scan_chunks as $index => $chunk): ?>
                     <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
                         <div class="table-responsive mb-4">
@@ -183,7 +183,7 @@ if ($koneksi) {
                                         <th>Hostname</th>
                                         <th>Nama User</th>
                                         <th>Divisi</th>
-                                        <th>Waktu Scan</th> 
+                                        <th>Waktu Scan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -192,7 +192,7 @@ if ($koneksi) {
                                         <td><?= htmlspecialchars($data['hostname'] ?? '-') ?></td>
                                         <td><?= htmlspecialchars($data['nama_user'] ?? '-') ?></td>
                                         <td><?= htmlspecialchars($data['divisi'] ?? '-') ?></td>
-                                        <td><?= htmlspecialchars($data['tanggal_masuk'] ?? '-') ?></td> 
+                                        <td><?= htmlspecialchars($data['tanggal_masuk'] ?? '-') ?></td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -200,11 +200,11 @@ if ($koneksi) {
                         </div>
                     </div>
                     <?php endforeach; ?>
-                    
+
                 <?php endif; ?>
-                
+
                 </div>
-                
+
                 <?php if (count($scan_chunks) > 1): // Tampilkan kontrol jika lebih dari 1 halaman ?>
                 <button class="carousel-control-prev" type="button" data-bs-target="#assetScanCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -215,18 +215,18 @@ if ($koneksi) {
                     <span class="visually-hidden">Next</span>
                 </button>
                 <?php endif; ?>
-                
+
             </div>
         </div>
 
 <div class="col-md-6">
             <h5 class="mb-3 text-center"> Daftar Aset On Service</h5>
-            
+
             <?php $service_chunks = array_chunk($service_list_on_service, 5); // Bagi data menjadi potongan 5 ?>
-            
+
             <div id="serviceOnCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
-                
+
                 <?php if (empty($service_list_on_service)): ?>
                     <div class="carousel-item active">
                         <div class="table-responsive">
@@ -241,7 +241,7 @@ if ($koneksi) {
                         </div>
                     </div>
                 <?php else: ?>
-                
+
                     <?php foreach ($service_chunks as $index => $chunk): ?>
                     <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
                         <div class="table-responsive">
@@ -251,7 +251,7 @@ if ($koneksi) {
                                         <th>No.</th>
                                         <th>Hostname</th>
                                         <th>Nama User</th>
-                                        <th>Admin Klaim</th>
+                                        <th>Admin</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -260,7 +260,7 @@ if ($koneksi) {
                                         <td><?= $no++ ?></td>
                                         <td><?= htmlspecialchars($service['hostname'] ?? '-') ?></td>
                                         <td><?= htmlspecialchars($service['nama_user'] ?? '-') ?></td>
-                                        <td><?= htmlspecialchars($service['admin_claim_name'] ?? 'Belum Diklaim') ?></td>
+                                        <td><?= htmlspecialchars($service['admin_claim_name'] ?? 'Belum Dipick Up') ?></td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -268,11 +268,11 @@ if ($koneksi) {
                         </div>
                     </div>
                     <?php endforeach; ?>
-                    
+
                 <?php endif; ?>
-                
+
                 </div>
-                
+
                 <?php if (count($service_chunks) > 1): // Tampilkan kontrol jika lebih dari 1 halaman ?>
                 <button class="carousel-control-prev" type="button" data-bs-target="#serviceOnCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -283,26 +283,26 @@ if ($koneksi) {
                     <span class="visually-hidden">Next</span>
                 </button>
                 <?php endif; ?>
-                
+
             </div>
         </div>
 </main>
 
 <script>
-    
+
     // Hanya menggunakan elemen yang diperlukan untuk manual input / scanner fisik
     const scanStatusElement = document.getElementById("scan-status");
     const alertContainer = document.getElementById('status-alert-container');
-    const mainHeaderElement = document.querySelector('.main-content h2'); 
-    
+    const mainHeaderElement = document.querySelector('.main-content h2');
+
     const manualInput = document.getElementById('manual-hostname-input');
     const manualButton = document.getElementById('manual-check-button');
     // const manualForm = document.getElementById('manual-check-form'); // Tidak perlu form object
-    
+
     // Fungsi untuk menambahkan item riwayat scan baru ke carousel
 function appendHistoryItem(data) {
     const historyContainer = document.getElementById('scanHistoryInner');
-    
+
     // 1. Buat baris baru (<tr>) untuk data yang baru di-scan
     const newRow = `
         <tr>
@@ -323,7 +323,7 @@ function appendHistoryItem(data) {
                             <th>Hostname</th>
                             <th>Nama User</th>
                             <th>Divisi</th>
-                            <th>Waktu Scan</th> 
+                            <th>Waktu Scan</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -339,23 +339,23 @@ function appendHistoryItem(data) {
     if (activeItem) {
         activeItem.classList.remove('active');
     }
-    
+
     // 4. Sisipkan item baru sebagai yang aktif (di awal)
     // Untuk menyederhanakan, kita hanya membuat item baru. Jika sebelumnya kosong:
     if (historyContainer.innerHTML.includes('Tidak ada aset')) {
         historyContainer.innerHTML = ''; // Kosongkan pesan "Tidak ada aset"
     }
 
-    // Karena logika Riwayat Scan Anda di-chunk per 5, 
-    // cara paling sederhana adalah mengganti seluruh inner HTML saat ada scan baru 
+    // Karena logika Riwayat Scan Anda di-chunk per 5,
+    // cara paling sederhana adalah mengganti seluruh inner HTML saat ada scan baru
     // agar data scan terbaru terlihat di slide pertama.
     // Namun, itu terlalu kompleks. Kita akan buat entry baru muncul di slide pertama.
 
     // *Modifikasi Sederhana:* Hanya menampilkan entri terbaru di DOM tanpa mengurus chunking.
-    
+
     const tempTable = document.createElement('table');
     tempTable.innerHTML = `<thead class="table-dark"><tr><th>Hostname</th><th>Nama User</th><th>Divisi</th><th>Waktu Scan</th></tr></thead><tbody>${newRow}</tbody>`;
-    
+
     const scanContainer = document.querySelector('.main-content .col-md-6:first-child');
     if(scanContainer) {
         // Hapus elemen lama (yang mungkin berisi pesan "Tidak ada aset")
@@ -382,7 +382,7 @@ function appendHistoryItem(data) {
         }
 
         scanStatusElement.innerText = " Hostname/Barcode terdeteksi: " + processedCode + ". Mencari data aset...";
-        
+
         // --- FETCH AJAX KE HANDLER SCAN AWAL (ajax_scan_handler.php) ---
         fetch('ajax_scan_handler.php', {
             method: 'POST',
@@ -398,16 +398,16 @@ function appendHistoryItem(data) {
             return response.json();
         })
         .then(data => {
-      alertContainer.innerHTML = ''; 
+      alertContainer.innerHTML = '';
       scanStatusElement.classList.remove('text-danger', 'text-primary');
       scanStatusElement.classList.add('text-success');
 
       if (data.status === 'success') {
-        
+
                 // >>> BARU: PERBARUI TAMPILAN SECARA INSTAN DI BROWSER <<<
                 appendHistoryItem(data);
                 // >>> END BARU <<<
-                
+
         // ASET DITEMUKAN: Lanjut ke addServiceEntry (Alur otomatis dikembalikan)
         scanStatusElement.innerText = ` Aset ${data.hostname} ditemukan. Mencatat service...`;
         addServiceEntry(data.id_aset, data.hostname); // KEMBALIKAN PANGGILAN INI
@@ -444,21 +444,21 @@ function appendHistoryItem(data) {
         .then(response => response.json())
         .then(data => {
             let message = data.message;
-            
+
             if (data.status === 'success' || data.status === 'warning') {
-                
+
                 mainHeaderElement.innerHTML = " Setelah scan silahkan tunggu PIC datang";
                 mainHeaderElement.classList.remove('text-danger', 'text-primary');
-                mainHeaderElement.classList.add('text-success'); 
-                
+                mainHeaderElement.classList.add('text-success');
+
                 scanStatusElement.innerText = ` Aset ${hostname} berhasil dicatat.`;
                 alertContainer.innerHTML = `<div class="alert alert-success mt-3">${message}. Halaman akan di-refresh dalam 3 detik.</div>`;
-                
+
                 // Bersihkan input setelah berhasil
                 manualInput.value = '';
 
-                refreshPageAfterDelay(3000); 
-                
+                refreshPageAfterDelay(3000);
+
             } else {
                 console.error("Gagal menambahkan service entry:", message);
                 scanStatusElement.innerText = ` Gagal mencatat service aset ${hostname}.`;
@@ -475,7 +475,7 @@ function appendHistoryItem(data) {
     // Fungsi untuk me-refresh halaman setelah delay
     function refreshPageAfterDelay(delay = 3000) {
         setTimeout(() => {
-            window.location.reload(); 
+            window.location.reload();
         }, delay);
     }
 
@@ -486,13 +486,13 @@ function appendHistoryItem(data) {
         const code = manualInput.value;
         handleAssetCheck(code);
     });
-    
+
     // --- EVENT KEYDOWN (Merespons Tombol ENTER dari Scanner Fisik) ---
     manualInput.addEventListener('keydown', function(event) {
         // Kode 13 adalah tombol Enter (yang dikirim oleh scanner)
-        if (event.keyCode === 13) { 
+        if (event.keyCode === 13) {
             event.preventDefault(); // Mencegah form di-submit default
-            
+
             const code = manualInput.value;
             // Panggil handler utama
             handleAssetCheck(code);

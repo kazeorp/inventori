@@ -184,7 +184,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                         <th>Divisi</th>
                         <th>Waktu Masuk</th>
                         <th>Catatan User</th>
-                        <th>Status Klaim</th>
+                        <th>Status</th>
                         <th style="width: 150px;">Aksi</th>
                     </tr>
                 </thead>
@@ -197,7 +197,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
 								$is_superadmin_user = $user_role_login === 'superadmin';
 								$can_reassign = $is_claimed && $is_superadmin_user;
 
-								$claim_badge_text = $is_claimed ? 'DIKLAIM' : 'PENDING';
+								$claim_badge_text = $is_claimed ? 'DIPICK UP' : 'PENDING';
 								$claim_badge_class = $is_claimed ? 'bg-success' : 'bg-warning text-dark';
 
 								$admin_klaim_info = $is_claimed
@@ -236,7 +236,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
 												data-id="<?= e($row['id_service']) ?>"
 												data-hostname="<?= e($row['hostname']) ?>"
 												title="Claim & Mulai Proses Service">
-												<i class="bi bi-person-fill-up"></i> Claim
+												<i class="bi bi-person-fill-up"></i> Pick Up
 											</button>
 										<?php endif; ?>
 
@@ -257,14 +257,14 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
 												<a href="detail-aset.php?hostname=<?= e($row['hostname']) ?>&action=service_claim"
 													class="btn btn-sm btn-info text-white"
 													title="Lanjutkan Input Aktivitas Service">
-													<i class="bi bi-pencil-square"></i> Proses
+													<i class="bi bi-pencil-square"></i> Process
 												</a>
 
 												<button type="button" class="btn btn-sm btn-dark btn-selesai"
 													data-id="<?= e($row['id_service']) ?>"
 													data-hostname="<?= e($row['hostname']) ?>"
 													title="Tandai Service Ini Selesai">
-													<i class="bi bi-check-circle"></i> Selesaikan
+													<i class="bi bi-check-circle"></i> Complete
 												</button>
 											<?php endif; ?>
 
@@ -277,7 +277,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
 							<tr>
 								<td colspan="8" class="text-center">
 									<?php if ($user_role_login === 'admin'): ?>
-										Tidak ada aset service yang diklaim/pending untuk Anda.
+										Tidak ada aset service yang di pick up/pending untuk Anda.
 									<?php else: ?>
 										Tidak ada aset service yang masuk saat ini.
 									<?php endif; ?>

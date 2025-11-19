@@ -23,16 +23,16 @@ $display_name = $_SESSION['nama_lengkap'] ?? ($_SESSION['username'] ?? 'Guest');
 
 
   <?php if ($role !== 'normal'): ?>
-    <a href="tampil.php">📦 Data Inventori</a>
+    <a href="tampil.php">📦 Inventory Data</a>
   <?php endif; ?>
 
   <?php if ($role === 'admin' || $role === 'superadmin'): ?>
-    <a href="detail-aset.php">📋 Detail Aset</a>
+    <a href="detail-aset.php">📋 Asset Detail</a>
   <?php endif; ?>
 
   <?php if ($role === 'superadmin'): ?>
-    <a href="laporan_servis.php">📈 Laporan Servis</a>
-    <a href="kelola-user.php">👥 Kelola User</a>
+    <a href="laporan_servis.php">📈 Service Report</a>
+    <a href="kelola-user.php">👥 Manage Admin</a>
   <?php endif; ?>
 
   <?php if (isset($_SESSION['username'])): ?>
