@@ -187,12 +187,12 @@ if (isset($_POST['import_submit'])) {
             
             $query_upsert = "INSERT INTO inventori (
                 hostname, status, domain, type, device_category, rak, ram, storage, win, keterangan, kelengkapan, 
-                tanggal_masuk, tanggal_keluar, nik, nama, divisi
+                tanggal_masuk, tanggal_keluar, nik, nama, divisi,  tanggal_register
             ) VALUES (
                 '$hostname', '$status', '$domain', '$type', '$device_category', '$rak', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan',
                 " . ($tanggal_masuk ? "'$tanggal_masuk'" : "NULL") . ",
                 " . ($tanggal_keluar ? "'$tanggal_keluar'" : "NULL") . ",
-                '$nik', '$nama', '$divisi'
+                '$nik', '$nama', '$divisi', NOW()
             )";
         }
 
