@@ -50,17 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
  // Eksekusi dan feedback
  if (mysqli_query($koneksi, $sql)) {
     // 2. Dapatkan ID yang baru dimasukkan
-<<<<<<< HEAD
     $new_id = mysqli_insert_id($koneksi);
 
     // 3. Panggil fungsi untuk memicu WebSocket
     pushWebSocketUpdate($new_id, 'insert');
-=======
-    $new_id = mysqli_insert_id($koneksi); 
-
-    // 3. Panggil fungsi untuk memicu WebSocket
-    pushWebSocketUpdate($new_id, 'insert'); 
->>>>>>> b76323b01532523f91876223627fac2e57da51a4
 
   echo "<script>alert('Data berhasil ditambahkan!'); window.location='tampil.php';</script>";
  } else {
