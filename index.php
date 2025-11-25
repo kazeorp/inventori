@@ -134,7 +134,7 @@ if ($koneksi) {
                 <form method="POST" id="manual-check-form">
                     <input type="text" name="hostname" id="manual-hostname-input" class="form-control form-control-lg mb-3" placeholder="Input Hostname di sini" required autofocus>
 
-                    <button type="button" id="manual-check-button" class="btn btn-success btn-lg">Cek Aset</button>
+                    <button type="button" id="manual-check-button" class="btn btn-success btn-lg">Input Aset</button>
                 </form>
             </div>
 
@@ -152,7 +152,7 @@ if ($koneksi) {
     <div class="row justify-content-center mt-4">
 
 <div class="col-md-6">
-            <h5 class="mb-3 text-center"> Riwayat Scan Aset (Terakhir)</h5>
+            <h5 class="mb-3 text-center">User Dalam Antrian</h5>
 
             <?php $scan_chunks = array_chunk($service_list_pending, 5); // Bagi data menjadi potongan 5 ?>
 
@@ -251,7 +251,7 @@ if ($koneksi) {
                                         <th>No.</th>
                                         <th>Hostname</th>
                                         <th>Nama User</th>
-                                        <th>Admin</th>
+                                        <th>Technician</th>
                                     </tr>
                                 </thead>
                                 <tbody>
