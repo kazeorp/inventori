@@ -21,14 +21,14 @@ if (isset($_POST['update'])) {
   $id_update = mysqli_real_escape_string($koneksi, $_POST['id']);
   $rak = mysqli_real_escape_string($koneksi, $_POST['rak']);
   $status = mysqli_real_escape_string($koneksi, $_POST['status']);
-  
+
   // DATA BARU
   $domain = mysqli_real_escape_string($koneksi, $_POST['domain']);
   $device_category = mysqli_real_escape_string($koneksi, $_POST['device_category']);
 
   // HOSTNAME di-UPPERCASE
   $hostname = strtoupper(mysqli_real_escape_string($koneksi, $_POST['hostname']));
-  
+
   $type = mysqli_real_escape_string($koneksi, $_POST['type']);
   $ram = mysqli_real_escape_string($koneksi, $_POST['ram']);
   $storage = mysqli_real_escape_string($koneksi, $_POST['storage']);
@@ -41,7 +41,7 @@ if (isset($_POST['update'])) {
   $divisi = mysqli_real_escape_string($koneksi, $_POST['divisi']);
 
   // Tambahkan domain dan device_category ke query UPDATE
-  $sql = "UPDATE inventori SET 
+  $sql = "UPDATE inventori SET
       rak='$rak', status='$status', hostname='$hostname', type='$type',
       domain='$domain', device_category='$device_category',
       ram='$ram', storage='$storage', win='$win', keterangan='$keterangan',
@@ -51,11 +51,11 @@ if (isset($_POST['update'])) {
 
   if (mysqli_query($koneksi, $sql)) {
         // 2. Panggil fungsi untuk memicu WebSocket setelah update berhasil
-        pushWebSocketUpdate($id_update, 'update'); 
-        
+        pushWebSocketUpdate($id_update, 'update');
+
     echo "<script>alert('Data berhasil diupdate!'); window.location='tampil.php';</script>";
   } else {
-    echo "<script>alert('Error: Gagal mengupdate data: " . mysqli_error($koneksi) . "');</script>"; 
+    echo "<script>alert('Error: Gagal mengupdate data: " . mysqli_error($koneksi) . "');</script>";
   }
 }
 ?>
@@ -79,15 +79,15 @@ if (isset($_POST['update'])) {
       <div class="col-md-6">
         <label>Status</label>
         <select name="status" id="status" class="form-control" required>
-          <?php 
+          <?php
             // Mengambil opsi status dan memastikan nilai yang tersimpan di DB terpilih
             $current_status = $row['status'];
             // Opsi status harus konsisten dengan status.php Anda
             $status_options = [
-              '', 'Spare', 'Grace Period', 'Pending Service', 
+              '', 'Spare', 'Grace Period', 'Pending Service',
               'Scrap', 'MT', 'Ready To Assign', 'Assign', 'Loan'
             ];
-            
+
             echo '<option value="">-- Pilih Status --</option>';
             foreach ($status_options as $option) {
               $selected = (strcasecmp($option, $current_status) == 0) ? 'selected' : '';
@@ -108,7 +108,7 @@ if (isset($_POST['update'])) {
       <div class="col-md-6">
         <label>Domain</label>
         <select name="domain" id="domain" class="form-control" required>
-          <?php 
+          <?php
             $domain_options = ['APP', 'SMF', 'CKP', 'TGR', 'KRW'];
             foreach ($domain_options as $option) {
               $selected = ($row['domain'] == $option) ? 'selected' : '';
@@ -120,7 +120,7 @@ if (isset($_POST['update'])) {
       <div class="col-md-6">
         <label>Kategori Perangkat</label>
         <select name="device_category" id="device_category" class="form-control" required>
-          <?php 
+          <?php
             $category_options = ['', 'Laptop', 'Desktop', 'Server', 'Printer', 'Monitor'];
             foreach ($category_options as $option) {
               $selected = ($row['device_category'] == $option) ? 'selected' : '';
@@ -131,7 +131,7 @@ if (isset($_POST['update'])) {
         </select>
       </div>
     </div>
-    
+
     <div class="row mb-3">
       <div class="col-md-6">
         <label>Hostname</label>
@@ -140,12 +140,12 @@ if (isset($_POST['update'])) {
       <div class="col-md-6">
         <label>Type</label>
         <select name="type" class="form-control" required>
-          <?php 
+          <?php
           // Mengambil data tipe dari tabel device_types
           $current_type = $row['type'];
           $query_tipe = "SELECT type_name FROM device_types ORDER BY type_name ASC";
           $result_tipe = mysqli_query($koneksi, $query_tipe);
-          
+
           echo '<option value="">-- Pilih Type --</option>';
 
           if ($result_tipe && mysqli_num_rows($result_tipe) > 0) {
@@ -187,14 +187,14 @@ if (isset($_POST['update'])) {
     <div class="mb-3">
       <label>Kelengkapan</label>
       <select name="kelengkapan" id="kelengkapan" class="form-control">
-        <?php 
+        <?php
         $kelengkapan_options = [
-          'Tas', 'Adaptor', 'Tas dan Adaptor', 'Tas dan Converter VGA', 
-          'Tas dan Converter LAN', 'Tas, Adaptor, Converter LAN', 
+          'Tas', 'Adaptor', 'Tas dan Adaptor', 'Tas dan Converter VGA',
+          'Tas dan Converter LAN', 'Tas, Adaptor, Converter LAN',
           'Tas, Adaptor, Converter VGA', 'Tas, Adaptor, Converter LAN & VGA'
         ];
         $current_kel = $row['kelengkapan'];
-        
+
         echo '<option value="">-- Pilih Kelengkapan --</option>';
         foreach ($kelengkapan_options as $option) {
           $selected = ($current_kel == $option) ? 'selected' : '';
@@ -237,11 +237,11 @@ if (isset($_POST['update'])) {
     $("#status").change(function(){
       var status = $(this).val();
       var rakField = $("#rak");
-      
+
       // Logika pemetaan Status ke Rak
       if(status === "Spare"){ rakField.val("GD-R11"); }
       else if(status === "Grace Period"){ rakField.val("GD-R13"); }
-      else if(status === "Pending Service"){ rakField.val("GD-R12"); } 
+      else if(status === "Pending Service"){ rakField.val("GD-R12"); }
       else if(status === "Scrap"){ rakField.val("GD-R4"); }
       else if(status === "MT"){ rakField.val("GD-R8"); }
       else if(status === "Ready To Assign"){ rakField.val("GD-R9"); }

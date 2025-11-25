@@ -101,7 +101,7 @@ try {
   $result_update = mysqli_stmt_execute($stmt_update_service);
 
   if ($result_update && mysqli_stmt_affected_rows($stmt_update_service) > 0) {
-        
+
         // --- LOGIKA WEBSOCKET BARU ---
         // Panggil fungsi untuk memicu WebSocket
         pushWebSocketUpdate($id_service, 'update', 'service_list'); // Beri sinyal 'update' ke tabel service_list

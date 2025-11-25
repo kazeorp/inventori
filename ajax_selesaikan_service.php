@@ -7,20 +7,20 @@ ini_set('display_startup_errors', 0);
 error_reporting(0);
 header('Content-Type: application/json');
 
-include 'session.php'; 
+include 'session.php';
 include "koneksi.php"; // Koneksi DB
 include "helpers.php"; // <--- TAMBAH: Sertakan helper untuk fungsi WebSocket
 
 // Periksa koneksi
 if (mysqli_connect_errno()) {
-  http_response_code(500); 
+  http_response_code(500);
   echo json_encode(['success' => false, 'message' => 'Kesalahan koneksi database.']);
   exit;
 }
 
 // --- 2. VALIDASI REQUEST & PENGAMBILAN DATA POST ---
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  http_response_code(400); 
+  http_response_code(400);
   echo json_encode(['success' => false, 'message' => 'Permintaan tidak valid.']);
   exit;
 }
@@ -46,31 +46,31 @@ mysqli_begin_transaction($koneksi);
 
 try {
   // --- 3. AMBIL HOSTNAME DARI SERVICE_LIST ---
-  $stmt_get_hostname = mysqli_prepare($koneksi, 
+  $stmt_get_hostname = mysqli_prepare($koneksi,
     "SELECT hostname FROM service_list WHERE id_service = ?"
   );
   mysqli_stmt_bind_param($stmt_get_hostname, 'i', $id_service);
   mysqli_stmt_execute($stmt_get_hostname);
   $result_hostname = mysqli_stmt_get_result($stmt_get_hostname);
-  
+
   if (!$row_hostname = mysqli_fetch_assoc($result_hostname)) {
     throw new Exception("Service ID #{$id_service} tidak ditemukan.");
   }
   $hostname = $row_hostname['hostname'];
   mysqli_stmt_close($stmt_get_hostname);
-  
+
   // --- 5. UPDATE SERVICE_LIST (PENYELESAIAN STATUS GANDA) ---
-  $stmt_update_service = mysqli_prepare($koneksi, 
-    "UPDATE service_list 
+  $stmt_update_service = mysqli_prepare($koneksi,
+    "UPDATE service_list
     SET finish_status = 'Selesai',
-      admin_finish_id = ?, 
+      admin_finish_id = ?,
       admin_finish_name = ?,
       finish_timestamp = ?
-    WHERE id_service = ? AND finish_status IS NULL" 
+    WHERE id_service = ? AND finish_status IS NULL"
   );
-  
+
   // Binding: string (date), string (ticket), string (action), string (notes), integer (id)
-  mysqli_stmt_bind_param($stmt_update_service, 'issi', 
+  mysqli_stmt_bind_param($stmt_update_service, 'issi',
     $admin_id,        // 1. admin_finish_id (i)
     $admin_nama_lengkap,     // 2. admin_finish_name (s)
     $tanggal_selesai,    // 3. finish_timestamp (s) (Gunakan $tanggal_selesai yang sudah di-define)
@@ -79,22 +79,22 @@ try {
   $result_update = mysqli_stmt_execute($stmt_update_service);
 
   if ($result_update && mysqli_stmt_affected_rows($stmt_update_service) > 0) {
-        
+
         // --- LOGIKA WEBSOCKET BARU ---
         // Panggil fungsi untuk memicu WebSocket
         pushWebSocketUpdate($id_service, 'update', 'service_list'); // Beri sinyal 'update' ke tabel service_list
         // -----------------------------
-        
+
     // --- 6. COMMIT TRANSAKSI ---
     mysqli_commit($koneksi);
-    
-    $msg_inventori = "Status Inventori tidak diubah, tetap pada status terakhir."; 
+
+    $msg_inventori = "Status Inventori tidak diubah, tetap pada status terakhir.";
 
     echo json_encode([
-      'success' => true, 
+      'success' => true,
       'message' => "Servis ID #{$id_service} berhasil diselesaikan. {$msg_inventori}",
     ]);
-    
+
   } else {
     mysqli_rollback($koneksi);
     throw new Exception("Gagal mengupdate service list. Pastikan service belum berstatus Selesai.");
@@ -102,11 +102,11 @@ try {
 
 } catch (Exception $e) {
   mysqli_rollback($koneksi);
-  $sql_error = mysqli_error($koneksi); 
+  $sql_error = mysqli_error($koneksi);
   error_log("AJAX Complete Service Error: " . $e->getMessage() . " | SQL Error: " . $sql_error);
-  
+
   http_response_code(500);
-  echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan sistem saat menyelesaikan servis. Detail: ' . $e->getMessage()]); 
+  echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan sistem saat menyelesaikan servis. Detail: ' . $e->getMessage()]);
 }
 
 // Tutup koneksi database
