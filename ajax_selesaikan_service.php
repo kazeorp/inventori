@@ -80,13 +80,11 @@ try {
 
   if ($result_update && mysqli_stmt_affected_rows($stmt_update_service) > 0) {
 
-        // --- LOGIKA WEBSOCKET BARU ---
-        // Panggil fungsi untuk memicu WebSocket
-        pushWebSocketUpdate($id_service, 'update', 'service_list'); // Beri sinyal 'update' ke tabel service_list
-        // -----------------------------
-
     // --- 6. COMMIT TRANSAKSI ---
     mysqli_commit($koneksi);
+
+    // Panggil helper di sini
+    pushWebSocketUpdate($id_service, 'service_complete');
 
     $msg_inventori = "Status Inventori tidak diubah, tetap pada status terakhir.";
 

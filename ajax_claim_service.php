@@ -102,13 +102,11 @@ try {
 
   if ($result_update && mysqli_stmt_affected_rows($stmt_update_service) > 0) {
 
-        // --- LOGIKA WEBSOCKET BARU ---
-        // Panggil fungsi untuk memicu WebSocket
-        pushWebSocketUpdate($id_service, 'update', 'service_list'); // Beri sinyal 'update' ke tabel service_list
-        // -----------------------------
-
     // 4. Commit transaksi jika semua berhasil
     mysqli_commit($koneksi);
+
+    // Panggil helper di sini
+    pushWebSocketUpdate($id_service, 'service_claim');
 
     echo json_encode([
       'success' => true,

@@ -139,6 +139,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.7/css/dataTables.dataTables.min.css">
 </head>
 <body>
 
@@ -357,6 +358,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
     include 'modal-reassign.php';
     ?>
 
+    <script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
     <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="main.js"></script>
 

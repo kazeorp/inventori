@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $new_id = mysqli_insert_id($koneksi);
 
     // 3. Panggil fungsi untuk memicu WebSocket
-    pushWebSocketUpdate($new_id, 'insert');
+    pushWebSocketUpdate($new_id, 'asset_insert');
 
   echo "<script>alert('Data berhasil ditambahkan!'); window.location='tampil.php';</script>";
  } else {

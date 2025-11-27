@@ -287,7 +287,39 @@ if ($koneksi) {
             </div>
         </div>
 </main>
+<script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
+<script>
+// Di file main.js atau di tag <script> di index2.php
 
+// Ganti [IP_SERVER_ANDA] dengan IP yang sama seperti di koneksi.php
+const socket = io('http://172.16.3.60:3000');
+
+socket.on('connect', () => {
+    console.log('[Client WS] Connected to Socket.IO server!');
+});
+
+socket.on('service_update', (data) => {
+    console.log('[Client WS] Received Update:', data);
+    const { id, action } = data;
+
+    // --- LOGIKA PEMBARUAN TAMPILAN ---
+    if (action === 'service_claim') {
+        // Contoh: Update status baris di tabel dengan ID = id
+        // Misalnya: $('#row-' + id).addClass('claimed').find('.status').text('On Service');
+        alert(`Service ID ${id} baru saja diklaim oleh admin lain! Reload data.`);
+        // Di sini Anda mungkin ingin memuat ulang bagian tabel atau baris tertentu
+        // reloadDataTable();
+    } else if (action === 'service_complete') {
+        alert(`Service ID ${id} baru saja diselesaikan!`);
+    }
+    // ... Tambahkan logika untuk action lain (cancel, dll.)
+});
+
+socket.on('disconnect', () => {
+    console.log('[Client WS] Disconnected.');
+});
+
+</script>
 <script>
 
     // Hanya menggunakan elemen yang diperlukan untuk manual input / scanner fisik

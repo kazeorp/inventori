@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
  }
 
  //  Lanjutkan proses update
- $sql = "UPDATE inventori SET 
+ $sql = "UPDATE inventori SET
       rak='$rak', status='$status', hostname='$hostname', type='$type',
       ram='$ram', storage='$storage', win='$win', keterangan='$keterangan',
       kelengkapan='$kelengkapan', tanggal_masuk = '$tanggal_masuk', tanggal_keluar='$tanggal_keluar',
@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
  if (mysqli_query($koneksi, $sql)) {
     // 2. Panggil fungsi untuk memicu WebSocket
-    pushWebSocketUpdate($id, 'update'); 
-    
+    pushWebSocketUpdate($id, 'asset_update');
+
   echo "<script>alert('Data berhasil diupdate!'); window.location='tampil.php';</script>";
  } else {
   echo "<script>alert('Gagal mengupdate data: " . mysqli_error($koneksi) . "'); window.location='tampil.php';</script>";

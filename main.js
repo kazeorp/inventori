@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('JS DEBUG: main.js loaded. All system listeners registered.');
-    
+
     // =======================================================
     // 1. DEFINISI MAPPING & FUNGSI PEMBANTU
     // =======================================================
@@ -21,39 +21,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Peta Standar Kelengkapan
     const standardMap = {
-        "ADAPTOR,TAS": "TAS DAN ADAPTOR",  
+        "ADAPTOR,TAS": "TAS DAN ADAPTOR",
         "CONVERTERVGA,TAS": "TAS DAN CONVERTER VGA",
         "CONVERTERLAN,TAS": "TAS DAN CONVERTER LAN",
         "ADAPTOR,CONVERTERLAN,TAS": "TAS, ADAPTOR, CONVERTER LAN",
         "ADAPTOR,CONVERTERVGA,TAS": "TAS, ADAPTOR, CONVERTER VGA",
         "ADAPTOR,CONVERTERLAN,CONVERTERVGA,TAS": "TAS, ADAPTOR, CONVERTER LAN & VGA",
-        "ADAPTOR,CONVERTERLAN,TAS,VGA": "TAS, ADAPTOR, CONVERTER LAN & VGA", 
+        "ADAPTOR,CONVERTERLAN,TAS,VGA": "TAS, ADAPTOR, CONVERTER LAN & VGA",
         "ADAPTOR": "ADAPTOR",
         "TAS": "TAS",
-        "": ""  
+        "": ""
     };
 
     // Fungsi Pembantu 1: Membersihkan dan menormalkan string mentah (untuk kelengkapan)
     function cleanAndNormalize(str) {
         if (!str || str === '0' || str === '0000-00-00' || str === '0000-00-00 00:00:00') return '';
-        
+
         let cleaned = str.toUpperCase().trim();
         cleaned = cleaned.replace(/,\s*|\s*,\s*|\s*&amp;\s*|\s*&\s*|\s*DAN\s*/g, ',');
         cleaned = cleaned.replace(/,,+/g, ',').replace(/\s+/g, '').replace(/^,|,$/g, '');
-        
-        return cleaned; 
+
+        return cleaned;
     }
 
     // Fungsi Pembantu 2: Mencari nilai standar Kelengkapan
     function normalizeKelengkapan(inputString) {
         if (!inputString) return '';
-        
+
         let cleaned = cleanAndNormalize(inputString);
         let items = cleaned.split(',').sort();
-        let sortedKey = items.join(','); 
+        let sortedKey = items.join(',');
 
         const result = standardMap[sortedKey];
-        return result || ''; 
+        return result || '';
     }
 
     // Fungsi Pembantu 3: Capitalize string (untuk Kategori Perangkat)
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return dateTimeStr.split(' ')[0];
     }
-    
+
     // =======================================================
     // 2. LOGIKA OTOMATISASI RAK (Modal Tambah & Edit)
     // =======================================================
@@ -88,10 +88,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mendapatkan elemen di awal untuk digunakan di Bagian 3
     const statusSelectEdit = document.getElementById('edit-status');
     const rakInputEdit = document.getElementById('edit-rak');
-    
+
     if (statusSelectEdit && rakInputEdit) {
         statusSelectEdit.addEventListener('change', function () {
-            rakInputEdit.value = statusToRak[this.value] || ""; 
+            rakInputEdit.value = statusToRak[this.value] || "";
         });
         console.log("JS DEBUG: Rak Automation Listener Registered for Edit Modal.");
     }
@@ -99,30 +99,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // =======================================================
     // 3. LOGIKA PENGISIAN MODAL EDIT INVENTORI (BARU & LENGKAP)
     // =======================================================
-    
+
     // Asumsi: userRole didefinisikan secara global di luar script ini, misal: <script>const userRole = 'admin';</script>
     const editButtons = document.querySelectorAll('.edit-btn');
     editButtons.forEach(btn => {
         btn.addEventListener('click', function () {
             const modal = document.getElementById('editModal');
             if (!modal) return;
-            
+
             // --- PENGAMBILAN DATA DENGAN NORMALISASI ---
-            
+
             // Kelengkapan
-            const kelengkapanRaw = btn.getAttribute('data-kelengkapan'); 
-            const dataKelengkapan = normalizeKelengkapan(kelengkapanRaw); 
-            
+            const kelengkapanRaw = btn.getAttribute('data-kelengkapan');
+            const dataKelengkapan = normalizeKelengkapan(kelengkapanRaw);
+
             // Kategori Perangkat
             const categoryRaw = btn.getAttribute('data-device_category');
             const dataDeviceCategory = categoryRaw ? capitalize(categoryRaw) : '';
-            
+
             // Tanggal
             const tglMasukRaw = btn.getAttribute('data-tanggal_masuk');
             const dataTglMasuk = normalizeDateTimeToDate(tglMasukRaw);
-            
+
             const tglKeluarRaw = btn.getAttribute('data-tanggal_keluar');
-            const dataTglKeluar = normalizeDateTimeToDate(tglKeluarRaw); 
+            const dataTglKeluar = normalizeDateTimeToDate(tglKeluarRaw);
 
 
             // --- PENGISIAN DATA KE MODAL ---
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.querySelector('#edit-id').value = this.dataset.id;
             modal.querySelector('#edit-hostname').value = this.dataset.hostname;
             // Rak diisi dari dataset, akan di-override jika status diubah (oleh Bagian 2)
-            modal.querySelector('#edit-rak').value = this.dataset.rak; 
+            modal.querySelector('#edit-rak').value = this.dataset.rak;
             modal.querySelector('#edit-ram').value = this.dataset.ram;
             modal.querySelector('#edit-storage').value = this.dataset.storage;
             modal.querySelector('#edit-win').value = this.dataset.win;
@@ -144,11 +144,11 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.querySelector('#edit-status').value = this.dataset.status;
             modal.querySelector('#edit-type').value = this.dataset.type;
             modal.querySelector('#edit-domain').value = this.dataset.domain;
-            
+
             // Pengisian Select Field (Kelengkapan & Kategori)
             modal.querySelector('#edit-kelengkapan').value = dataKelengkapan;
             modal.querySelector('#edit-device_category').value = dataDeviceCategory;
-            
+
             // Pengisian Tanggal
             modal.querySelector('#edit-tanggal_masuk').value = dataTglMasuk;
             modal.querySelector('#edit-tanggal_keluar').value = dataTglKeluar;
@@ -158,14 +158,14 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.querySelector('#detailBtn').href = 'detail-aset.php?id=' + this.dataset.id;
             modal.querySelector('#deleteBtn').href = 'hapus.php?id=' + this.dataset.id;
 
-            // 🔒 Cek Hak Akses
+            //  Cek Hak Akses
             const role = typeof userRole !== 'undefined' ? userRole : 'normal';
 
             const elementsToDisable = modal.querySelectorAll('input, select, textarea');
             const submitBtn = modal.querySelector('button[type="submit"]');
             const deleteBtn = modal.querySelector('#deleteBtn');
             const detailBtn = modal.querySelector('#detailBtn');
-            
+
             if (role === 'normal') {
                 elementsToDisable.forEach(el => {
                     el.setAttribute('readonly', true);
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 🔹 Konfirmasi hapus (Fungsi Global)
+    //  Konfirmasi hapus (Fungsi Global)
     window.confirmDelete = function () {
         return confirm("Yakin ingin menghapus data ini? Tindakan ini tidak bisa dibatalkan.");
     };
@@ -205,13 +205,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (reassignModalElement) {
         reassignModalElement.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
-            const serviceId = button.getAttribute('data-id'); 
+            const serviceId = button.getAttribute('data-id');
             const currentAdminName = button.getAttribute('data-current-admin-name');
-            
+
             document.getElementById('reassign-service-id').textContent = serviceId;
             document.getElementById('reassign-service-input').value = serviceId;
             document.getElementById('current-handler-name').textContent = currentAdminName;
-            
+
             const formReassign = document.getElementById('form-reassign');
             if (formReassign) {
                 formReassign.reset();
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (formReassign) {
         formReassign.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const newAdminId = document.getElementById('new_admin_id').value;
             const serviceId = document.getElementById('reassign-service-input').value;
             const currentAdminName = document.getElementById('current-handler-name').textContent;
@@ -237,19 +237,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!newAdminId || newAdminId === "") {
                 alert("Pilih Admin Baru terlebih dahulu.");
                 document.getElementById('new_admin_id').focus();
-                return; 
+                return;
             }
 
             if (confirm(`Yakin ingin me-reassign Service ID #${serviceId} (saat ini ditangani ${currentAdminName})?`)) {
-                
+
                 const submitButton = formReassign.querySelector('button[type="submit"]');
                 const originalText = submitButton.textContent;
-                
+
                 submitButton.disabled = true;
                 submitButton.textContent = 'Processing...';
 
                 const formData = new URLSearchParams(new FormData(formReassign));
-                
+
                 fetch('ajax_reassign_service.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -269,10 +269,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('JS DEBUG: Reassign Response:', data);
 
                     if (data.success) {
-                        alert('✅ Reassign berhasil: ' + data.message);
+                        alert(' Reassign berhasil: ' + data.message);
                         window.location.reload();
                     } else {
-                        alert('❌ Reassign Gagal: ' + (data.message || 'Terjadi kesalahan.'));
+                        alert(' Reassign Gagal: ' + (data.message || 'Terjadi kesalahan.'));
                         submitButton.disabled = false;
                         submitButton.textContent = originalText;
                     }
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => {
                     console.error('JS ERROR: Error Reassign:', error);
                     alert('Terjadi kesalahan jaringan atau server saat Reassign. Cek Console F12.');
-                    
+
                     const reassignModalElement = document.getElementById('reassignModal');
                     if (reassignModalElement && typeof bootstrap !== 'undefined') {
                         bootstrap.Modal.getInstance(reassignModalElement).hide();
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    
+
     // =======================================================
     // 5. LOGIKA CLAIM & SELESAIKAN SERVICE (Event Delegation)
     // =======================================================
@@ -307,14 +307,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (claimButton) {
                 const serviceId = claimButton.dataset.id;
                 const hostname = claimButton.dataset.hostname;
-                
+
                 if (!serviceId || !hostname) {
                     alert('Gagal: Data service ID atau Hostname hilang.');
                     return;
                 }
-                
+
                 if (confirm(`Yakin ingin meng-claim Service ID #${serviceId} (Hostname: ${hostname}) dan melanjutkan ke halaman input aktivitas?`)) {
-                    
+
                     claimButton.disabled = true;
                     claimButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Claiming...';
 
@@ -351,12 +351,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             }
-            
+
             // --- HANDLE SELESAIKAN ---
             if (selesaiButton) {
                 const serviceId = selesaiButton.dataset.id;
                 const hostname = selesaiButton.dataset.hostname;
-                
+
                 if (!serviceId || !hostname) {
                     alert('Gagal: Data service ID atau Hostname hilang untuk Selesaikan.');
                     return;
@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                         // Cukup kirim data minimum yang dibutuhkan PHP
-                        body: `id_service=${serviceId}` 
+                        body: `id_service=${serviceId}`
                         // Anda bisa menghapus &hostname=${hostname} karena tidak digunakan di PHP
                     })
                     .then(response => {
@@ -399,5 +399,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+    }
+
+// =======================================================
+    // 6. LOGIKA WEBSOCKET (REAL-TIME REFRESH - RELOAD PENUH)
+    // =======================================================
+
+    const NODE_SERVER_URL = 'http://172.16.3.60:3000';
+
+    // Periksa apakah Socket.IO library dimuat (pastikan <script src="/socket.io/...") ada di index2.php)
+    if (typeof io !== 'undefined') {
+        const socket = io(NODE_SERVER_URL); // Gunakan const/let karena di dalam DOMContentLoaded
+
+        socket.on('connect', () => {
+            console.log(`[Client WS] Connected to Socket.IO server at ${NODE_SERVER_URL}`);
+        });
+
+        socket.on('service_update', (data) => {
+            const { id, action } = data;
+
+            console.log(`[Client WS] Received Update: Action ${action} for ID ${id}. Triggering page reload.`);
+
+            // KARENA TIDAK ADA DATATABLES, KITA GUNAKAN RELOAD PENUH
+            window.location.reload();
+        });
+
+        socket.on('disconnect', () => {
+            console.warn('[Client WS] Disconnected from Socket.IO.');
+        });
+    } else {
+        console.error("JS ERROR: Socket.IO library (io) tidak ditemukan. Cek <script> tag di HTML.");
     }
 }); // Penutup DOMContentLoaded

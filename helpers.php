@@ -10,35 +10,30 @@ if (!function_exists('e')) {
 
 ## FUNGSI BARU UNTUK WEBSOCKETS
 if (!function_exists('pushWebSocketUpdate')) {
-    /**
-     * Mengirim sinyal pembaruan ke Server WebSocket Node.js.
-     * * @param int $id ID aset yang diubah.
-     * @param string $action 'insert', 'update', atau 'delete'.
-     */
     function pushWebSocketUpdate($id, $action) {
-        // !!! PENTING: GANTI DENGAN IP STATIS SERVER LAN ANDA jika PC lain tidak bisa mengakses 'localhost' !!!
-        // Contoh: $url = 'http://192.168.1.100:3000/push-update';
-        $url = 'http://localhost:3000/push-update';
+        if (!defined('NODE_FULL_BROADCAST_URL')) return;
 
-        $data = [
-            'id' => $id,
-            'action' => $action
-        ];
+        $url = NODE_FULL_BROADCAST_URL;
+        $broadcast_data = json_encode(['id' => $id, 'action' => $action]);
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $broadcast_data,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Content-Length: ' . strlen($broadcast_data)],
+            CURLOPT_TIMEOUT => 2 // Batasan waktu singkat agar tidak memblokir
+        ]);
 
-        // Timeout yang sangat pendek (100ms) untuk memastikan PHP tidak menunggu respons
-        // dari Node.js (non-blocking) agar pengalaman user tetap cepat.
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
+        $response = curl_exec($ch);
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        // Jalankan cURL (Non-blocking: PHP tidak akan terhambat)
-        curl_exec($ch);
-
-        // Tutup koneksi cURL
+        // Logging untuk Debugging
+        if ($httpcode !== 200 || curl_errno($ch)) {
+            error_log("❌ WS Broadcast Failed (ID: $id, Action: $action). HTTP Code: $httpcode. cURL Error: " . curl_error($ch));
+        } else {
+            error_log("✅ WS Broadcast Success (ID: $id, Action: $action). Response: " . $response);
+        }
         curl_close($ch);
     }
 }
