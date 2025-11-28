@@ -86,6 +86,9 @@ if ($stmt = $koneksi->prepare($sql_insert)) {
 
     if ($stmt->execute()) {
 
+      $new_service_id = $koneksi->insert_id; // Ambil ID service yang baru dibuat
+      pushWebSocketUpdate($new_service_id, 'service_insert');
+
     // --- LOGIKA RIWAYAT SCAN DARI SESI ---
 
     // Hapus item yang baru saja di-service dari array riwayat

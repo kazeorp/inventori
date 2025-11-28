@@ -358,8 +358,8 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
     include 'modal-reassign.php';
     ?>
 
-    <script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
     <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
     <script src="main.js"></script>
 
 </body>

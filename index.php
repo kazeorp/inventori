@@ -304,13 +304,10 @@ socket.on('service_update', (data) => {
 
     // --- LOGIKA PEMBARUAN TAMPILAN ---
     if (action === 'service_claim') {
-        // Contoh: Update status baris di tabel dengan ID = id
-        // Misalnya: $('#row-' + id).addClass('claimed').find('.status').text('On Service');
-        alert(`Service ID ${id} baru saja diklaim oleh admin lain! Reload data.`);
-        // Di sini Anda mungkin ingin memuat ulang bagian tabel atau baris tertentu
-        // reloadDataTable();
+        window.location.reload();
+
     } else if (action === 'service_complete') {
-        alert(`Service ID ${id} baru saja diselesaikan!`);
+        window.location.reload();
     }
     // ... Tambahkan logika untuk action lain (cancel, dll.)
 });

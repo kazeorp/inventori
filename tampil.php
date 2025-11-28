@@ -255,139 +255,6 @@ $notifikasi_grace = [];
   // Ambil semua parameter filter URL saat ini untuk digunakan saat reload
   const currentURLParams = window.location.search;
 
-  // FUNGSI 1: Memuat ulang body tabel inventori via AJAX
-  function reloadTableData(action, id) {
-    console.log(`Memuat ulang data tabel karena aksi: ${action} pada ID: ${id}`);
-
-    // Tampilkan indikator loading (opsional)
-    const tableBody = document.querySelector('.table-responsive tbody');
-    tableBody.innerHTML = '<tr><td colspan="10" class="text-center"><div class="spinner-border spinner-border-sm me-2"></div> Memuat data terbaru...</td></tr>';
-
-    // Panggil file PHP yang hanya me-render <tr> (asumsi: 'table-inventori-ajax.php')
-        // *Jika Anda tidak memiliki file terpisah, Anda bisa me-reload seluruh halaman.*
-
-        // Pilihan Paling Sederhana (Reload Penuh):
-        window.location.reload();
-
-        // Pilihan Cepat (Jika Anda punya file AJAX terpisah):
-        /*
-        fetch('table-inventori-ajax.php' + currentURLParams)
-            .then(response => response.text())
-            .then(html => {
-                tableBody.innerHTML = html;
-                // Tampilkan notifikasi toast/alert sukses
-                showNotification(`Perubahan aset [${action}] terdeteksi!`);
-            })
-            .catch(error => {
-                console.error('Reload AJAX Gagal:', error);
-                tableBody.innerHTML = '<tr><td colspan="10" class="text-center text-danger">Gagal memuat ulang data.</td></tr>';
-            });
-        */
-  }
-
-    // FUNGSI 2: Menghubungkan dan Mendengarkan WebSocket
-    function connectWebSocket() {
-    // GANTI [ALAMAT_IP_SERVER]:[PORT_WS] dengan alamat server Node.js Anda
-    const ws = new WebSocket("ws://localhost:8080"); // Contoh default
-
-    ws.onopen = () => {
-      console.log("WebSocket connected.");
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log("WebSocket message received:", data);
-
-        // Hanya panggil fungsi reload jika aksi terkait Inventori
-                // Menggunakan startsWith('asset_') untuk mencakup insert, update, delete, bulk
-        if (data.action && data.action.startsWith('asset_')) {
-          reloadTableData(data.action, data.id);
-        }
-                // Opsional: Notifikasi jika ada perubahan Service, tapi di halaman ini tidak perlu reload penuh
-                else if (data.action && data.action.startsWith('service_')) {
-                     console.log(`Perubahan Service (Aksi: ${data.action}) terdeteksi, abaikan di halaman Inventori.`);
-                }
-      } catch (e) {
-        console.error("Error parsing WebSocket message:", e);
-      }
-    };
-
-    ws.onclose = () => {
-      console.log("WebSocket disconnected. Reconnecting in 5 seconds...");
-      setTimeout(connectWebSocket, 5000); // Coba sambung ulang
-    };
-
-    ws.onerror = (err) => {
-      console.error("WebSocket error observed:", err);
-      ws.close();
-    };
-  }
-
-  // Hanya hubungkan jika peran memiliki akses (Admin/Superadmin)
-  if (userRole !== 'normal') {
-    connectWebSocket();
-  }
-
-  // -------------------------------------
-
-  // --- Logika Export Excel (Sudah Benar) ---
-    // ... (Logika Export Excel yang sudah ada) ...
-
- </script>
-  <script>
-    // Pastikan userRole didefinisikan
-  const userRole = '<?= isset($_SESSION['role']) ? htmlspecialchars($_SESSION['role']) : 'normal' ?>';
-
-    // --- LOGIKA WEBSOCKET (Sisi Klien) ---
-    // Tambahkan kode untuk menginisialisasi koneksi WebSocket dan mendengarkan event
-    function connectWebSocket() {
-        // Ganti URL ini dengan URL server WebSocket Anda (e.g., ws://localhost:8080)
-        const ws = new WebSocket("ws://[ALAMAT_IP_SERVER]:[PORT_WS]");
-
-        ws.onopen = () => {
-            console.log("WebSocket connected.");
-        };
-
-        ws.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                console.log("WebSocket message received:", data);
-
-                // Cek apakah update relevan dengan tabel inventori
-                if (data.table === 'inventori') {
-                    // Notifikasi atau pemicu reload/update parsial
-                    alert("Perubahan Inventori Terdeteksi! Silakan muat ulang halaman atau klik OK.");
-                    // Opsional: window.location.reload(); // Muat ulang seluruh halaman
-                    // Jika Anda ingin memuat ulang bagian tabel saja, gunakan AJAX.
-                } else if (data.table === 'service_list') {
-                    // Notifikasi jika ada perubahan di service (tergantung kebutuhan)
-                    // Jika data service ada di halaman ini, panggil fungsi update service.
-                }
-
-            } catch (e) {
-                console.error("Error parsing WebSocket message:", e);
-            }
-        };
-
-        ws.onclose = () => {
-            console.log("WebSocket disconnected. Reconnecting in 5 seconds...");
-            setTimeout(connectWebSocket, 5000); // Coba sambung ulang
-        };
-
-        ws.onerror = (err) => {
-            console.error("WebSocket error observed:", err);
-            ws.close();
-        };
-    }
-
-    // Hanya hubungkan jika peran bukan 'normal' (misalnya admin atau superadmin)
-    if (userRole !== 'normal') {
-        connectWebSocket();
-    }
-    // -------------------------------------
-
-
     // --- LOGIKA EXPORT EXCEL ---
     document.addEventListener('DOMContentLoaded', function() {
         const exportLink = document.getElementById('export-link');
@@ -399,7 +266,7 @@ $notifikasi_grace = [];
             // Namun, karena kita ingin mengekspor data yang ditampilkan, kita gunakan semua parameter.
 
             // Construct base export URL (asumsi file handler export adalah ajax_export_excel.php)
-            let exportUrl = 'ajax_export_excel.php?';
+            let exportUrl = 'export_inventori.php?';
 
             // Tambahkan parameter status (wajib ada)
             exportUrl += 'status=' + encodeURIComponent('<?= e($status_filter); ?>');
@@ -426,7 +293,9 @@ $notifikasi_grace = [];
   </script>
 
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
   <script src="main.js"></script>
+  <script src="tipe_inventori.js"></script>
 
 </body>
 </html>

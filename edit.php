@@ -51,7 +51,7 @@ if (isset($_POST['update'])) {
 
   if (mysqli_query($koneksi, $sql)) {
         // 2. Panggil fungsi untuk memicu WebSocket setelah update berhasil
-        pushWebSocketUpdate($id_update, 'update');
+        pushWebSocketUpdate($id_update, 'asset_update');
 
     echo "<script>alert('Data berhasil diupdate!'); window.location='tampil.php';</script>";
   } else {

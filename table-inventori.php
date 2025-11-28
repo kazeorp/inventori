@@ -62,24 +62,53 @@ if (isset($result) && mysqli_num_rows($result) > 0) {
 
     $editClass = 'edit-btn';
 
-    // --- PEMROSESAN TANGGAL TUNGGAL ---
-    $tanggal_masuk_raw = displayValue($row['tanggal_masuk']);
-    $tanggal_keluar_raw = displayValue($row['tanggal_keluar']);
-    $tanggal_register_raw = displayValue($row['tanggal_register'] ?? ''); // MENGGUNAKAN NAMA LENGKAP
+// ... Kode Pemrosesan Tanggal Tunggal Anda ...
+$tanggal_masuk_raw = displayValue($row['tanggal_masuk'] ?? '');
+$tanggal_keluar_raw = displayValue($row['tanggal_keluar'] ?? '');
+$tanggal_register_raw = displayValue($row['tanggal_register'] ?? '');
 
-    $tanggal_masuk_display = ($tanggal_masuk_raw !== '-') ? date('d-m-Y', strtotime($tanggal_masuk_raw)) : '-';
-    $tanggal_keluar_display = ($tanggal_keluar_raw !== '-') ? date('d-m-Y', strtotime($tanggal_keluar_raw)) : '-';
-    $tanggal_register_display = ($tanggal_register_raw !== '-') ? date('d-m-Y', strtotime($tanggal_register_raw)) : '-';
+$tanggal_masuk_display = ($tanggal_masuk_raw !== '-') ? date('d-m-Y', strtotime($tanggal_masuk_raw)) : '-';
+$tanggal_keluar_display = ($tanggal_keluar_raw !== '-') ? date('d-m-Y', strtotime($tanggal_keluar_raw)) : '-';
+$tanggal_register_display = ($tanggal_register_raw !== '-') ? date('d-m-Y', strtotime($tanggal_register_raw)) : '-';
 
-    // --- LOGIKA TANGGAL GABUNGAN (Masuk/Keluar) ---
-    $tgl_gabungan_html = '';
+    // --- LOGIKA TANGGAL GABUNGAN (Menemukan Tanggal TERBARU) ---
+    $tgl_gabungan_html = '-'; // Default
 
-    if ($tanggal_masuk_display !== '-' && $tanggal_keluar_display === '-') {
-      // Aset baru masuk/dikembalikan (tanggal masuk ada, keluar kosong)
-      $tgl_gabungan_html = "<span class='fw-bold text-success'>Masuk:</span> " . $tanggal_masuk_display;
-    } elseif ($tanggal_keluar_display !== '-') {
-      // Aset sedang keluar (tanggal keluar ada)
-      $tgl_gabungan_html = "<span class='fw-bold text-danger'>Keluar:</span> " . $tanggal_keluar_display;
+    // 1. Kumpulkan semua timestamp yang valid (bukan '-')
+    $timestamps = [];
+    if ($tanggal_masuk_raw !== '-') {
+        $timestamps[] = strtotime($tanggal_masuk_raw);
+    }
+    if ($tanggal_keluar_raw !== '-') {
+        $timestamps[] = strtotime($tanggal_keluar_raw);
+    }
+    // Jika perlu mempertimbangkan TANGGAL REGISTER
+    if ($tanggal_register_raw !== '-' && !empty($tanggal_register_raw) && $row['status'] === 'New') {
+        // Contoh: Hanya pertimbangkan register jika aset BARU
+        // $timestamps[] = strtotime($tanggal_register_raw);
+    }
+
+
+    if (!empty($timestamps)) {
+        // 2. Temukan timestamp yang paling baru (terbesar)
+        $latest_timestamp = max($timestamps);
+        $latest_date_display = date('d-m-Y', $latest_timestamp);
+
+        // 3. Tentukan kategori untuk tampilan warna (Masuk/Keluar)
+        $status_label = 'Aksi'; // Default
+
+        // Jika Tanggal Terbaru sama dengan Tanggal Masuk (dan Masuk bukan Kosong)
+        if ($tanggal_masuk_raw !== '-' && strtotime($tanggal_masuk_raw) === $latest_timestamp) {
+            $status_label = "<span class='fw-bold text-success'>Masuk:</span>";
+        }
+        // Jika Tanggal Terbaru sama dengan Tanggal Keluar (dan Keluar bukan Kosong)
+        elseif ($tanggal_keluar_raw !== '-' && strtotime($tanggal_keluar_raw) === $latest_timestamp) {
+            $status_label = "<span class='fw-bold text-danger'>Keluar:</span>";
+        }
+
+        // 4. Gabungkan dan tampilkan
+        $tgl_gabungan_html = $status_label . " " . $latest_date_display;
+
     }
 
 

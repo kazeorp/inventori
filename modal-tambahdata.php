@@ -7,7 +7,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body row">
-          
+
           <div class="col-md-6 mb-3">
             <label>Hostname</label>
             <input type="text" name="hostname" id="add-hostname" class="form-control" required>
@@ -16,7 +16,7 @@
             <label>Rak</label>
             <input type="text" name="rak" id="add-rak" class="form-control" readonly>
           </div>
-          
+
           <div class="col-md-6 mb-3">
             <label>Status</label>
             <select name="status" id="add-status" class="form-control" required>
@@ -50,7 +50,7 @@
               <?php include 'tipe-laptop.php'; ?>
             </select>
           </div>
-          
+
           <div class="col-md-4 mb-3">
             <label>RAM</label>
             <input type="text" name="ram" id="add-ram" class="form-control">
@@ -63,7 +63,7 @@
             <label>Windows</label>
             <input type="text" name="win" id="add-win" class="form-control">
           </div>
-          
+
           <div class="col-md-6 mb-3">
             <label>Keterangan</label>
             <textarea name="keterangan" id="add-keterangan" class="form-control"></textarea>
@@ -82,10 +82,10 @@
               <option value="TAS, ADAPTOR, CONVERTER LAN & VGA">TAS, ADAPTOR, CONVERTER LAN & VGA</option>
             </select>
           </div>
-          
+
 		  <div class="col-md-6 mb-3">
-            <label class="fw-bold">Tanggal Masuk</label>
-            <input type="date" name="tanggal_masuk" id="add-tanggal_masuk" class="form-control" style="border-radius: var(--radius-md);" required>
+            <label>Tanggal Masuk</label>
+            <input type="date" name="tanggal_masuk" id="add-tanggal_masuk" class="form-control" style="border-radius: var(--radius-md);" >
           </div>
           <div class="col-md-6 mb-3">
             <label>Tanggal Keluar</label>
@@ -103,7 +103,7 @@
             <label>Divisi</label>
             <input type="text" name="divisi" id="add-divisi" class="form-control">
           </div>
-          
+
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-success">Simpan</button>

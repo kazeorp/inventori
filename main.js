@@ -418,10 +418,34 @@ document.addEventListener('DOMContentLoaded', function() {
         socket.on('service_update', (data) => {
             const { id, action } = data;
 
-            console.log(`[Client WS] Received Update: Action ${action} for ID ${id}. Triggering page reload.`);
+            // Definisikan Aksi yang menyebabkan refresh di halaman ini
+            let actionsToRefresh;
 
-            // KARENA TIDAK ADA DATATABLES, KITA GUNAKAN RELOAD PENUH
-            window.location.reload();
+            //  LOGIKA BARU: Tentukan aksi berdasarkan halaman saat ini
+            // Perhatikan: window.location.pathname akan mendapatkan '/tampil.php' atau '/index2.php'
+
+            if (window.location.pathname.includes('tampil.php')) {
+                // Untuk halaman Aset (tampil.php), kita peduli pada perubahan Aset (INSERT, UPDATE, DELETE)
+                actionsToRefresh = ['asset_insert', 'asset_update', 'asset_delete', 'asset_bulk_insert'];
+
+            } else if (window.location.pathname.includes('index2.php')) {
+                // Untuk halaman Service (index2.php), kita peduli pada perubahan Service
+                actionsToRefresh = ['service_insert', 'service_claim', 'service_complete'];
+
+            } else {
+                // Halaman lain, misalnya landing page, tidak perlu refresh
+                return;
+            }
+
+            // Cek apakah aksi yang diterima termasuk dalam daftar refresh
+            if (actionsToRefresh.includes(action)) {
+
+                console.log(`[Client WS] Received CRITICAL Update (${action}). Triggering page reload.`);
+
+                window.location.reload();
+            } else {
+                 console.log(`[Client WS] Received non-monitored update (${action}). Ignored for this view.`);
+            }
         });
 
         socket.on('disconnect', () => {

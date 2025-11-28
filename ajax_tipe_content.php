@@ -20,7 +20,7 @@ $result_tipe = mysqli_query($koneksi, $query_tipe);
 // PEMERIKSAAN ERROR
 if (!$result_tipe) {
     http_response_code(500);
-    echo '<div class="alert alert-danger">❌ Query Gagal. Periksa tabel di database Anda. Error: ' . e(mysqli_error($koneksi)) . '</div>';
+    echo '<div class="alert alert-danger"> Query Gagal. Periksa tabel di database Anda. Error: ' . e(mysqli_error($koneksi)) . '</div>';
     exit;
 }
 
@@ -28,7 +28,7 @@ if (!$result_tipe) {
 ?>
 <div class="card mb-4 bg-light shadow-sm">
     <div class="card-body">
-        <h6 class="card-title text-primary">➕ Tambah Tipe Baru</h6>
+        <h6 class="card-title text-primary"> Tambah Tipe Baru</h6>
         <form id="form-tambah-tipe" method="POST" action="proses-tipe-laptop.php">
             <input type="hidden" name="action" value="tambah">
             <div class="row g-2">
@@ -38,7 +38,7 @@ if (!$result_tipe) {
                 <div class="col-md-3">
                     <button type="submit" class="btn btn-primary w-100" name="submit_tambah_tipe">Tambah</button>
                 </div>
-                <input type="hidden" name="deskripsi" value=""> 
+                <input type="hidden" name="deskripsi" value="">
             </div>
         </form>
     </div>
@@ -58,10 +58,10 @@ if (mysqli_num_rows($result_tipe) > 0):
         </thead>
         <tbody>
             <?php while ($row = mysqli_fetch_assoc($result_tipe)): ?>
-            <tr data-id="<?= e($row['id']) ?>" data-tipe="<?= e($row['type_name']) ?>" data-desc=""> 
+            <tr data-id="<?= e($row['id']) ?>" data-tipe="<?= e($row['type_name']) ?>" data-desc="">
                 <td><?= e($row['type_name']) ?></td>
                 <td>
-                    <button type="button" class="btn btn-sm btn-info text-white btn-edit-tipe me-1" 
+                    <button type="button" class="btn btn-sm btn-info text-white btn-edit-tipe me-1"
                         data-bs-toggle="modal" data-bs-target="#editTipeModal">
                         Edit
                     </button>

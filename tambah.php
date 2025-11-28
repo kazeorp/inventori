@@ -15,10 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
  $rak       = mysqli_real_escape_string($koneksi, $_POST['rak'] ?? '');
  $status      = mysqli_real_escape_string($koneksi, $_POST['status'] ?? '');
  $type       = mysqli_real_escape_string($koneksi, $_POST['type'] ?? '');
- $ram       = mysqli_real_escape_string($koneksi, $_POST['ram'] ?? '');
+ $ram       = strtoupper(mysqli_real_escape_string($koneksi, $_POST['ram'] ?? ''));
  $storage     = strtoupper(mysqli_real_escape_string($koneksi, $_POST['storage'] ?? ''));
  $win       = strtoupper(mysqli_real_escape_string($koneksi, $_POST['win'] ?? ''));
- $keterangan    = mysqli_real_escape_string($koneksi, $_POST['keterangan'] ?? '');
+ $keterangan    = strtoupper(mysqli_real_escape_string($koneksi, $_POST['keterangan'] ?? ''));
  $kelengkapan   = strtoupper(mysqli_real_escape_string($koneksi, $_POST['kelengkapan'] ?? ''));
  $tanggal_masuk  = mysqli_real_escape_string($koneksi, $_POST['tanggal_masuk'] ?? '');
  $tanggal_keluar  = mysqli_real_escape_string($koneksi, $_POST['tanggal_keluar'] ?? '');
