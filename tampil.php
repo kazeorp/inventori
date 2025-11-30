@@ -169,7 +169,7 @@ $notifikasi_grace = [];
           <div class="row g-3 align-items-end">
 
             <div class="col-12 col-md-5">
-              <label for="cari_input" class="form-label fw-bold mb-0">Pencarian Hostname/Nama/NIK</label>
+              <label for="cari_input" class="form-label fw-bold mb-0">Pencarian Hostname / Nama / NIK</label>
               <input type="text" name="cari" id="cari_input" class="form-control" placeholder="Hostname / Nama / NIK" value="<?= isset($_GET['cari']) ? htmlspecialchars($_GET['cari']) : ''; ?>">
             </div>
 
@@ -201,6 +201,12 @@ $notifikasi_grace = [];
           <?php if ($role !== 'normal'): ?>
             <a href="#" id="export-link" class="btn btn-success shadow-sm me-2">
               <i class="bi bi-file-earmark-spreadsheet"></i> Export Excel
+            </a>
+          <?php endif; ?>
+
+          <?php if ($role !== 'normal'): ?>
+            <a href="form_manager.php" class="btn btn-info text-white shadow-sm me-2" title="Kelola Template Form Aset">
+                <i class="bi bi-pencil"></i> Kelola Form
             </a>
           <?php endif; ?>
 

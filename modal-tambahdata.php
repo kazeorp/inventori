@@ -9,22 +9,22 @@
         <div class="modal-body row">
 
           <div class="col-md-6 mb-3">
-            <label>Hostname</label>
+            <label class="fw-bold">Hostname</label>
             <input type="text" name="hostname" id="add-hostname" class="form-control" required>
           </div>
           <div class="col-md-6 mb-3">
-            <label>Rak</label>
+            <label class="fw-bold">Rak</label>
             <input type="text" name="rak" id="add-rak" class="form-control" readonly>
           </div>
 
           <div class="col-md-6 mb-3">
-            <label>Status</label>
+            <label class="fw-bold">Status</label>
             <select name="status" id="add-status" class="form-control" required>
               <?php include 'status.php'; ?>
             </select>
           </div>
           <div class="col-md-6 mb-3">
-            <label>Domain</label>
+            <label class="fw-bold">Domain</label>
             <select name="domain" id="add-domain" class="form-control" required>
               <option value="APP">APP</option>
               <option value="SMF">SMF</option>
@@ -35,7 +35,7 @@
           </div>
 
           <div class="col-md-6 mb-3">
-            <label>Kategori Perangkat</label>
+            <label class="fw-bold">Kategori Perangkat</label>
             <select name="device_category" id="add-device_category" class="form-control" required>
               <option value="">-- Pilih Kategori --</option>
               <option value="Laptop">Laptop</option>
@@ -45,31 +45,31 @@
             </select>
           </div>
           <div class="col-md-6 mb-3">
-            <label>Tipe (Merk/Model)</label>
+            <label class="fw-bold">Tipe (Merk/Model)</label>
             <select name="type" id="add-type" class="form-control" required>
               <?php include 'tipe-laptop.php'; ?>
             </select>
           </div>
 
           <div class="col-md-4 mb-3">
-            <label>RAM</label>
+            <label class="fw-bold">RAM</label>
             <input type="text" name="ram" id="add-ram" class="form-control">
           </div>
           <div class="col-md-4 mb-3">
-            <label>Storage</label>
+            <label class="fw-bold">Storage</label>
             <input type="text" name="storage" id="add-storage" class="form-control">
           </div>
           <div class="col-md-4 mb-3">
-            <label>Windows</label>
+            <label class="fw-bold">Windows</label>
             <input type="text" name="win" id="add-win" class="form-control">
           </div>
 
           <div class="col-md-6 mb-3">
-            <label>Keterangan</label>
+            <label class="fw-bold">Keterangan</label>
             <textarea name="keterangan" id="add-keterangan" class="form-control"></textarea>
           </div>
           <div class="col-md-6 mb-3">
-            <label>Kelengkapan</label>
+            <label class="fw-bold">Kelengkapan</label>
             <select name="kelengkapan" id="add-kelengkapan" class="form-control">
               <option value="">-- Pilih Kelengkapan --</option>
               <option value="TAS">TAS</option>
@@ -84,23 +84,23 @@
           </div>
 
 		  <div class="col-md-6 mb-3">
-            <label>Tanggal Masuk</label>
+            <label class="fw-bold">Tanggal Masuk</label>
             <input type="date" name="tanggal_masuk" id="add-tanggal_masuk" class="form-control" style="border-radius: var(--radius-md);" >
           </div>
           <div class="col-md-6 mb-3">
-            <label>Tanggal Keluar</label>
+            <label class="fw-bold">Tanggal Keluar</label>
             <input type="date" name="tanggal_keluar" id="add-tanggal_keluar" class="form-control">
           </div>
           <div class="col-md-6 mb-3">
-            <label>NIK</label>
+            <label class="fw-bold">NIK</label>
             <input type="text" name="nik" id="add-nik" class="form-control">
           </div>
           <div class="col-md-6 mb-3">
-            <label>Nama</label>
+            <label class="fw-bold">Nama</label>
             <input type="text" name="nama" id="add-nama" class="form-control">
           </div>
           <div class="col-md-6 mb-3">
-            <label>Divisi</label>
+            <label class="fw-bold">Divisi</label>
             <input type="text" name="divisi" id="add-divisi" class="form-control">
           </div>
 
