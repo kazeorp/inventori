@@ -122,12 +122,11 @@ if ($koneksi) {
 <?php include 'sidebar.php'; ?>
 
 <main class="main-content container py-4">
-    <h2 class="mb-4 text-center">Cek Aset dan Service</h2>
+    <h2 class="mb-4 text-center">Scan Barcode</h2>
 
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div id="manual-check-form-container" class="text-center mb-5">
-                <h5 class="mb-3">Input Hostname</h5>
 
                 <div id="scan-status" class="fw-bold mb-3 text-primary"></div>
 
