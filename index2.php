@@ -184,108 +184,122 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                         <th>Nama User (Pelapor)</th>
                         <th>Divisi</th>
                         <th>Waktu Masuk</th>
-                        <th>Catatan User</th>
+                        <th>Catatan</th>
                         <th>Status</th>
                         <th style="width: 150px;">Aksi</th>
                     </tr>
                 </thead>
-					<tbody id="service-list-body">
-						<?php if ($result_service && mysqli_num_rows($result_service) > 0): ?>
-							<?php while($row = mysqli_fetch_assoc($result_service)):
+                <tbody id="service-list-body">
+                    <?php if ($result_service && mysqli_num_rows($result_service) > 0): ?>
+                        <?php while($row = mysqli_fetch_assoc($result_service)):
 
-								$is_claimed = !empty($row['current_admin_id']) && $row['current_admin_id'] != 0;
-								$is_my_claim = $is_claimed && ((int)$row['current_admin_id'] === (int)($admin_id_login ?? 0));
-								$is_superadmin_user = $user_role_login === 'superadmin';
-								$can_reassign = $is_claimed && $is_superadmin_user;
+                            // Logika Klaim yang Sudah Ada
+                            $is_claimed = !empty($row['current_admin_id']) && $row['current_admin_id'] != 0;
+                            $is_my_claim = $is_claimed && ((int)$row['current_admin_id'] === (int)($admin_id_login ?? 0));
+                            $is_superadmin_user = $user_role_login === 'superadmin';
+                            $can_reassign = $is_claimed && $is_superadmin_user;
 
-								$claim_badge_text = $is_claimed ? 'DIPICK UP' : 'PENDING';
-								$claim_badge_class = $is_claimed ? 'bg-success' : 'bg-warning text-dark';
+                            $claim_badge_text = $is_claimed ? 'DIPICK UP' : 'PENDING';
+                            $claim_badge_class = $is_claimed ? 'bg-success' : 'bg-warning text-dark';
 
-								$admin_klaim_info = $is_claimed
-													? ('<small class="text-muted">Oleh: ' . e($row['current_admin_name'] ?? 'N/A') . '</small>')
-													: '---';
+                            $admin_klaim_info = $is_claimed
+                                                ? ('<small class="text-muted">Oleh: ' . e($row['current_admin_name'] ?? 'N/A') . '</small>')
+                                                : '---';
 
-							?>
-							<tr id="service-row-<?= e($row['id_service']) ?>">
+                            // 🚀 LOGIKA BARU: Deteksi Registrasi Aset Baru (id_inventori NULL dan Catatan Spesifik)
+                            $is_new_registration = empty($row['id_inventori']) && ($row['catatan_user'] ?? '') === 'Aset memerlukan registrasi';
 
-								<td><?= e($row['id_service']) ?></td>
+                            ?>
+                            <tr id="service-row-<?= e($row['id_service']) ?>">
 
-								<td>
-									<strong><?= e($row['hostname']) ?></strong><br>
-									<?= $admin_klaim_info ?>
-								</td>
+                                <td><?= e($row['id_service']) ?></td>
 
-								<td><?= e($row['nama_user'] ?? 'N/A') ?></td>
+                                <td>
+                                    <strong><?= e($row['hostname']) ?></strong><br>
+                                    <?= $admin_klaim_info ?>
+                                </td>
 
-								<td><?= e($row['divisi'] ?? 'N/A') ?></td>
+                                <td><?= e($row['nama_user'] ?? 'N/A') ?></td>
 
-								<td><?= date('d/m/Y H:i', strtotime($row['tanggal_masuk'])) ?></td>
+                                <td><?= e($row['divisi'] ?? 'N/A') ?></td>
 
-								<td><?= e($row['catatan_user'] ?? '-') ?></td>
+                                <td><?= date('d/m/Y H:i', strtotime($row['tanggal_masuk'])) ?></td>
 
-								<td>
-									<span class="badge <?= $claim_badge_class ?>">
-										<?= $claim_badge_text ?>
-									</span>
-								</td>
+                                <td><?= e($row['catatan'] ?? '-') ?></td>
 
-								<td>
-									<div class="d-flex flex-column gap-1 mx-auto" style="max-width: 140px;">
+                                <td>
+                                    <span class="badge <?= $claim_badge_class ?>">
+                                        <?= $claim_badge_text ?>
+                                    </span>
+                                </td>
 
-										<?php if (!$is_claimed): ?>
-											<button type="button" class="btn btn-sm btn-success btn-claim"
-												data-id="<?= e($row['id_service']) ?>"
-												data-hostname="<?= e($row['hostname']) ?>"
-												title="Claim & Mulai Proses Service">
-												<i class="bi bi-person-fill-up"></i> Pick Up
-											</button>
-										<?php endif; ?>
+                                <td>
+                                    <div class="d-flex flex-column gap-1 mx-auto" style="max-width: 140px;">
 
-										<?php if ($is_claimed): ?>
+                                        <?php if ($is_new_registration): ?>
+                                            <a href="tambah_data.php?service_id=<?= e($row['id_service']) ?>&host=<?= e($row['hostname']) ?>&user=<?= e($row['nama_user']) ?>&div=<?= e($row['divisi']) ?>"
+                                                class="btn btn-sm btn-primary"
+                                                title="Registrasi aset ke tabel Inventori">
+                                                <i class="bi bi-person-fill-up"></i> Registrasi Aset
+                                            </a>
 
-											<?php if ($is_superadmin_user): ?>
-												<button type="button" class="btn btn-sm btn-danger btn-reassign"
-													data-bs-toggle="modal" data-bs-target="#reassignModal"
-													data-id="<?= e($row['id_service']) ?>"
-													data-current-admin-name="<?= e($row['current_admin_name'] ?? 'N/A') ?>"
-													title="Reassign ke Admin Lain">
-													<i class="bi bi-person-replace"></i> Reassign
-												</button>
-											<?php endif; ?>
+                                        <?php else: // Service biasa (sudah ada id_inventori atau catatan berbeda) ?>
 
-											<?php if ($is_my_claim): ?>
+                                            <?php if (!$is_claimed): ?>
+                                                <button type="button" class="btn btn-sm btn-success btn-claim"
+                                                    data-id="<?= e($row['id_service']) ?>"
+                                                    data-hostname="<?= e($row['hostname']) ?>"
+                                                    title="Claim & Mulai Proses Service">
+                                                    <i class="bi bi-person-fill-up"></i> Pick Up
+                                                </button>
+                                            <?php endif; ?>
 
-												<a href="detail-aset.php?hostname=<?= e($row['hostname']) ?>&action=service_claim"
-													class="btn btn-sm btn-info text-white"
-													title="Lanjutkan Input Aktivitas Service">
-													<i class="bi bi-pencil-square"></i> Process
-												</a>
+                                            <?php if ($is_claimed): ?>
 
-												<button type="button" class="btn btn-sm btn-dark btn-selesai"
-													data-id="<?= e($row['id_service']) ?>"
-													data-hostname="<?= e($row['hostname']) ?>"
-													title="Tandai Service Ini Selesai">
-													<i class="bi bi-check-circle"></i> Complete
-												</button>
-											<?php endif; ?>
+                                                <?php if ($is_superadmin_user): ?>
+                                                    <button type="button" class="btn btn-sm btn-danger btn-reassign"
+                                                        data-bs-toggle="modal" data-bs-target="#reassignModal"
+                                                        data-id="<?= e($row['id_service']) ?>"
+                                                        data-current-admin-name="<?= e($row['current_admin_name'] ?? 'N/A') ?>"
+                                                        title="Reassign ke Admin Lain">
+                                                        <i class="bi bi-person-replace"></i> Reassign
+                                                    </button>
+                                                <?php endif; ?>
 
-										<?php endif; ?>
-									</div>
-								</td>
-							</tr>
-							<?php endwhile; ?>
-						<?php else: ?>
-							<tr>
-								<td colspan="8" class="text-center">
-									<?php if ($user_role_login === 'admin'): ?>
-										Tidak ada aset service yang di pick up/pending untuk Anda.
-									<?php else: ?>
-										Tidak ada aset service yang masuk saat ini.
-									<?php endif; ?>
-								</td>
-							</tr>
-						<?php endif; ?>
-					</tbody>
+                                                <?php if ($is_my_claim): ?>
+                                                    <a href="detail-aset.php?hostname=<?= e($row['hostname']) ?>&action=service_claim"
+                                                        class="btn btn-sm btn-info text-white"
+                                                        title="Lanjutkan Input Aktivitas Service">
+                                                        <i class="bi bi-pencil-square"></i> Process
+                                                    </a>
+
+                                                    <button type="button" class="btn btn-sm btn-dark btn-selesai"
+                                                        data-id="<?= e($row['id_service']) ?>"
+                                                        data-hostname="<?= e($row['hostname']) ?>"
+                                                        title="Tandai Service Ini Selesai">
+                                                        <i class="bi bi-check-circle"></i> Complete
+                                                    </button>
+                                                <?php endif; ?>
+
+                                            <?php endif; ?>
+
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <?php if ($user_role_login === 'admin'): ?>
+                                    Tidak ada aset service yang di pick up/pending untuk Anda.
+                                <?php else: ?>
+                                    Tidak ada aset service yang masuk saat ini.
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
             </table>
         </div>
 

@@ -122,6 +122,11 @@ if ($koneksi) {
 <?php include 'sidebar.php'; ?>
 
 <main class="main-content container py-4">
+    <div class="d-flex justify-content-middle mb-3">
+    <button type="button" class="btn btn-primary position-relative" data-bs-toggle="modal" data-bs-target="#registerModal">
+        <i class="bi bi-plus-circle"></i> Register
+    </button>
+    </div>
     <h2 class="mb-4 text-center">Scan Barcode</h2>
 
     <div class="row justify-content-center">
@@ -179,6 +184,7 @@ if ($koneksi) {
                             <table class="table table-sm table-bordered table-striped table-hover">
                                 <thead class="table-dark">
                                     <tr>
+                                        <th>No.</th>
                                         <th>Hostname</th>
                                         <th>Nama User</th>
                                         <th>Divisi</th>
@@ -186,8 +192,9 @@ if ($koneksi) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($chunk as $data): ?>
+                                    <?php $no = ($index * 5) + 1; foreach ($chunk as $data): ?>
                                     <tr>
+                                        <td><?= $no++ ?></td>
                                         <td><?= htmlspecialchars($data['hostname'] ?? '-') ?></td>
                                         <td><?= htmlspecialchars($data['nama_user'] ?? '-') ?></td>
                                         <td><?= htmlspecialchars($data['divisi'] ?? '-') ?></td>
@@ -530,5 +537,10 @@ function appendHistoryItem(data) {
 </script>
 
 <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+<?php
+// Memuat file modal_register_aset.php
+include 'modal-register-aset.php';
+?>
+
 </body>
 </html>
