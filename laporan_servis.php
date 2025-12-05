@@ -12,9 +12,25 @@ if (!function_exists('e')) {
 // 1. PROTEKSI ROLE (Hanya Superadmin yang bisa akses)
 $user_role_login = $_SESSION['role'] ?? 'normal';
 if ($user_role_login !== 'superadmin') {
-    header("Location: index.php"); 
+    header("Location: index.php");
     exit;
 }
+
+// 💡 DEFENISI GLOBAL UNTUK BULAN INDONESIA
+$bulan_indo = [
+    1 => 'Januari',
+    2 => 'Februari',
+    3 => 'Maret',
+    4 => 'April',
+    5 => 'Mei',
+    6 => 'Juni',
+    7 => 'Juli',
+    8 => 'Agustus',
+    9 => 'September',
+    10 => 'Oktober',
+    11 => 'November',
+    12 => 'Desember'
+];
 
 // 2. Tentukan Bulan dan Tahun yang dipilih
 $selected_month = isset($_GET['bulan']) ? (int)$_GET['bulan'] : date('m');
@@ -24,23 +40,25 @@ $selected_year = isset($_GET['tahun']) ? (int)$_GET['tahun'] : date('Y');
 if ($selected_month < 1 || $selected_month > 12) $selected_month = date('m');
 if ($selected_year < 2020 || $selected_year > date('Y') + 1) $selected_year = date('Y');
 
-$current_month_name = date('F Y', mktime(0, 0, 0, $selected_month, 1, $selected_year));
+// 💡 HITUNG NAMA BULAN UNTUK JUDUL
+$month_name_indo = $bulan_indo[$selected_month] ?? 'Bulan Tidak Valid';
+$current_month_name = "{$month_name_indo} {$selected_year}";
 
 // 3. Query Laporan Servis Selesai berdasarkan Bulan & Tahun
 $sql_laporan = "
-    SELECT  
+    SELECT
         sl.admin_finish_name AS username_admin,
         u.nama_lengkap AS admin_finish_name, -- Mengambil nama lengkap
         COUNT(sl.id_service) AS total_servis_selesai
     FROM service_list sl
     LEFT JOIN admin u ON sl.admin_finish_name = u.username -- JOIN berdasarkan username
-    WHERE 
-        sl.finish_status IS NOT NULL AND  
-        YEAR(sl.finish_timestamp) = ? AND  
+    WHERE
+        sl.finish_status IS NOT NULL AND
+        YEAR(sl.finish_timestamp) = ? AND
         MONTH(sl.finish_timestamp) = ?
-    GROUP BY  
+    GROUP BY
         sl.admin_finish_name, u.nama_lengkap -- Grouping harus mencakup nama_lengkap
-    ORDER BY  
+    ORDER BY
         total_servis_selesai DESC
 ";
 
@@ -73,20 +91,19 @@ $result_admins = mysqli_query($koneksi, $sql_admins);
         <p class="text-muted">Laporan kinerja berdasarkan jumlah servis yang diselesaikan.</p>
 
         <form method="GET" class="row g-3 mb-5 align-items-end">
-            <div class="col-md-3">
-                <label for="bulan" class="form-label">Pilih Bulan</label>
-                <select name="bulan" id="bulan" class="form-select">
-                    <?php 
-                    $months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                    foreach ($months as $key => $month):
-                        $month_num = $key + 1;
-                    ?>
-                    <option value="<?= $month_num ?>" <?= ($selected_month == $month_num) ? 'selected' : '' ?>>
-                        <?= $month ?>
-                    </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+        <div class="col-md-3">
+            <label for="bulan" class="form-label">Pilih Bulan</label>
+            <select name="bulan" id="bulan" class="form-select">
+                <?php
+                // 💡 GUNAKAN ARRAY YANG SUDAH DIDEFINISIKAN DI ATAS FILE
+                foreach ($bulan_indo as $month_num => $month_name):
+                ?>
+                <option value="<?= $month_num ?>" <?= ($selected_month == $month_num) ? 'selected' : '' ?>>
+                    <?= $month_name ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
             <div class="col-md-2">
                 <label for="tahun" class="form-label">Pilih Tahun</label>
                 <select name="tahun" id="tahun" class="form-select">
@@ -106,8 +123,8 @@ $result_admins = mysqli_query($koneksi, $sql_admins);
             <table class="table table-bordered table-striped table-hover">
                 <thead class="table-success">
                     <tr>
-                        <th>Admin</th>
-                        <th>Jumlah Servis Selesai</th>
+                        <th>Engineer</th>
+                        <th>Jumah Servis Selesai</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -119,7 +136,7 @@ $result_admins = mysqli_query($koneksi, $sql_admins);
                                 <td><span class="badge bg-success fs-6"><?= e($row_laporan['total_servis_selesai']) ?></span> Unit</td>
                                 <td>
 									<button type="button" class="btn btn-sm btn-info text-white btn-detail"
-										data-bs-toggle="modal" 
+										data-bs-toggle="modal"
 										data-bs-target="#detailModal"
 										data-admin-name="<?= e($row_laporan['admin_finish_name']) ?>"
 										data-admin-username="<?= e($row_laporan['username_admin']) ?>" data-month="<?= e($selected_month) ?>"
@@ -181,14 +198,14 @@ $result_admins = mysqli_query($koneksi, $sql_admins);
 			const year = button.getAttribute('data-year');
 
 			adminNamePlaceholder.textContent = adminName; // Menampilkan nama lengkap
-			detailContent.innerHTML = ''; 
-			loadingIndicator.style.display = 'block'; 
+			detailContent.innerHTML = '';
+			loadingIndicator.style.display = 'block';
 
 			fetch('ajax_laporan_detail.php', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 				// MENGIRIM USERNAME sebagai admin_name
-				body: `admin_name=${encodeURIComponent(adminUsername)}&bulan=${month}&tahun=${year}` 
+				body: `admin_name=${encodeURIComponent(adminUsername)}&bulan=${month}&tahun=${year}`
 			})
             .then(response => response.text())
             .then(html => {

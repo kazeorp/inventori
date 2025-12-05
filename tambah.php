@@ -1,63 +1,109 @@
 <?php
 session_start();
 include 'koneksi.php';
-include 'helpers.php'; // 1. Masukkan helpers.php untuk mendapatkan fungsi WebSocket
+include 'helpers.php'; // Digunakan untuk fungsi pushWebSocketUpdate
+
+// Ambil ID admin yang sedang login
+$admin_id_login = $_SESSION['admin_id'] ?? 0;
+$user_role_login = $_SESSION['role'] ?? 'normal';
+
+// Tentukan halaman redirect default (untuk non-admin atau error fatal)
+$redirect_page = ($user_role_login === 'admin' || $user_role_login === 'superadmin') ? 'index2.php' : 'kelola-aset.php';
 
 // Cegah akses user normal
-if (isset($_SESSION['role']) && $_SESSION['role'] == 'normal') {
- echo "<script>alert('Anda tidak memiliki akses untuk menambah data.'); window.location='kelola-aset.php';</script>";
- exit;
+if ($user_role_login !== 'admin' && $user_role_login !== 'superadmin') {
+    $msg = urlencode("Anda tidak memiliki akses untuk menambah data.");
+    header("Location: $redirect_page?status=danger&msg=$msg");
+    exit;
 }
 
 // Proses jika form dikirim
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
- // Ambil dan sanitasi data
- $rak       = mysqli_real_escape_string($koneksi, $_POST['rak'] ?? '');
- $status      = mysqli_real_escape_string($koneksi, $_POST['status'] ?? '');
- $type       = mysqli_real_escape_string($koneksi, $_POST['type'] ?? '');
- $ram       = strtoupper(mysqli_real_escape_string($koneksi, $_POST['ram'] ?? ''));
- $storage     = strtoupper(mysqli_real_escape_string($koneksi, $_POST['storage'] ?? ''));
- $win       = strtoupper(mysqli_real_escape_string($koneksi, $_POST['win'] ?? ''));
- $keterangan    = strtoupper(mysqli_real_escape_string($koneksi, $_POST['keterangan'] ?? ''));
- $kelengkapan   = strtoupper(mysqli_real_escape_string($koneksi, $_POST['kelengkapan'] ?? ''));
- $tanggal_masuk  = mysqli_real_escape_string($koneksi, $_POST['tanggal_masuk'] ?? '');
- $tanggal_keluar  = mysqli_real_escape_string($koneksi, $_POST['tanggal_keluar'] ?? '');
- $nik       = mysqli_real_escape_string($koneksi, $_POST['nik'] ?? '');
- $nama       = strtoupper(mysqli_real_escape_string($koneksi, $_POST['nama'] ?? ''));
- $divisi      = strtoupper(mysqli_real_escape_string($koneksi, $_POST['divisi'] ?? ''));
+    // Ambil dan sanitasi data
+    $rak            = mysqli_real_escape_string($koneksi, $_POST['rak'] ?? '');
+    $status         = mysqli_real_escape_string($koneksi, $_POST['status'] ?? '');
+    $type           = mysqli_real_escape_string($koneksi, $_POST['type'] ?? '');
+    $ram            = strtoupper(mysqli_real_escape_string($koneksi, $_POST['ram'] ?? ''));
+    $storage        = strtoupper(mysqli_real_escape_string($koneksi, $_POST['storage'] ?? ''));
+    $win            = strtoupper(mysqli_real_escape_string($koneksi, $_POST['win'] ?? ''));
+    $keterangan     = strtoupper(mysqli_real_escape_string($koneksi, $_POST['keterangan'] ?? ''));
+    $kelengkapan    = strtoupper(mysqli_real_escape_string($koneksi, $_POST['kelengkapan'] ?? ''));
+    $tanggal_masuk  = mysqli_real_escape_string($koneksi, $_POST['tanggal_masuk'] ?? '');
+    $tanggal_keluar = mysqli_real_escape_string($koneksi, $_POST['tanggal_keluar'] ?? '');
+    $nik            = mysqli_real_escape_string($koneksi, $_POST['nik'] ?? '');
+    $nama           = strtoupper(mysqli_real_escape_string($koneksi, $_POST['nama'] ?? ''));
+    $divisi         = strtoupper(mysqli_real_escape_string($koneksi, $_POST['divisi'] ?? ''));
+    $domain         = mysqli_real_escape_string($koneksi, $_POST['domain'] ?? '');
+    $device_category = mysqli_real_escape_string($koneksi, $_POST['device_category'] ?? '');
 
- //  DATA BARU: Ambil Domain dan Kategori Perangkat
- $domain      = mysqli_real_escape_string($koneksi, $_POST['domain'] ?? '');
- $device_category = mysqli_real_escape_string($koneksi, $_POST['device_category'] ?? '');
+    // 🚀 DATA BARU: Ambil service_id_to_update dari hidden field
+    $service_id_to_update = (int)($_POST['service_id_to_update'] ?? 0);
 
- //  KONVERSI HOSTNAME KE UPPERCASE
- $hostname = strtoupper(mysqli_real_escape_string($koneksi, $_POST['hostname'] ?? ''));
+    // KONVERSI HOSTNAME KE UPPERCASE
+    $hostname = strtoupper(mysqli_real_escape_string($koneksi, $_POST['hostname'] ?? ''));
 
- //  Cek apakah hostname sudah digunakan (gunakan $hostname yang sudah UPPERCASE)
- $cek_duplikat = mysqli_query($koneksi, "SELECT id FROM inventori WHERE hostname='$hostname'");
- if (mysqli_num_rows($cek_duplikat) > 0) {
-  echo "<script>alert(' Hostname sudah ada.'); window.location='tampil.php';</script>";
-  exit;
- }
+    // Cek apakah hostname sudah digunakan
+    $cek_duplikat = mysqli_query($koneksi, "SELECT id FROM inventori WHERE hostname='$hostname'");
+    if (mysqli_num_rows($cek_duplikat) > 0) {
+        $msg = urlencode("Hostname $hostname sudah ada di inventori.");
+        // Redirect ke tampil.php (halaman inventori utama) dengan pesan error
+        header("Location: tampil.php?status=danger&msg=$msg");
+        exit;
+    }
 
- // Query simpan
- $sql = "INSERT INTO inventori (
-  rak, status, hostname, type, domain, device_category, ram, storage, win, keterangan, kelengkapan, tanggal_masuk, tanggal_keluar, nik, nama, divisi
- ) VALUES (
-  '$rak', '$status', '$hostname', '$type', '$domain', '$device_category', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan','$tanggal_masuk', '$tanggal_keluar', '$nik', '$nama', '$divisi'
- )";
+    // Query simpan ke tabel inventori
+    $sql = "INSERT INTO inventori (
+        rak, status, hostname, type, domain, device_category, ram, storage, win, keterangan, kelengkapan, tanggal_masuk, tanggal_keluar, nik, nama, divisi
+    ) VALUES (
+        '$rak', '$status', '$hostname', '$type', '$domain', '$device_category', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan','$tanggal_masuk', '$tanggal_keluar', '$nik', '$nama', '$divisi'
+    )";
 
- // Eksekusi dan feedback
- if (mysqli_query($koneksi, $sql)) {
-    // 2. Dapatkan ID yang baru dimasukkan
-    $new_id = mysqli_insert_id($koneksi);
+    // Eksekusi dan feedback
+    if (mysqli_query($koneksi, $sql)) {
+        // 1. Dapatkan ID inventori yang baru dimasukkan
+        $new_inventori_id = mysqli_insert_id($koneksi);
 
-    // 3. Panggil fungsi untuk memicu WebSocket
-    pushWebSocketUpdate($new_id, 'asset_insert');
+        // 2. Logika Khusus untuk Registrasi Aset dari Service Request
+        if ($service_id_to_update > 0 && $admin_id_login > 0) {
 
-  echo "<script>alert('Data berhasil ditambahkan!'); window.location='tampil.php';</script>";
- } else {
-  echo "<script>alert('Gagal menambahkan data: " . mysqli_error($koneksi) . "'); window.location='tampil.php';</script>";
- }
+            // Update Service List: Isi id_inventori dan klaim service tersebut
+            $update_service_query = "
+                UPDATE service_list SET
+                    id_inventori = $new_inventori_id,
+                    current_admin_id = $admin_id_login
+                WHERE id_service = $service_id_to_update
+            ";
+
+            if (mysqli_query($koneksi, $update_service_query)) {
+                // Sukses Registrasi dan Claim
+                pushWebSocketUpdate($service_id_to_update, 'service_claim');
+                $msg = urlencode("Aset berhasil diregistrasi (ID #$new_inventori_id) dan otomatis diclaim untuk service request #$service_id_to_update.");
+                header("Location: index2.php?status=success&msg=$msg");
+                exit;
+            } else {
+                // Sukses Registrasi, Gagal Claim
+                pushWebSocketUpdate($new_inventori_id, 'asset_insert');
+                $msg = urlencode("Aset berhasil diregistrasi, tetapi gagal mengklaim service request #$service_id_to_update. Silakan klaim secara manual.");
+                header("Location: index2.php?status=warning&msg=$msg");
+                exit;
+            }
+        }
+
+        // 3. Logika untuk Tambah Inventori Biasa (Jika service_id_to_update tidak ada)
+        pushWebSocketUpdate($new_inventori_id, 'asset_insert');
+        $msg = urlencode("Data inventori berhasil ditambahkan!");
+        header("Location: tampil.php?status=success&msg=$msg"); // Redirect ke halaman inventori
+        exit;
+
+    } else {
+        // Gagal INSERT ke inventori
+        $msg = urlencode("Gagal menambahkan data: " . mysqli_error($koneksi));
+        header("Location: tampil.php?status=danger&msg=$msg"); // Redirect ke halaman inventori
+        exit;
+    }
+} else {
+    // Akses langsung ke tambah.php tanpa POST
+    header("Location: tampil.php");
+    exit;
 }
 ?>

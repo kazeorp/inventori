@@ -125,7 +125,7 @@ try {
     }
 
         // Perbarui $aksi untuk log agar lebih jelas
-        $aksi_log = "Loan Dibuat & Status Aset A diubah menjadi: {$aksi}";
+        $aksi_log = "Loan aset ({$loan_hostname_val}) dibuat & Status Aset {$hostname} diubah menjadi {$aksi}";
 
     } else {
         // JIKA LOAN TIDAK AKTIF: JANGAN UPDATE STATUS INVENTORI

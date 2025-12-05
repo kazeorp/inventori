@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // =======================================================
     // 2. LOGIKA OTOMATISASI RAK (Modal Tambah & Edit)
     // =======================================================
-
+    const addModal = document.getElementById('addModal');
     const statusSelectAdd = document.getElementById('add-status');
     const rakInputAdd = document.getElementById('add-rak');
     if (statusSelectAdd && rakInputAdd) {
@@ -453,5 +453,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     } else {
         console.error("JS ERROR: Socket.IO library (io) tidak ditemukan. Cek <script> tag di HTML.");
+    }
+
+
+    // Tombol Registrasi
+    if (addModal) {
+        addModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+
+            // Check apakah pemicu modal adalah tombol 'Registrasi Aset'
+            if (button && button.classList.contains('btn-register-service')) {
+
+                // Ambil data dari tombol
+                const serviceId = button.getAttribute('data-service-id');
+                const hostname = button.getAttribute('data-hostname');
+                const namaUser = button.getAttribute('data-user');
+                const divisi = button.getAttribute('data-divisi');
+
+                // Isi Hidden Field Service ID (PENTING untuk proses di tambah.php)
+                document.getElementById('service-id-to-update').value = serviceId;
+
+                // Isi field Hostname, Nama, dan Divisi
+                const hostnameInput = document.getElementById('add-hostname');
+                document.getElementById('add-nama').value = namaUser;
+                document.getElementById('add-divisi').value = divisi;
+
+                // Set Hostname dan buat readonly (tidak bisa diubah)
+                hostnameInput.value = hostname;
+                hostnameInput.setAttribute('readonly', 'readonly');
+
+                // Ubah judul modal
+                const modalTitle = addModal.querySelector('.modal-title');
+                modalTitle.textContent = 'Registrasi Aset dari Service Request #' + serviceId;
+            } else {
+                // Reset/bersihkan modal jika dibuka dari tombol "Tambah Inventori" biasa
+                document.getElementById('service-id-to-update').value = '';
+                document.getElementById('add-hostname').value = '';
+                document.getElementById('add-nama').value = '';
+                document.getElementById('add-divisi').value = '';
+                document.getElementById('add-hostname').removeAttribute('readonly');
+
+                const modalTitle = addModal.querySelector('.modal-title');
+                modalTitle.textContent = 'Tambah Inventori';
+            }
+        });
     }
 }); // Penutup DOMContentLoaded

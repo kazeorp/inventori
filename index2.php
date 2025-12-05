@@ -65,10 +65,10 @@ if (isset($koneksi)) {
 }
 
 $data = [
-    "📦 Total Asset"                 => ["jumlah" => $stok_total, "status" => "all"],
-    "🧊 Spare"                       => ["jumlah" => $stok_spare, "status" => "Spare"],
-    "📥 Loan"                        => ["jumlah" => $stok_loan, "status" => "Loan"],
-    "🛠️ Pending Service"             => ["jumlah" => $stok_pending, "status" => "Pending Service"],
+    " Total Asset"                 => ["jumlah" => $stok_total, "status" => "all"],
+    " Spare"                       => ["jumlah" => $stok_spare, "status" => "Spare"],
+    " Loan"                        => ["jumlah" => $stok_loan, "status" => "Loan"],
+    " Pending Service"             => ["jumlah" => $stok_pending, "status" => "Pending Service"],
 ];
 
 // --- LOGIKA QUERY SERVICE (SESUAI VISIBILITAS) ---
@@ -92,8 +92,9 @@ $sql_service = "
     SELECT
         sl.*,
         u1.nama_lengkap AS current_admin_name,
-        i.nama AS nama_user,
-        i.divisi AS divisi
+        i.id AS id_inventori,
+        i.nama AS nama_user_inventori,
+        i.divisi AS divisi_inventori
     FROM service_list sl
 
     LEFT JOIN admin u1 ON sl.current_admin_id = u1.id
@@ -111,7 +112,7 @@ $result_service = mysqli_query($koneksi, $sql_service);
 
 if (!$result_service) {
     // Fatal error jika query gagal
-    die("❌ GAGAL MENJALANKAN QUERY SERVICE: " . mysqli_error($koneksi));
+    die(" GAGAL MENJALANKAN QUERY SERVICE: " . mysqli_error($koneksi));
 }
 
 // --- LOGIKA LAPORAN BULANAN SERVIS ---
@@ -171,7 +172,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
         <hr>
 
 
-        <h4 class="mt-5 mb-3 text-danger">🚨 Service Aset Masuk Terbaru</h4>
+        <h4 class="mt-5 mb-3 text-danger"> Service Aset Masuk Terbaru</h4>
 
         <div id="service-notification-area" class="mb-4"></div>
 
@@ -206,8 +207,16 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                                                 ? ('<small class="text-muted">Oleh: ' . e($row['current_admin_name'] ?? 'N/A') . '</small>')
                                                 : '---';
 
-                            // 🚀 LOGIKA BARU: Deteksi Registrasi Aset Baru (id_inventori NULL dan Catatan Spesifik)
-                            $is_new_registration = empty($row['id_inventori']) && ($row['catatan_user'] ?? '') === 'Aset memerlukan registrasi';
+                            //  LOGIKA BARU: Deteksi Status Aset
+                            // Jika id_inventori NULL, berarti aset tidak ditemukan di tabel inventori
+                            $asset_missing = empty($row['id_inventori']);
+
+                            // Kondisi untuk menampilkan Tombol Registrasi
+                            $should_show_registration_button = $asset_missing;
+
+                            // Tentukan Nama User dan Divisi yang akan ditampilkan di tabel (gunakan data service_list jika aset hilang, gunakan data inventori jika ada)
+                            $display_nama_user = $asset_missing ? ($row['nama_user'] ?? 'N/A') : ($row['nama_user_inventori'] ?? 'N/A');
+                            $display_divisi = $asset_missing ? ($row['divisi'] ?? 'N/A') : ($row['divisi_inventori'] ?? 'N/A');
 
                             ?>
                             <tr id="service-row-<?= e($row['id_service']) ?>">
@@ -219,9 +228,9 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                                     <?= $admin_klaim_info ?>
                                 </td>
 
-                                <td><?= e($row['nama_user'] ?? 'N/A') ?></td>
+                                <td><?= e($display_nama_user) ?></td>
 
-                                <td><?= e($row['divisi'] ?? 'N/A') ?></td>
+                                <td><?= e($display_divisi) ?></td>
 
                                 <td><?= date('d/m/Y H:i', strtotime($row['tanggal_masuk'])) ?></td>
 
@@ -236,50 +245,54 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                                 <td>
                                     <div class="d-flex flex-column gap-1 mx-auto" style="max-width: 140px;">
 
-                                        <?php if ($is_new_registration): ?>
-                                            <a href="tambah_data.php?service_id=<?= e($row['id_service']) ?>&host=<?= e($row['hostname']) ?>&user=<?= e($row['nama_user']) ?>&div=<?= e($row['divisi']) ?>"
-                                                class="btn btn-sm btn-primary"
+                                        <?php if ($should_show_registration_button): // Aset Belum ada di Inventori ?>
+
+                                            <button type="button"
+                                                class="btn btn-sm btn-primary text-white btn-register-service"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#addModal"
+                                                data-service-id="<?= e($row['id_service']) ?>"
+                                                data-hostname="<?= e($row['hostname']) ?>"
+                                                data-user="<?= e($row['nama_user']) ?>"
+                                                data-divisi="<?= e($row['divisi']) ?>"
                                                 title="Registrasi aset ke tabel Inventori">
                                                 <i class="bi bi-person-fill-up"></i> Registrasi Aset
-                                            </a>
+                                            </button>
 
-                                        <?php else: // Service biasa (sudah ada id_inventori atau catatan berbeda) ?>
+                                        <?php else: // Service biasa (Aset SUDAH ditemukan di Inventori) ?>
 
-                                            <?php if (!$is_claimed): ?>
+                                            <?php if (!$is_claimed): // Tampilkan tombol Pick Up jika belum diklaim ?>
+
                                                 <button type="button" class="btn btn-sm btn-success btn-claim"
                                                     data-id="<?= e($row['id_service']) ?>"
                                                     data-hostname="<?= e($row['hostname']) ?>"
                                                     title="Claim & Mulai Proses Service">
                                                     <i class="bi bi-person-fill-up"></i> Pick Up
                                                 </button>
-                                            <?php endif; ?>
 
-                                            <?php if ($is_claimed): ?>
+                                            <?php else: // Aset SUDAH diklaim dan BELUM selesai ?>
 
-                                                <?php if ($is_superadmin_user): ?>
-                                                    <button type="button" class="btn btn-sm btn-danger btn-reassign"
-                                                        data-bs-toggle="modal" data-bs-target="#reassignModal"
+                                                <?php if (($_SESSION['role'] ?? 'normal') === 'superadmin'): ?>
+                                                    <button type="button" class="btn btn-sm btn-info text-white btn-reassign"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#reassignModal"
                                                         data-id="<?= e($row['id_service']) ?>"
                                                         data-current-admin-name="<?= e($row['current_admin_name'] ?? 'N/A') ?>"
-                                                        title="Reassign ke Admin Lain">
-                                                        <i class="bi bi-person-replace"></i> Reassign
+                                                        title="Pindahkan penanganan ke Admin lain">
+                                                        <i class="bi bi-person-fill-gear"></i> Reassign
                                                     </button>
                                                 <?php endif; ?>
 
-                                                <?php if ($is_my_claim): ?>
-                                                    <a href="detail-aset.php?hostname=<?= e($row['hostname']) ?>&action=service_claim"
-                                                        class="btn btn-sm btn-info text-white"
-                                                        title="Lanjutkan Input Aktivitas Service">
-                                                        <i class="bi bi-pencil-square"></i> Process
-                                                    </a>
+                                                <a href="detail-service.php?id=<?= e($row['id_service']) ?>" class="btn btn-sm btn-secondary" title="Lihat detail & Lanjutkan Proses">
+                                                    <i class="bi bi-gear"></i> Proses
+                                                </a>
 
-                                                    <button type="button" class="btn btn-sm btn-dark btn-selesai"
-                                                        data-id="<?= e($row['id_service']) ?>"
-                                                        data-hostname="<?= e($row['hostname']) ?>"
-                                                        title="Tandai Service Ini Selesai">
-                                                        <i class="bi bi-check-circle"></i> Complete
-                                                    </button>
-                                                <?php endif; ?>
+                                                <button type="button" class="btn btn-sm btn-danger btn-selesai"
+                                                    data-id="<?= e($row['id_service']) ?>"
+                                                    data-hostname="<?= e($row['hostname']) ?>"
+                                                    title="Tandai Service Selesai">
+                                                    <i class="bi bi-check-circle"></i> Selesaikan
+                                                </button>
 
                                             <?php endif; ?>
 
@@ -303,7 +316,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
             </table>
         </div>
 
-        <h4 class="mt-5 mb-3">📋 Data Asset</h4>
+        <h4 class="mt-5 mb-3"> Data Asset</h4>
 
         <?php if ($inventori_query && mysqli_num_rows($inventori_query) > 0): ?>
             <div class="table-responsive mb-4">
@@ -369,6 +382,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
         </main>
 
     <?php
+    include 'modal-tambahdata.php';
     include 'modal-reassign.php';
     ?>
 

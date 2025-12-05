@@ -1,6 +1,7 @@
 <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <form method="POST" action="tambah.php">
+      <input type="hidden" name="service_id_to_update" id="service-id-to-update" value="">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Tambah Inventori</h5>
