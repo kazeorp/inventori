@@ -24,6 +24,8 @@ $display_name = $_SESSION['nama_lengkap'] ?? ($_SESSION['username'] ?? 'Guest');
 
   <?php if ($role !== 'normal'): ?>
     <a href="tampil.php">📦 Inventory Data</a>
+    <a href="peripherals.php">📦 Stock Peripheral</a>
+
   <?php endif; ?>
 
   <?php if ($role === 'admin' || $role === 'superadmin'): ?>

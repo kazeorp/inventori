@@ -6,6 +6,7 @@
 require 'session.php';
 require 'koneksi.php';
 require 'helpers.php';
+require 'fetch_peripheral_stock.php';
 
 
 // 2. PROTEKSI ROLE
@@ -69,6 +70,41 @@ $data = [
     " Spare"                       => ["jumlah" => $stok_spare, "status" => "Spare"],
     " Loan"                        => ["jumlah" => $stok_loan, "status" => "Loan"],
     " Pending Service"             => ["jumlah" => $stok_pending, "status" => "Pending Service"],
+];
+
+
+// 💡 DEFENISI DATA PERIPHERAL UNTUK DASHBOARD CARD
+$data_peripheral = [
+    "Stok RAM (DDR)" => [
+        'jumlah' => $total_ram,
+        'unit' => 'Pcs',
+        'link' => 'peripherals.php',
+        'color' => 'success'
+    ],
+    "Stok SSD (SATA/NVMe)" => [
+        'jumlah' => $total_ssd,
+        'unit' => 'Pcs',
+        'link' => 'peripherals.php',
+        'color' => 'info'
+    ],
+    "Stok Keyboard" => [
+        'jumlah' => $total_keyboard,
+        'unit' => 'Unit',
+        'link' => 'peripherals.php',
+        'color' => 'warning'
+    ],
+    "Stok Mouse" => [
+        'jumlah' => $total_mouse,
+        'unit' => 'Unit',
+        'link' => 'peripherals.php',
+        'color' => 'secondary'
+    ],
+    "Stok Monitor" => [
+        'jumlah' => $total_monitor,
+        'unit' => 'Unit',
+        'link' => 'peripherals.php',
+        'color' => 'danger'
+    ]
 ];
 
 // --- LOGIKA QUERY SERVICE (SESUAI VISIBILITAS) ---
@@ -168,7 +204,25 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                 </div>
             <?php endforeach; ?>
         </div>
-
+        <hr class="mb-4"> <div class="row">
+            <?php 
+            // Definisikan warna seragam
+            $seragam_color = 'secondary';
+            
+            foreach ($data_peripheral as $label => $info):
+            ?>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <a href="<?= e($info['link']) ?>" style="text-decoration: none;">
+                        <div class="card border-start border-4 border-<?= $seragam_color ?> shadow-sm h-100" style="border-radius: var(--radius-md);">
+                            <div class="card-body text-dark text-center">
+                                <h6 class="card-title fw-bold text-uppercase" style="color: var(--app-blue);"><?= $label ?></h6>
+                                <p class="card-text fs-4 fw-bold"><?= $info['jumlah'] ?> <?= $info['unit'] ?></p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            <?php endforeach; ?>
+        </div>
         <hr>
 
 

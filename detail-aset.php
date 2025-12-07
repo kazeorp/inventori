@@ -207,7 +207,7 @@ elseif (isset($_GET['hostname'])) {
       </div>
 
             <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
-        <h5 class="mb-3"> Linimasa Histori Aktivitas</h5>
+        <h5 class="mb-3">Histori Aktivitas</h5>
         <ul class="timeline">
           <?php
           $histori_query = mysqli_query($koneksi, "SELECT * FROM histori_aset WHERE inventori_id = $id ORDER BY tanggal DESC");

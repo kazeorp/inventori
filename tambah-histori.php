@@ -121,11 +121,11 @@ try {
     ";
 
     if (!mysqli_query($koneksi, $query_update_a)) {
-        throw new Exception("Gagal update status Aset A ke {$aksi}: " . mysqli_error($koneksi));
+        throw new Exception("Gagal update status Aset {$hostname} ke {$aksi}: " . mysqli_error($koneksi));
     }
 
         // Perbarui $aksi untuk log agar lebih jelas
-        $aksi_log = "Loan aset ({$loan_hostname_val}) dibuat & Status Aset {$hostname} diubah menjadi {$aksi}";
+        $aksi_log = "Loan aset {$loan_hostname_val} dibuat & Status Aset {$hostname} diubah menjadi {$aksi}";
 
     } else {
         // JIKA LOAN TIDAK AKTIF: JANGAN UPDATE STATUS INVENTORI
