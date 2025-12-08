@@ -34,13 +34,13 @@ if (($_SESSION['role'] ?? 'normal') !== 'admin' && ($_SESSION['role'] ?? 'normal
 
 
 // =======================================================
-// 2. AMBIL DATA FORM & VALIDASI DASAR (KOREKSI FINAL)
+// 2. AMBIL DATA FORM & VALIDASI DASAR
 // =======================================================
 
 // --- A. PENGAMBILAN DATA (Gunakan nama input yang benar) ---
 
 $inventori_id = (int)($_POST['inventori_id'] ?? 0);
-$hostname = $_POST['hostname'] ?? ''; // Jangan di-escape dulu
+$hostname = $_POST['hostname'] ?? '';
 
 // KOREKSI: Ambil dari 'new_status' BUKAN 'aksi'
 $aksi = $_POST['new_status'] ?? 'Diservis';
@@ -49,6 +49,10 @@ $ticket = $_POST['ticket'] ?? '';
 $catatan_aktivitas = $_POST['catatan'] ?? '';
 $oleh = $_POST['oleh'] ?? 'Admin';
 $tanggal = date("Y-m-d H:i:s");
+
+// 💡 ADMIN YANG SEDANG LOGIN UNTUK LAST_ADMIN
+$admin_name = $_SESSION['username'] ?? 'System';
+$admin_name_safe = mysqli_real_escape_string($koneksi, $admin_name);
 
 
 // --- B. DATA LOAN & SERVICE ---
@@ -112,11 +116,13 @@ try {
         $set_rak = ", rak = '{$rak_baru}'";
     }
 
-    // 3. Update Status dan Rak Aset A
+    // 3. Update Status, Rak, dan Admin Terakhir Aset A
+    // 💡 Perubahan 1: Tambahkan last_admin ke UPDATE Aset A
     $query_update_a = "
         UPDATE inventori
         SET status = '$aksi' {$set_rak},
-        tanggal_masuk = NOW()
+        tanggal_masuk = NOW(),
+        last_admin = '{$admin_name_safe}'
         WHERE id = '$inventori_id'
     ";
 
@@ -134,6 +140,7 @@ try {
     }
 
     // 2. Logika Histori Aset A (WAJIB)
+    // Catatan: Histori ini adalah histori aktivitas user, bukan perubahan data.
     $query_insert_histori_a = "
         INSERT INTO histori_aset (inventori_id, tanggal, aksi, ticket, oleh, catatan)
         VALUES ('$inventori_id', '$tanggal','$aksi_log', '$ticket', '$oleh', '$catatan_aktivitas')
@@ -162,17 +169,21 @@ if ($is_loan_active) {
     $id_loan_aset = (int)$row_loan_id['id'];
 
     // 2. Update status Aset B ke 'Loan' dan salin data user Aset A
+    // 💡 Perubahan 2: Tambahkan last_admin ke UPDATE Aset B
     $stmt_update_b = mysqli_prepare($koneksi, "
         UPDATE inventori
-        SET status = 'Loan', nik = ?, nama = ?, divisi = ?, tanggal_keluar = NOW()
+        SET status = 'Loan', nik = ?, nama = ?, divisi = ?, tanggal_keluar = NOW(),
+        last_admin = ?
         WHERE id = ?
     ");
 
-    // Binding: s (nik), s (nama), s (divisi), i (id_loan_aset)
-    mysqli_stmt_bind_param($stmt_update_b, 'sssi',
+    // Binding: s (nik), s (nama), s (divisi), s (admin_name), i (id_loan_aset)
+    // 💡 Perubahan 3: Tambahkan $admin_name di parameter binding
+    mysqli_stmt_bind_param($stmt_update_b, 'ssssi',
         $loan_nik,
         $loan_nama,
         $loan_divisi,
+        $admin_name, // <-- Tambahan Admin Name
         $id_loan_aset // Gunakan ID Aset B
     );
     if (!mysqli_stmt_execute($stmt_update_b)) {
@@ -181,7 +192,6 @@ if ($is_loan_active) {
     mysqli_stmt_close($stmt_update_b);
 
     // 3. Insert Histori Aset B - KOREKSI ID DARI $inventori_id MENJADI $id_loan_aset
-    // Asumsi $tanggal, $ticket, $oleh sudah didefinisikan di atas
     $catatan_loan_lengkap = "LOAN kepada user '{$loan_nama}' ({$loan_nik}, Divisi: {$loan_divisi}). Tiket: {$ticket}. Catatan Tambahan: {$loan_catatan}";
 
     $stmt_insert_histori_b = mysqli_prepare($koneksi, "
@@ -247,7 +257,7 @@ if ($id_service > 0) {
     mysqli_commit($koneksi);
 
     $loan_message = $is_loan_active ? " Aset pengganti juga berhasil dipinjamkan." : "";
-    // JANGAN SET SESSION. Kirim pesan langsung ke JS.
+
     $pesan_final = "Aktivitas untuk aset {$hostname} berhasil dicatat.{$loan_message}";
     $redirect_url = "detail-aset.php?hostname=" . urlencode($hostname);
 
