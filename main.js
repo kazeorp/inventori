@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.querySelector('#deleteBtn').href = 'hapus.php?id=' + this.dataset.id;
 
             //  Cek Hak Akses
-            const role = typeof userRole !== 'undefined' ? userRole : 'normal';
+            const role = userRole;
 
             const elementsToDisable = modal.querySelectorAll('input, select, textarea');
             const submitBtn = modal.querySelector('button[type="submit"]');

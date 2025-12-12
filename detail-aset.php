@@ -233,7 +233,7 @@ elseif (isset($_GET['hostname'])) {
     ?>
   <?php endif; ?>
 
-    <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'superadmin'): ?>
+    <?php if ($_SESSION['role'] !== 'normal'): ?>
         <?php include 'modal-edit.php'; ?>
     <?php endif; ?>
 </main>

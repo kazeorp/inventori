@@ -1,17 +1,15 @@
 <?php
 // Pastikan session sudah dimulai sebelum include koneksi
-session_start(); // Tambahkan ini jika belum ada di file lain yang di-include
-
+include "session.php";
 include "koneksi.php";
 include "helpers.php";
-// 💡 PASTIKAN ANDA JUGA INCLUDE FILE SESSION UNTUK MENGAMBIL USERNAME
-// include "session.php"; // Uncomment/Ganti ini jika Anda menggunakan file session terpisah
+//  PASTIKAN ANDA JUGA INCLUDE FILE SESSION UNTUK MENGAMBIL USERNAME
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // ----------------------------------------------------
     // 1. AMBIL NAMA ADMIN DARI SESSION
     // ----------------------------------------------------
-    $admin_name = $_SESSION['username'] ?? 'System'; // Ambil username, default 'System'
+    $admin_name = $_SESSION['nama_lengkap'] ?? 'System'; // Ambil username, default 'System'
     $admin_name_safe = mysqli_real_escape_string($koneksi, $admin_name);
 
     // ----------------------------------------------------
@@ -45,13 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // ----------------------------------------------------
     // 4. LANJUTKAN PROSES UPDATE
     // ----------------------------------------------------
-    // 💡 Penambahan last_admin='{$admin_name_safe}'
     $sql = "UPDATE inventori SET
         rak='$rak', status='$status', hostname='$hostname', type='$type',
         ram='$ram', storage='$storage', win='$win', keterangan='$keterangan',
         kelengkapan='$kelengkapan', tanggal_masuk = '$tanggal_masuk', tanggal_keluar='$tanggal_keluar',
         nik='$nik', nama='$nama', divisi='$divisi',
-        last_admin='{$admin_name_safe}' <-- BARIS KRUSIAL UNTUK TRIGGER
+        last_admin='$admin_name_safe'
         WHERE id='$id'";
 
     if (mysqli_query($koneksi, $sql)) {
