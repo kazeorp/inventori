@@ -146,6 +146,10 @@ elseif (isset($_GET['hostname'])) {
         <button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#aktivitasModal">
              <i class="bi bi-search"></i> Tambah Aktivitas
         </button>
+        
+        <a href="cetak-form.php?id=<?= e($aset['id']) ?>" target="_blank" class="btn btn-info">
+        <i class="bi bi-printer"></i> Cetak Form Serah Terima
+        </a>
 
 <h3 class="mb-4">
        Detail Aset:
