@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $rak            = mysqli_real_escape_string($koneksi, $_POST['rak'] ?? '');
     $status         = mysqli_real_escape_string($koneksi, $_POST['status'] ?? '');
     $type           = mysqli_real_escape_string($koneksi, $_POST['type'] ?? '');
+    $serial_number  = strtoupper(mysqli_real_escape_string($koneksi, $_POST['serial_number'] ?? ''));
     $ram            = strtoupper(mysqli_real_escape_string($koneksi, $_POST['ram'] ?? ''));
     $storage        = strtoupper(mysqli_real_escape_string($koneksi, $_POST['storage'] ?? ''));
     $win            = strtoupper(mysqli_real_escape_string($koneksi, $_POST['win'] ?? ''));
@@ -53,9 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Query simpan ke tabel inventori
     $sql = "INSERT INTO inventori (
-        rak, status, hostname, type, domain, device_category, ram, storage, win, keterangan, kelengkapan, tanggal_masuk, tanggal_keluar, nik, nama, divisi
+        rak, status, hostname, type, serial_number, domain, device_category, ram, storage, win, keterangan, kelengkapan, tanggal_masuk, tanggal_keluar, nik, nama, divisi
     ) VALUES (
-        '$rak', '$status', '$hostname', '$type', '$domain', '$device_category', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan','$tanggal_masuk', '$tanggal_keluar', '$nik', '$nama', '$divisi'
+        '$rak', '$status', '$hostname', '$type', '$serial_number', '$domain', '$device_category', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan','$tanggal_masuk', '$tanggal_keluar', '$nik', '$nama', '$divisi'
     )";
 
     // Eksekusi dan feedback

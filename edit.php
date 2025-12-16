@@ -30,8 +30,9 @@ if (isset($_POST['update'])) {
   $hostname = strtoupper(mysqli_real_escape_string($koneksi, $_POST['hostname']));
 
   $type = mysqli_real_escape_string($koneksi, $_POST['type']);
+  $serial_number  = strtoupper(mysqli_real_escape_string($koneksi, $_POST['serial_number'] ?? ''));
   $ram = mysqli_real_escape_string($koneksi, $_POST['ram']);
-  $storage = mysqli_real_escape_string($koneksi, $_POST['storage']);
+  $storage = strtoupper(mysqli_real_escape_string($koneksi, $_POST['storage'] ?? ''));
   $win = mysqli_real_escape_string($koneksi, $_POST['win']);
   $keterangan = mysqli_real_escape_string($koneksi, $_POST['keterangan']);
   $kelengkapan = mysqli_real_escape_string($koneksi, $_POST['kelengkapan']);
@@ -43,7 +44,7 @@ if (isset($_POST['update'])) {
   // Tambahkan domain dan device_category ke query UPDATE
   $sql = "UPDATE inventori SET
       rak='$rak', status='$status', hostname='$hostname', type='$type',
-      domain='$domain', device_category='$device_category',
+      domain='$domain', device_category='$device_category', serial_number='$serial_number',
       ram='$ram', storage='$storage', win='$win', keterangan='$keterangan',
       kelengkapan='$kelengkapan', tanggal_keluar='$tanggal_keluar',
       nik='$nik', nama='$nama', divisi='$divisi'

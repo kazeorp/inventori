@@ -143,13 +143,21 @@ elseif (isset($_GET['hostname'])) {
             </div>
         </form>
 
-        <button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#aktivitasModal">
-             <i class="bi bi-search"></i> Tambah Aktivitas
+    <div class="d-flex align-items-center gap-2 mb-3">
+
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#aktivitasModal">
+            <i class="bi bi-plus"></i> Tambah Aktivitas
         </button>
-        
+
         <a href="cetak-form.php?id=<?= e($aset['id']) ?>" target="_blank" class="btn btn-info">
-        <i class="bi bi-printer"></i> Cetak Form Serah Terima
+            <i class="bi bi-printer"></i> Accepted Form
         </a>
+
+        <a href="cetak-return-form.php?id=<?= e($aset['id']) ?>" target="_blank" class="btn btn-danger">
+            <i class="bi bi-arrow-left-right"></i> Return Form
+        </a>
+
+    </div>
 
 <h3 class="mb-4">
        Detail Aset:

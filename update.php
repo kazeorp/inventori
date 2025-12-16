@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $status         = mysqli_real_escape_string($koneksi, $_POST['status']);
     $hostname       = mysqli_real_escape_string($koneksi, trim($_POST['hostname']));
     $type           = mysqli_real_escape_string($koneksi, $_POST['type']);
+    $serial_number  = strtoupper(mysqli_real_escape_string($koneksi, $_POST['serial_number'] ?? ''));
     $ram            = mysqli_real_escape_string($koneksi, $_POST['ram']);
     $storage        = mysqli_real_escape_string($koneksi, $_POST['storage']);
     $win            = mysqli_real_escape_string($koneksi, $_POST['win']);
@@ -44,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // 4. LANJUTKAN PROSES UPDATE
     // ----------------------------------------------------
     $sql = "UPDATE inventori SET
-        rak='$rak', status='$status', hostname='$hostname', type='$type',
+        rak='$rak', status='$status', hostname='$hostname', type='$type',serial_number='$serial_number',
         ram='$ram', storage='$storage', win='$win', keterangan='$keterangan',
         kelengkapan='$kelengkapan', tanggal_masuk = '$tanggal_masuk', tanggal_keluar='$tanggal_keluar',
         nik='$nik', nama='$nama', divisi='$divisi',

@@ -51,10 +51,10 @@ if (isset($_POST['tambah_user'])) {
   $password_hash = password_hash($password_raw, PASSWORD_DEFAULT);
 
   // Proteksi 1: Mencegah pembuatan Superadmin baru
-  if ($role === 'superadmin') {
-    header("Location: kelola-user.php?status=error&msg=cannot_create_superadmin");
-    exit;
-  }
+//   if ($role === 'superadmin') {
+//     header("Location: kelola-user.php?status=error&msg=cannot_create_superadmin");
+//     exit;
+//   }
 
   // Proteksi 2: Cek duplikasi username
   $check_query = mysqli_query($koneksi, "SELECT id FROM admin WHERE username='$username'");

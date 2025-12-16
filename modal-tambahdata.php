@@ -53,6 +53,10 @@
           </div>
 
           <div class="col-md-4 mb-3">
+            <label class="fw-bold">Serial Number</label>
+            <input type="text" name="serial_number" id="add-serial_number" class="form-control">
+          </div>
+          <div class="col-md-4 mb-3">
             <label class="fw-bold">RAM</label>
             <input type="text" name="ram" id="add-ram" class="form-control">
           </div>

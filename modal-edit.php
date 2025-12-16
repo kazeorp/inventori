@@ -55,6 +55,10 @@
                     </div>
 
                     <div class="col-md-4 mb-3">
+                        <label class="fw-bold">Serial Number</label>
+                        <input type="text" name="serial_number" id="edit-serial_number" class="form-control">
+                    </div>
+                    <div class="col-md-4 mb-3">
                         <label class="fw-bold">RAM</label>
                         <input type="text" name="ram" id="edit-ram" class="form-control" style="border-radius: var(--radius-md);">
                     </div>
@@ -71,7 +75,7 @@
                         <label class="fw-bold">Keterangan</label>
                         <textarea name="keterangan" id="edit-keterangan" class="form-control" style="border-radius: var(--radius-md);"></textarea>
                     </div>
-                    
+
                     <div class="col-md-6 mb-3">
                         <label class="fw-bold">Kelengkapan</label>
                         <select name="kelengkapan" id="edit-kelengkapan" class="form-control" style="border-radius: var(--radius-md);">
@@ -86,7 +90,7 @@
                             <option value="TAS, ADAPTOR, CONVERTER LAN & VGA">TAS, ADAPTOR, CONVERTER LAN & VGA</option>
                         </select>
                     </div>
-					
+
 					<div class="col-md-6 mb-3">
                         <label class="fw-bold">Tanggal Masuk</label>
                         <input type="date" name="tanggal_masuk" id="edit-tanggal_masuk" class="form-control" style="border-radius: var(--radius-md);">
@@ -116,14 +120,14 @@
                     <a href="#" id="detailBtn" class="btn btn-secondary">Detail Aset</a>
                     <div>
                         <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                        
-                        <?php 
+
+                        <?php
                         // ASUMSI: Variabel $role tersedia
-                        if (isset($role) && $role === 'superadmin') { 
+                        if (isset($role) && $role === 'superadmin') {
                         ?>
                             <a href="#" id="deleteBtn" class="btn btn-danger" onclick="return confirmDelete()">Hapus</a>
-                        <?php 
-                        } 
+                        <?php
+                        }
                         ?>
                     </div>
                 </div>
