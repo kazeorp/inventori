@@ -1,40 +1,61 @@
 <?php
-// ... (Bagian PHP data aset tetap sama)
-// cetak-form.php - Revisi Final dengan format ACCEPTED FORM
+// cetak-form.php
 
 include 'koneksi.php';
 
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-  die("ID Aset tidak ditemukan.");
+// LOGIKA PENGAMBILAN DATA (MANUAL VS DATABASE)
+if (isset($_GET['manual']) && $_GET['manual'] == 'true') {
+    // Mode Manual: Ambil 3 baris perangkat dari URL
+    $d1_type = !empty($_GET['type1']) ? htmlspecialchars($_GET['type1']) : '&nbsp;';
+    $d1_sn   = !empty($_GET['sn1'])   ? htmlspecialchars($_GET['sn1'])   : '&nbsp;';
+    $d1_host = !empty($_GET['host1']) ? htmlspecialchars($_GET['host1']) : '&nbsp;';
+
+    $d2_type = !empty($_GET['type2']) ? htmlspecialchars($_GET['type2']) : '&nbsp;';
+    $d2_sn   = !empty($_GET['sn2'])   ? htmlspecialchars($_GET['sn2'])   : '&nbsp;';
+    $d2_host = !empty($_GET['host2']) ? htmlspecialchars($_GET['host2']) : '&nbsp;';
+
+    $d3_type = !empty($_GET['type3']) ? htmlspecialchars($_GET['type3']) : '&nbsp;';
+    $d3_sn   = !empty($_GET['sn3'])   ? htmlspecialchars($_GET['sn3'])   : '&nbsp;';
+    $d3_host = !empty($_GET['host3']) ? htmlspecialchars($_GET['host3']) : '&nbsp;';
+
+    // Data Karyawan Manual
+    $employee_name = !empty($_GET['nama']) ? htmlspecialchars($_GET['nama']) : '';
+    $employee_id   = !empty($_GET['nik']) ? htmlspecialchars($_GET['nik']) : '';
+    $div_dept      = !empty($_GET['divisi']) ? htmlspecialchars($_GET['divisi']) : '';
+    $request_date  = !empty($_GET['tanggal']) ? date('d/m/Y', strtotime($_GET['tanggal'])) : date('d/m/Y');
+
+    $win           = '';
+    $kelengkapan   = '';
+} else {
+    // Mode Database: Ambil berdasarkan ID
+    $id = (int) $_GET['id'];
+    $query = mysqli_query($koneksi, "SELECT * FROM inventori WHERE id = $id");
+    $aset = mysqli_fetch_assoc($query);
+
+    if (!$aset) {
+        die("Data aset tidak ditemukan.");
+    }
+
+    // Baris 1 diambil dari Database
+    $d1_type = htmlspecialchars($aset['type'] ?? '&nbsp;');
+    $d1_sn   = htmlspecialchars($aset['serial_number'] ?? '&nbsp;');
+    $d1_host = htmlspecialchars($aset['hostname'] ?? '&nbsp;');
+
+    // Baris 2 & 3 otomatis kosong (spasi) untuk mode database
+    $d2_type = $d2_sn = $d2_host = '&nbsp;';
+    $d3_type = $d3_sn = $d3_host = '&nbsp;';
+
+    // Data Karyawan dari Database
+    $employee_name = !empty($aset['nama']) ? htmlspecialchars($aset['nama']) : '';
+    $employee_id   = !empty($aset['nik']) ? htmlspecialchars($aset['nik']) : '';
+    $div_dept      = !empty($aset['divisi']) ? htmlspecialchars($aset['divisi']) : '';
+    $request_date  = date('d/m/Y');
+
+    $win           = htmlspecialchars($aset['win'] ?? '');
+    $kelengkapan   = htmlspecialchars($aset['kelengkapan'] ?? '');
 }
-
-$id = (int) $_GET['id'];
-$query = mysqli_query($koneksi, "SELECT * FROM inventori WHERE id = $id");
-$aset = mysqli_fetch_assoc($query);
-
-if (!$aset) {
-  die("Data aset tidak ditemukan.");
-}
-
-// Data Aset
-$hostname = htmlspecialchars($aset['hostname'] ?? 'N/A');
-$type = htmlspecialchars($aset['type'] ?? 'N/A');
-$ram = htmlspecialchars($aset['ram'] ?? 'N/A');
-$storage = htmlspecialchars($aset['storage'] ?? 'N/A');
-$keterangan = htmlspecialchars($aset['keterangan'] ?? '');
-// Jika serial number tidak ada kolom, kita asumsikan ia berada di keterangan atau tidak terisi
-$serial_number = empty($keterangan) ? 'N/A' : $keterangan;
-$kelengkapan = htmlspecialchars($aset['kelengkapan'] ?? '');
-
-// Data Karyawan
-$employee_name = htmlspecialchars($aset['nama'] ?? '____________________');
-$nik = htmlspecialchars($aset['nik'] ?? '____________________');
-$div_dept = htmlspecialchars($aset['divisi'] ?? '____________________');
-
-// Tanggal
-$request_date = date('d/m/Y');
-$employee_id = $nik;
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -242,19 +263,19 @@ $employee_id = $nik;
     </thead>
     <tbody>
       <tr>
-        <td><?= $type ?></td>
-        <td><?= $serial_number ?></td>
-        <td><?= $hostname ?></td>
+        <td><?= $d1_type ?></td>
+        <td><?= $d1_sn?></td>
+        <td><?= $d1_host ?></td>
       </tr>
       <tr>
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
+        <td><?= $d2_type ?></td>
+        <td><?= $d2_sn?></td>
+        <td><?= $d2_host ?></td>
       </tr>
       <tr>
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
+        <td><?= $d3_type ?></td>
+        <td><?= $d3_sn?></td>
+        <td><?= $d3_host ?></td>
       </tr>
     </tbody>
   </table>
@@ -276,7 +297,7 @@ $employee_id = $nik;
       <div class="checkbox-item"><input type="checkbox"> Sophos Antivirus</div>
       <div class="checkbox-item"><input type="checkbox"> Zscaler</div>
       <div class="checkbox-item"><input type="checkbox"> 7zip</div>
-      <div class="checkbox-item">Windows OS: <?= htmlspecialchars($aset['win'] ?? 'N/A') ?></div>
+      <div class="checkbox-item">Windows : <?= htmlspecialchars($aset['win'] ?? '') ?></div>
     </div>
 
     <div class="column">
@@ -312,7 +333,7 @@ $employee_id = $nik;
         <pre>
       </div>
       <p style="margin-top: 10px;">Signature . . . . . . . . . . . . .</p>
-      <p>(<?= $employee_name ?>)</p>
+      <p>(User)</p>
     </div>
 
     <div class="signature-box">

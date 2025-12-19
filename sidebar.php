@@ -30,6 +30,7 @@ $display_name = $_SESSION['nama_lengkap'] ?? ($_SESSION['username'] ?? 'Guest');
 
   <?php if ($role === 'admin' || $role === 'superadmin'): ?>
     <a href="detail-aset.php">📋 Asset Detail</a>
+    <a href="cetak-manual.php">📋 Print Form</a>
   <?php endif; ?>
 
   <?php if ($role === 'superadmin'): ?>

@@ -2,256 +2,198 @@
 include 'session.php';
 include 'koneksi.php';
 
-// Pastikan user adalah superadmin
-if ($_SESSION['role'] !== 'superadmin') {
-  echo "<!DOCTYPE html><html lang='id'><head><meta charset='UTF-8'><title>Akses Ditolak</title><link href='bootstrap/css/bootstrap.min.css' rel='stylesheet'><link rel='stylesheet' href='style.css'></head><body class='bg-light'>";
-  include 'header.php';
-  include 'sidebar.php';
-  echo "<div class='main-content container py-4'><div class='alert alert-danger'>Akses ditolak! Hanya Superadmin yang dapat mengakses halaman ini.</div></div>";
-  echo "<script src='bootstrap/js/bootstrap.bundle.min.js'></script></body></html>";
-  exit;
+$role_login = $_SESSION['role'];
+$current_user_id = (int)($_SESSION['admin_id'] ?? 0);
+
+// Izinkan Superadmin DAN Admin masuk
+if ($role_login !== 'superadmin' && $role_login !== 'admin') {
+    header("Location: index.php");
+    exit;
 }
 
-$users = mysqli_query($koneksi, "SELECT * FROM admin");
-// Dapatkan ID Superadmin yang sedang login
-$current_user_id = (int)($_SESSION['admin_id'] ?? 0);
+// Ambil data user
+if ($role_login === 'superadmin') {
+    // Superadmin melihat semua user
+    $query_users = mysqli_query($koneksi, "SELECT * FROM admin ORDER BY role DESC");
+} else {
+    // Admin hanya melihat dirinya sendiri
+    $query_users = mysqli_query($koneksi, "SELECT * FROM admin WHERE id = $current_user_id");
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Kelola User</title>
-  <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Memuat style.css global untuk konsistensi layout -->
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <meta charset="UTF-8">
+    <title>Kelola User</title>
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
-<body>
+<body class="bg-light">
+    <?php include 'header.php'; ?>
+    <?php include 'sidebar.php'; ?>
 
-  <?php include 'header.php'; ?>
-  <?php include 'sidebar.php'; ?>
+    <main class="main-content">
+        <div class="container-fluid">
+            <h2 class="mb-4"><i class="bi bi-people-fill"></i> Kelola User</h2>
 
-  <main class="main-content">
-    <h2 class="mb-4"> Kelola User</h2>
+            <?php if ($role_login === 'admin'):
+                $me = mysqli_fetch_assoc($query_users);
+            ?>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Profil Saya</h5>
+                            </div>
+                            <div class="card-body">
+                                <form action="proses-user.php" method="POST">
+                                    <input type="hidden" name="id" value="<?= $me['id'] ?>">
+                                    <div class="mb-3">
+                                        <label class="form-label">Username</label>
+                                        <input type="text" name="username" class="form-control" value="<?= htmlspecialchars($me['username']) ?>" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nama Lengkap</label>
+                                        <input type="text" name="nama_lengkap" class="form-control" value="<?= htmlspecialchars($me['nama_lengkap']) ?>" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Password Baru (Kosongkan jika tidak ganti)</label>
+                                        <input type="password" name="new_password" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Role</label>
+                                        <input type="text" class="form-control bg-light" value="Admin" readonly>
+                                        <input type="hidden" name="role" value="admin">
+                                    </div>
+                                    <button type="submit" name="edit_user" class="btn btn-primary w-100">Simpan Perubahan</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- NOTIFIKASI STATUS -->
-    <?php
-    if (isset($_GET['status']) && isset($_GET['msg'])) {
-        $status = $_GET['status'];
-        $msg = $_GET['msg'];
-        $alert_class = ($status === 'success') ? 'alert-success' : 'alert-danger';
-        $pesan = '';
+            <?php else: ?>
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="bi bi-person-plus"></i> Tambah User
+                </button>
 
-        switch ($msg) {
-            case 'user_added':
-                $pesan = ' User baru berhasil ditambahkan.';
-                break;
-            case 'user_updated':
-                $pesan = ' Data user berhasil diperbarui.';
-                break;
-            case 'user_deleted':
-                $pesan = ' User berhasil dihapus.';
-                break;
-            case 'cannot_create_superadmin':
-                $pesan = ' Gagal: Tidak dapat membuat akun superadmin.';
-                break;
-            case 'username_exists':
-                $pesan = ' Gagal: Username sudah digunakan.';
-                break;
-            case 'superadmin_protected':
-            case 'superadmin_protected_delete':
-                $pesan = ' Akses Ditolak: Akun Superadmin tidak dapat dimodifikasi atau dihapus.';
-                break;
-            default:
-                $pesan = ' Terjadi kesalahan.';
-                break;
-        }
+                <div class="table-responsive bg-white p-3 rounded shadow-sm">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Username</th>
+                                <th>Nama Lengkap</th>
+                                <th>Role</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($user = mysqli_fetch_assoc($query_users)):
+                                $is_me = ($user['id'] == $current_user_id);
+                                $is_other_sa = ($user['role'] === 'superadmin' && !$is_me);
+                            ?>
+                                <tr>
+                                    <td class="fw-bold"><?= htmlspecialchars($user['username']) ?></td>
+                                    <td><?= htmlspecialchars($user['nama_lengkap']) ?></td>
+                                    <td>
+                                        <span class="badge <?= $user['role'] === 'superadmin' ? 'bg-danger' : 'bg-info' ?>">
+                                            <?= ucfirst($user['role']) ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <?php if ($is_other_sa): ?>
+                                            <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> Protected</span>
+                                        <?php else: ?>
+                                            <button class="btn btn-sm btn-outline-primary edit-user-btn"
+                                                data-bs-toggle="modal" data-bs-target="#editUserModal"
+                                                data-id="<?= $user['id'] ?>"
+                                                data-username="<?= $user['username'] ?>"
+                                                data-nama="<?= $user['nama_lengkap'] ?>"
+                                                data-role="<?= $user['role'] ?>">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </button>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </main>
 
-        echo "<div class='alert {$alert_class} alert-dismissible fade show' role='alert'>
-                {$pesan}
-                <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
-              </div>";
-    }
-    ?>
-    <!-- AKHIR NOTIFIKASI STATUS -->
-
-    <!-- Tombol Tambah -->
-    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal"> Tambah User</button>
-
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-          <tr>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Nama</th>
-            <!-- Kolom 'Aksi' dihapus -->
-          </tr>
-        </thead>
-<tbody>
-          <?php
-          while ($user = mysqli_fetch_assoc($users)):
-              // Cek apakah user yang ditampilkan adalah user yang sedang login
-              $is_current_user = ($user['id'] == $current_user_id);
-          ?>
-            <tr>
-              <td>
-                <?php
-
-                // 1. Jika User adalah Superadmin yang sedang login
-                if ($user['role'] === 'superadmin' && $is_current_user):
-                ?>
-                    <a href="#" class="text-decoration-none text-success edit-user-btn"
-                      data-bs-toggle="modal"
-                      data-bs-target="#editUserModal"
-                      data-id="<?= htmlspecialchars($user['id'] ?? '') ?>"
-                      data-username="<?= htmlspecialchars($user['username'] ?? '') ?>"
-                      data-role="<?= htmlspecialchars($user['role'] ?? '') ?>"
-                      data-nama="<?= htmlspecialchars($user['nama_lengkap'] ?? '') ?>">
-                      <?= htmlspecialchars($user['username'] ?? '') ?>
-                    </a>
-                    <span class="badge bg-success">Anda</span>
-                <?php
-
-                // 2. Jika User adalah Superadmin lain
-                elseif ($user['role'] === 'superadmin' && !$is_current_user):
-                ?>
-                    <?= htmlspecialchars($user['username'] ?? '') ?>
-                    <span class="badge bg-danger">Protected</span>
-                <?php
-
-                // 3. Jika User adalah Admin/Normal
-                else:
-                ?>
-                    <a href="#" class="text-decoration-none text-primary edit-user-btn"
-                      data-bs-toggle="modal"
-                      data-bs-target="#editUserModal"
-                      data-id="<?= htmlspecialchars($user['id'] ?? '') ?>"
-                      data-username="<?= htmlspecialchars($user['username'] ?? '') ?>"
-                      data-role="<?= htmlspecialchars($user['role'] ?? '') ?>"
-                      data-nama="<?= htmlspecialchars($user['nama_lengkap'] ?? '') ?>">
-                      <?= htmlspecialchars($user['username'] ?? '') ?>
-                    </a>
-                <?php endif; ?>
-              </td>
-              <td><?= ucfirst(htmlspecialchars($user['role'] ?? '')) ?></td>
-              <td><?= htmlspecialchars($user['nama_lengkap'] ?? '') ?></td>
-            </tr>
-          <?php endwhile; ?>
-        </tbody>
-      </table>
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form action="proses-user.php" method="POST" class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Ubah User</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="edit_id">
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" id="edit_username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nama Lengkap</label>
+                        <input type="text" name="nama_lengkap" id="edit_nama_lengkap" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password Baru</label>
+                        <input type="password" name="new_password" class="form-control" placeholder="Kosongkan jika tidak ingin mengubah">
+                    </div>
+                    <div class="mb-3" id="role_field_container">
+                        <label class="form-label">Role</label>
+                        <select name="role" id="edit_role" class="form-select">
+                            <option value="superadmin">Superadmin</option>
+                            <option value="admin">Admin</option>
+                            <option value="normal">Normal</option>
+                        </select>
+                        <small id="sa_warning" class="text-danger d-none">Anda tidak bisa mengubah role Anda sendiri.</small>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="submit" name="hapus_user" id="hapus_user_btn" class="btn btn-danger" onclick="return confirm('Yakin hapus user ini?')">Hapus User</button>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" name="edit_user" class="btn btn-primary">Simpan</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- Include Modal Tambah -->
-    <?php include 'modal-tambah-user.php'; ?>
+    <?php if($role_login === 'superadmin') include 'modal-tambah-user.php'; ?>
 
-    <!-- MODAL EDIT USER TUNGGAL (HARUS DI SINI) -->
-<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <form action="proses-user.php" method="POST" class="modal-content" style="border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="editUserModalLabel" style="color: var(--app-blue);"> Ubah User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" name="id" id="edit_id">
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('.edit-user-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const role = this.dataset.role;
+                const is_me = (id == "<?= $current_user_id ?>");
 
-                <div class="mb-3">
-                    <label for="edit_username" class="form-label fw-bold">Username</label>
-                    <input type="text" name="username" id="edit_username" class="form-control" style="border-radius: var(--radius-md);" required>
-                </div>
+                document.getElementById('edit_id').value = id;
+                document.getElementById('edit_username').value = this.dataset.username;
+                document.getElementById('edit_nama_lengkap').value = this.dataset.nama;
+                document.getElementById('edit_role').value = role;
 
-                <div class="mb-3">
-                    <label for="edit_nama_lengkap" class="form-label fw-bold">Nama Lengkap</label>
-                    <input type="text" name="nama_lengkap" id="edit_nama_lengkap" class="form-control" style="border-radius: var(--radius-md);" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="edit_password" class="form-label fw-bold">Password Baru (opsional)</label>
-                    <input type="password" name="new_password" id="edit_password" class="form-control" style="border-radius: var(--radius-md);" placeholder="Kosongkan jika tidak ingin mengubah">
-                </div>
-
-                <div class="mb-3">
-                    <label for="edit_role" class="form-label fw-bold">Role</label>
-                    <select name="role" id="edit_role" class="form-select" style="border-radius: var(--radius-md);" required>
-                        <option value="admin">Admin</option>
-                        <option value="normal">Normal</option>
-                    </select>
-                    <small id="role_warning" class="text-danger fw-bold" style="display:none;"> Role Superadmin tidak dapat diubah.</small>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" name="edit_user" class="btn btn-primary">Simpan Perubahan</button>
-                <button type="submit" name="hapus_user" id="hapus_user_btn" class="btn btn-danger" onclick="return confirm('Yakin ingin menghapus user ini?')">Hapus User</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-  </main>
-
-  <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
-
-<script>
-  // PASANG ID USER YANG SEDANG LOGIN DARI PHP
-    const currentUserId = <?= json_encode($current_user_id) ?>;
-
-  // Script untuk mengisi data user ke dalam modal edit tunggal
-  document.addEventListener('DOMContentLoaded', function () {
-    const editButtons = document.querySelectorAll('.edit-user-btn');
-    const editModal = document.getElementById('editUserModal');
-
-    if (editModal) {
-      editButtons.forEach(button => {
-        button.addEventListener('click', function (e) {
-          e.preventDefault();
-
-          const userId = this.getAttribute('data-id');
-          const username = this.getAttribute('data-username');
-          const role = this.getAttribute('data-role');
-          const nama = this.getAttribute('data-nama');
-
-          // Dapatkan elemen-elemen di modal
-          const editRoleSelect = editModal.querySelector('#edit_role');
-          const hapusBtn = editModal.querySelector('#hapus_user_btn');
-          const roleWarning = editModal.querySelector('#role_warning');
-
-          // Set judul modal
-          editModal.querySelector('.modal-title').textContent = 'Ubah User: ' + username;
-
-          // Set nilai form
-          editModal.querySelector('#edit_id').value = userId;
-          editModal.querySelector('#edit_username').value = username;
-          editModal.querySelector('#edit_nama_lengkap').value = nama;
-          editRoleSelect.value = role; // Set role awal
-
-          // Kosongkan password field
-          editModal.querySelector('#edit_password').value = '';
-
-          // Logika Proteksi Superadmin
-          if (role === 'superadmin') {
-            // Nonaktifkan field Role dan tampilkan peringatan
-            editRoleSelect.setAttribute('disabled', 'disabled');
-            roleWarning.style.display = 'block';
-
-            // Sembunyikan tombol Hapus untuk akun Superadmin
-            hapusBtn.style.display = 'none';
-          } else {
-            // Aktifkan field Role
-            editRoleSelect.removeAttribute('disabled');
-            roleWarning.style.display = 'none';
-
-            // Tampilkan kembali tombol Hapus untuk user non-superadmin
-            hapusBtn.style.display = 'inline-block';
-          }
+                // Proteksi Role Superadmin saat edit diri sendiri
+                if (is_me) {
+                    document.getElementById('edit_role').disabled = true;
+                    document.getElementById('sa_warning').classList.remove('d-none');
+                    document.getElementById('hapus_user_btn').classList.add('d-none');
+                } else {
+                    document.getElementById('edit_role').disabled = false;
+                    document.getElementById('sa_warning').classList.add('d-none');
+                    document.getElementById('hapus_user_btn').classList.remove('d-none');
+                }
+            });
         });
-      });
-    } else {
-      console.error("Modal element with ID 'editUserModal' not found.");
-    }
-  });
-</script>
+    </script>
 </body>
 </html>
