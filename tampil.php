@@ -1,5 +1,5 @@
 <?php
-// ajax_reassign_service.php - DIREVISI FINAL
+// tampil.php - DIREVISI FINAL (Tampilan Dirapikan)
 
 include 'session.php';
 include "koneksi.php";
@@ -53,15 +53,13 @@ if (!empty($type_filter)) {
 
 $where_clause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
 
-// Query utama yang akan di-include di table-inventori.php
+// Query utama
 $query = "
   SELECT
     i.*,
-    t_loan.oleh AS pic_loan_name_display -- Mengambil nama PIC dari tabel histori_aset (t_loan)
+    t_loan.oleh AS pic_loan_name_display
   FROM
     inventori i
-
-  -- LEFT JOIN untuk menemukan nama PIC yang terakhir melakukan aksi 'Loan'
   LEFT JOIN (
     SELECT
       t1.inventori_id,
@@ -70,7 +68,6 @@ $query = "
     FROM
       histori_aset t1
     INNER JOIN (
-      -- Cari ID Log Transaksi TERBARU untuk aksi 'Loan'
       SELECT
         inventori_id,
         MAX(tanggal) AS max_tanggal
@@ -83,17 +80,12 @@ $query = "
     ) t2 ON t1.inventori_id = t2.inventori_id AND t1.tanggal = t2.max_tanggal
     WHERE
       t1.aksi = 'Loan'
-  ) AS t_loan ON i.id = t_loan.inventori_id -- JOIN berdasarkan ID Inventori
-
+  ) AS t_loan ON i.id = t_loan.inventori_id
   $where_clause
   ORDER BY i.id ASC
 ";
 
 $result = mysqli_query($koneksi, $query);
-
-// Logika Notifikasi Grace Period (dibiarkan kosong karena tidak digunakan di sini)
-$notifikasi_grace = [];
-// ... (Logika Grace Period yang ada di file Anda) ...
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -106,21 +98,46 @@ $notifikasi_grace = [];
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
+    /* Global Font Size Adjustment */
+    body {
+        font-size: 0.875rem; /* Sekitar 14px */
+        background-color: #f8f9fa;
+    }
+
+    /* Table Specific Styling for Compactness */
+    .table thead th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap; /* Header tidak turun baris */
+        vertical-align: middle;
+        padding: 0.6rem 0.5rem;
+    }
+
     .table td {
-      vertical-align: middle;
-      padding: 0.75rem;
+        font-size: 0.825rem; /* Font isi tabel lebih kecil */
+        vertical-align: middle;
+        padding: 0.4rem 0.5rem; /* Padding diperkecil agar baris lebih pendek */
     }
+
+    /* Filter & Buttons */
     .filter-buttons .btn {
-      margin-right: 5px;
-      margin-bottom: 5px;
+      margin-right: 3px;
+      margin-bottom: 3px;
+      font-size: 0.75rem; /* Tombol filter lebih kecil */
+      padding: 0.25rem 0.5rem;
     }
+
     .filter-container {
-      width: 100%;
+      padding: 1rem !important;
     }
-    .search-container {
-      /* Menyesuaikan jarak antara tombol filter dan pencarian */
-      margin-left: 20px;
+
+    .main-content h2 {
+        font-size: 1.5rem; /* Judul tidak terlalu besar */
     }
+
+    /* Utility */
+    .gap-2 { gap: 0.5rem !important; }
   </style>
 </head>
 <body class="bg-light">
@@ -132,32 +149,25 @@ $notifikasi_grace = [];
   <div class="container-fluid pt-4">
     <?php include 'notifikasi.php'; ?>
 
-    <h2 class="mb-4 text-dark fw-bold">
-      Data Inventori Gudang <?= ($status_filter === 'all') ? '' : ' - <span class="text-primary">' . htmlspecialchars($status_filter) . '</span>' ?>
-    </h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-dark fw-bold m-0">
+          Data Inventori <?= ($status_filter === 'all') ? '' : ' <small class="text-muted">/ ' . htmlspecialchars($status_filter) . '</small>' ?>
+        </h2>
+    </div>
 
-    <div class="mb-4 p-3 bg-white rounded shadow-sm filter-container">
-      <p class="fw-bold mb-2">Filter Data:</p>
+    <div class="mb-3 p-3 bg-white rounded shadow-sm filter-container">
+      <div class="row g-2">
 
-      <form method="GET" class="row align-items-end g-3">
-
-        <div class="col-12 mb-3">
+        <div class="col-12 mb-2 border-bottom pb-2">
+          <small class="fw-bold text-muted d-block mb-1">Filter Status:</small>
           <?php foreach ($status_options as $status_key => $label):
             $is_active = $status_filter === $status_key;
-            $btn_class = $is_active ? 'btn-primary' : 'btn-outline-primary';
+            $btn_class = $is_active ? 'btn-primary' : 'btn-outline-secondary'; // Ubah warna tidak aktif jadi abu-abu agar lebih soft
 
-            // Buat URL yang mempertahankan filter 'cari' jika ada
             $url = 'tampil.php?status=' . urlencode($status_key);
-            if (!empty($cari)) {
-              $url .= '&cari=' . urlencode($cari);
-            }
-                        // Tambahkan filter rak dan type
-            if (!empty($rak_filter)) {
-              $url .= '&rak=' . urlencode($rak_filter);
-            }
-            if (!empty($type_filter)) {
-              $url .= '&type=' . urlencode($type_filter);
-            }
+            if (!empty($cari)) $url .= '&cari=' . urlencode($cari);
+            if (!empty($rak_filter)) $url .= '&rak=' . urlencode($rak_filter);
+            if (!empty($type_filter)) $url .= '&type=' . urlencode($type_filter);
           ?>
             <a href="<?= e($url) ?>" class="btn <?= $btn_class ?> btn-sm filter-buttons">
               <?= e($label) ?>
@@ -166,87 +176,82 @@ $notifikasi_grace = [];
         </div>
 
         <div class="col-12">
-          <div class="row g-3 align-items-end">
+           <form method="GET" class="row g-2 align-items-end">
+                <input type="hidden" name="status" value="<?= e($status_filter); ?>">
 
-            <div class="col-12 col-md-5">
-              <label for="cari_input" class="form-label fw-bold mb-0">Pencarian Hostname / Nama / NIK</label>
-              <input type="text" name="cari" id="cari_input" class="form-control" placeholder="Hostname / Nama / NIK" value="<?= isset($_GET['cari']) ? htmlspecialchars($_GET['cari']) : ''; ?>">
-            </div>
+                <div class="col-md-4 col-sm-6">
+                    <label for="cari_input" class="form-label fw-bold mb-0 small">Cari (Hostname/Nama/NIK)</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="cari" id="cari_input" class="form-control form-control-sm" placeholder="Ketik kata kunci..." value="<?= isset($_GET['cari']) ? htmlspecialchars($_GET['cari']) : ''; ?>">
+                    </div>
+                </div>
 
-            <div class="col-auto">
-              <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Cari</button>
-            </div>
-            <div class="col-auto">
-              <a href="tampil.php" class="btn btn-secondary">Reset Filter</a>
-            </div>
-
-          </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm">Terapkan</button>
+                    <a href="tampil.php" class="btn btn-secondary btn-sm">Reset</a>
+                </div>
+           </form>
         </div>
-
-        <input type="hidden" name="status" value="<?= e($status_filter); ?>">
-
-      </form>
+      </div>
     </div>
-      <div class="d-flex mb-4">
 
-          <?php if ($role !== 'normal'): ?>
-            <button type="button" class="btn btn-primary me-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
-              <i class="bi bi-plus-circle"></i> Tambah Data
-            </button>
-            <button type="button" class="btn btn-info text-white me-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#importModal">
-              <i class="bi bi-file-earmark-arrow-up"></i> Import Excel
-            </button>
-          <?php endif; ?>
-
-          <?php if ($role !== 'normal'): ?>
-            <a href="#" id="export-link" class="btn btn-success shadow-sm me-2">
-              <i class="bi bi-file-earmark-spreadsheet"></i> Export Excel
-            </a>
-          <?php endif; ?>
-
-          <?php if ($role !== 'normal'): ?>
-            <a href="form_manager.php" class="btn btn-info text-white shadow-sm me-2" title="Kelola Template Form Aset">
-                <i class="bi bi-pencil"></i> Kelola Form
-            </a>
-          <?php endif; ?>
-
-          <?php if ($role === 'superadmin'): ?>
-            <button type="button" class="btn btn-warning text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#tipeLaptopModal">
-              <i class="bi bi-laptop-fill"></i> Kelola Tipe Laptop
-            </button>
-          <?php endif; ?>
-
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+        <div class="d-flex flex-wrap gap-2">
+            <?php if ($role !== 'normal'): ?>
+                <button type="button" class="btn btn-primary btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+                    <i class="bi bi-plus-circle"></i> Tambah
+                </button>
+                <button type="button" class="btn btn-success btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="bi bi-file-excel"></i> Import
+                </button>
+                <a href="#" id="export-link" class="btn btn-outline-success btn-sm shadow-sm">
+                    <i class="bi bi-download"></i> Export
+                </a>
+            <?php endif; ?>
         </div>
 
-        <div class="card shadow-sm">
+        <div class="d-flex flex-wrap gap-2">
+            <?php if ($role !== 'normal'): ?>
+                <a href="cetak-manual.php" class="btn btn-info text-white btn-sm shadow-sm">
+                    <i class="bi bi-gear"></i> Kelola Form
+                </a>
+            <?php endif; ?>
 
-      <div class="card shadow-sm">
+            <?php if ($role === 'superadmin'): ?>
+                <button type="button" class="btn btn-warning text-white btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#tipeLaptopModal">
+                    <i class="bi bi-laptop"></i> Tipe Laptop
+                </button>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover mb-0">
+            <table class="table table-bordered table-striped table-hover table-sm mb-0">
               <thead class="table-dark">
                 <tr>
                   <th>Domain</th>
                   <th>Rak</th>
                   <th>Status</th>
                   <th>Hostname & Tipe</th>
-                  <th>Spesifikasi (RAM/Storage/OS)</th>
+                  <th>Spesifikasi</th>
                   <th>Tgl. Register</th>
-                  <th>Tgl. (Masuk / Keluar)</th>
+                  <th>Tgl. In/Out</th>
                   <th>User & Divisi</th>
-                  <th>Kelengkapan & Keterangan</th>
+                  <th>Keterangan</th>
                 </tr>
               </thead>
               <tbody>
-                <?php
-                include 'table-inventori.php';
-                ?>
+                <?php include 'table-inventori.php'; ?>
               </tbody>
             </table>
           </div>
         </div>
-      </div>
-</div>
+    </div>
+
+  </div>
 </main>
 
   <?php include 'modal-edit.php'; ?>
@@ -255,45 +260,27 @@ $notifikasi_grace = [];
   <?php include 'modal-tipe-laptop.php'; ?>
 
 <script>
-  // Pastikan userRole didefinisikan
   const userRole = '<?= isset($_SESSION['role']) ? htmlspecialchars($_SESSION['role']) : 'normal' ?>';
-
-  // Ambil semua parameter filter URL saat ini untuk digunakan saat reload
   const currentURLParams = window.location.search;
 
     // --- LOGIKA EXPORT EXCEL ---
     document.addEventListener('DOMContentLoaded', function() {
         const exportLink = document.getElementById('export-link');
         if (exportLink) {
-            // Ambil semua parameter URL saat ini
-            const currentParams = new URLSearchParams(window.location.search);
-
-            // Hapus parameter 'cari' dan 'status' yang mungkin kosong jika ingin meng-export semua
-            // Namun, karena kita ingin mengekspor data yang ditampilkan, kita gunakan semua parameter.
-
-            // Construct base export URL (asumsi file handler export adalah ajax_export_excel.php)
             let exportUrl = 'export_inventori.php?';
-
-            // Tambahkan parameter status (wajib ada)
             exportUrl += 'status=' + encodeURIComponent('<?= e($status_filter); ?>');
 
-            // Tambahkan parameter pencarian jika ada
             if ('<?= e($cari); ?>' !== '') {
                 exportUrl += '&cari=' + encodeURIComponent('<?= e($cari); ?>');
             }
-
-            // Tambahkan parameter rak jika ada
             if ('<?= e($rak_filter); ?>' !== '') {
                 exportUrl += '&rak=' + encodeURIComponent('<?= e($rak_filter); ?>');
             }
-
-            // Tambahkan parameter type jika ada
             if ('<?= e($type_filter); ?>' !== '') {
                 exportUrl += '&type=' + encodeURIComponent('<?= e($type_filter); ?>');
             }
 
             exportLink.href = exportUrl;
-            console.log("Export URL set to:", exportUrl);
         }
     });
   </script>

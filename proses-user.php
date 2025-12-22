@@ -80,6 +80,12 @@ if (isset($_POST['edit_user'])) {
 
     $target_role_old = $target_data['role'];
 
+    // PROTEKSI BARU: Role Normal tidak boleh diutak-atik
+    if ($target_role_old === 'normal') {
+        header("Location: kelola-user.php?status=error&msg=normal_role_protected");
+        exit;
+    }
+
     // --- LOGIKA PROTEKSI SERVER-SIDE ---
 
     if ($role_login === 'admin') {
@@ -147,6 +153,12 @@ if (isset($_POST['hapus_user'])) {
     // Proteksi: Tidak boleh hapus Superadmin (baik diri sendiri maupun orang lain)
     if ($cek_target['role'] === 'superadmin') {
         header("Location: kelola-user.php?status=error&msg=superadmin_protected_delete");
+        exit;
+    }
+
+    // PROTEKSI BARU: Role Normal tidak boleh dihapus
+    if ($cek_target['role'] === 'normal') {
+        header("Location: kelola-user.php?status=error&msg=normal_role_protected");
         exit;
     }
 

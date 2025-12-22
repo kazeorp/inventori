@@ -118,6 +118,7 @@ $tanggal_register_display = ($tanggal_register_raw !== '-') ? date('d-m-Y', strt
     $domain_display = displayValue($row['domain'] ?? '');
     $device_category_display = displayValue($row['device_category'] ?? '');
     $type_display = displayValue($row['type']);
+    $serial_number_display = displayValue($row['serial_number']);
     $ram_display = displayValue($row['ram']);
     $storage_display = displayValue($row['storage']);
     $win_display = displayValue($row['win']);
@@ -130,7 +131,7 @@ $tanggal_register_display = ($tanggal_register_raw !== '-') ? date('d-m-Y', strt
 
 
     // --- Data Digabung ---
-    $specs = "RAM: {$ram_display} / Storage: {$storage_display} / OS: {$win_display}";
+    $specs = "RAM: {$ram_display} | Storage: {$storage_display} | OS: {$win_display}";
     $details = "Kelengkapan: {$kelengkapan_display}<br>Ket: {$keterangan_display}";
 
     // Mulai cetak baris tabel

@@ -25,7 +25,7 @@ if ($role_login === 'superadmin') {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Kelola User</title>
+    <title>Manage Admin</title>
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -36,7 +36,7 @@ if ($role_login === 'superadmin') {
 
     <main class="main-content">
         <div class="container-fluid">
-            <h2 class="mb-4"><i class="bi bi-people-fill"></i> Kelola User</h2>
+            <h2 class="mb-4"><i class="bi bi-people-fill"></i> Manage Admin</h2>
 
             <?php if ($role_login === 'admin'):
                 $me = mysqli_fetch_assoc($query_users);
@@ -45,7 +45,7 @@ if ($role_login === 'superadmin') {
                     <div class="col-md-6">
                         <div class="card shadow-sm">
                             <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">Profil Saya</h5>
+                                <h5 class="mb-0">My Profile</h5>
                             </div>
                             <div class="card-body">
                                 <form action="proses-user.php" method="POST">
@@ -55,11 +55,11 @@ if ($role_login === 'superadmin') {
                                         <input type="text" name="username" class="form-control" value="<?= htmlspecialchars($me['username']) ?>" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Nama Lengkap</label>
+                                        <label class="form-label">Full Name</label>
                                         <input type="text" name="nama_lengkap" class="form-control" value="<?= htmlspecialchars($me['nama_lengkap']) ?>" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Password Baru (Kosongkan jika tidak ganti)</label>
+                                        <label class="form-label">New Password (Kosongkan jika tidak ganti)</label>
                                         <input type="password" name="new_password" class="form-control">
                                     </div>
                                     <div class="mb-3">
@@ -76,7 +76,7 @@ if ($role_login === 'superadmin') {
 
             <?php else: ?>
                 <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                    <i class="bi bi-person-plus"></i> Tambah User
+                    <i class="bi bi-person-plus"></i> Add Admin
                 </button>
 
                 <div class="table-responsive bg-white p-3 rounded shadow-sm">
@@ -84,41 +84,44 @@ if ($role_login === 'superadmin') {
                         <thead class="table-dark">
                             <tr>
                                 <th>Username</th>
-                                <th>Nama Lengkap</th>
+                                <th>Full Name</th>
                                 <th>Role</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php while ($user = mysqli_fetch_assoc($query_users)):
-                                $is_me = ($user['id'] == $current_user_id);
-                                $is_other_sa = ($user['role'] === 'superadmin' && !$is_me);
-                            ?>
-                                <tr>
-                                    <td class="fw-bold"><?= htmlspecialchars($user['username']) ?></td>
-                                    <td><?= htmlspecialchars($user['nama_lengkap']) ?></td>
-                                    <td>
-                                        <span class="badge <?= $user['role'] === 'superadmin' ? 'bg-danger' : 'bg-info' ?>">
-                                            <?= ucfirst($user['role']) ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <?php if ($is_other_sa): ?>
-                                            <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> Protected</span>
-                                        <?php else: ?>
-                                            <button class="btn btn-sm btn-outline-primary edit-user-btn"
-                                                data-bs-toggle="modal" data-bs-target="#editUserModal"
-                                                data-id="<?= $user['id'] ?>"
-                                                data-username="<?= $user['username'] ?>"
-                                                data-nama="<?= $user['nama_lengkap'] ?>"
-                                                data-role="<?= $user['role'] ?>">
-                                                <i class="bi bi-pencil-square"></i> Edit
-                                            </button>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        </tbody>
+                          <tbody>
+                              <?php while ($user = mysqli_fetch_assoc($query_users)):
+                                  $is_me = ($user['id'] == $current_user_id);
+                                  $is_other_sa = ($user['role'] === 'superadmin' && !$is_me);
+                                  $is_normal = ($user['role'] === 'normal'); // Cek apakah role normal
+                              ?>
+                                  <tr>
+                                      <td class="fw-bold"><?= htmlspecialchars($user['username']) ?></td>
+                                      <td><?= htmlspecialchars($user['nama_lengkap']) ?></td>
+                                      <td>
+                                          <span class="badge <?= $user['role'] === 'superadmin' ? 'bg-danger' : ($user['role'] === 'normal' ? 'bg-secondary' : 'bg-info') ?>">
+                                              <?= ucfirst($user['role']) ?>
+                                          </span>
+                                      </td>
+                                      <td>
+                                          <?php if ($is_other_sa): ?>
+                                              <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> Protected (SA)</span>
+                                          <?php elseif ($is_normal): ?>
+                                              <span class="badge bg-dark"><i class="bi bi-shield-lock"></i> System Role</span>
+                                          <?php else: ?>
+                                              <button class="btn btn-sm btn-outline-primary edit-user-btn"
+                                                  data-bs-toggle="modal" data-bs-target="#editUserModal"
+                                                  data-id="<?= $user['id'] ?>"
+                                                  data-username="<?= $user['username'] ?>"
+                                                  data-nama="<?= $user['nama_lengkap'] ?>"
+                                                  data-role="<?= $user['role'] ?>">
+                                                  <i class="bi bi-pencil-square"></i> Edit
+                                              </button>
+                                          <?php endif; ?>
+                                      </td>
+                                  </tr>
+                              <?php endwhile; ?>
+                          </tbody>
                     </table>
                 </div>
             <?php endif; ?>
@@ -139,7 +142,7 @@ if ($role_login === 'superadmin') {
                         <input type="text" name="username" id="edit_username" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Nama Lengkap</label>
+                        <label class="form-label">Full Name</label>
                         <input type="text" name="nama_lengkap" id="edit_nama_lengkap" class="form-control" required>
                     </div>
                     <div class="mb-3">

@@ -1,47 +1,134 @@
-/* Tabel */
-table td,
-table th {
-  text-align: center;
-  vertical-align: middle;
-}
+    /* Pengaturan Font Global & Layout Dasar */
+    body {
+        font-size: 0.85rem; /* Ukuran font diperkecil */
+        background-color: #f8f9fa;
+        margin: 0;
+        display: flex;
+    }
 
-/* Label Form */
-label {
-  font-weight: bold;
-}
+    /* Update Sidebar di style.css */
+    .sidebar {
+        width: 220px;
+        background-color: #212529; /* Warna lebih gelap agar elegan */
+        color: rgba(255, 255, 255, 0.792);
+        padding: 15px;
+        position: fixed;
+        top: 0px; /* Menyesuaikan tinggi logo-header Anda */
+        left: 0;
+        height: calc(100vh - 70px);
+        overflow-y: auto;
+        z-index: 1000;
+        transition: all 0.3s;
+        border-right: 1px solid #343a40;
+    }
 
-/* Badge Notifikasi */
-.badge {
-  font-size: 0.75em;
-}
+    .user-profile-sidebar {
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #343a40;
+    }
 
-.badge.bg-danger {
-  font-size: 0.85em;
-  margin-top: 4px;
-  display: inline-block;
-}
+    .user-profile-sidebar .fw-bold {
+        font-size: 0.85rem;
+    }
 
-/* Posisi Relatif untuk Tombol Notifikasi */
-.position-relative {
-  display: inline-block;
-}
+    .sidebar a {
+        color: #ced4da;
+        text-decoration: none;
+        display: block;
+        padding: 8px 10px;
+        margin-bottom: 4px;
+        font-weight: 400;
+        font-size: 0.8rem; /* Font diperkecil agar seragam dengan tabel */
+        border-radius: 4px;
+        transition: 0.2s;
+    }
 
-/* Sidebar Navigasi */
-.sidebar {
-  width: 220px;
-  background-color: #343a40;
-  color: white;
-  padding: 20px;
-  min-height: 100vh
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-}
+    .sidebar a i {
+        font-size: 0.9rem; /* Ukuran ikon sedikit lebih besar dari teks */
+    }
 
-/* Konten Utama */
-.content {
-  flex-grow: 1;
-  padding: 30px;
-  margin-left: 220px; /* Sesuai lebar sidebar */
-}
+    .sidebar a:hover {
+        background-color: #3d444b;
+        color: #fff;
+        padding-left: 15px; /* Efek geser sedikit saat hover */
+    }
+
+    /* Scrollbar Sidebar lebih tipis */
+    .sidebar::-webkit-scrollbar {
+        width: 5px;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+        background: #495057;
+    }
+
+    /* Konten Utama (Menyesuaikan Sidebar) */
+    .main-content {
+        flex-grow: 1;
+        padding: 20px 30px;
+        margin-left: 220px; /* Sesuai lebar sidebar */
+        width: calc(100% - 220px);
+    }
+
+    /* Tabel: Compact & Rapi */
+    .table thead th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        background-color: #212529 !important;
+        color: #fff;
+        text-align: center;
+        vertical-align: middle;
+        padding: 8px;
+        white-space: nowrap;
+    }
+
+    .table td {
+        font-size: 0.8rem;
+        text-align: center;
+        vertical-align: middle;
+        padding: 6px 4px; /* Padding minimal agar rapat */
+    }
+
+    /* Form & Label */
+    label {
+        font-weight: bold;
+        font-size: 0.8rem;
+        margin-bottom: 3px;
+    }
+
+    .form-control-sm, .btn-sm {
+        font-size: 0.75rem;
+    }
+
+    /* Badge & Notifikasi */
+    .badge {
+        font-size: 0.7em;
+        font-weight: 500;
+    }
+
+    .badge.bg-danger {
+        font-size: 0.75em;
+        margin-top: 4px;
+        display: inline-block;
+    }
+
+    /* Utilitas Filter */
+    .filter-container {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .filter-buttons .btn {
+        margin-right: 2px;
+        margin-bottom: 4px;
+        padding: 2px 8px;
+    }
+
+    .position-relative {
+        display: inline-block;
+    }
+
+    /* Garis pemisah halus */
+    .border-bottom-light {
+        border-bottom: 1px solid #eee;
+    }
