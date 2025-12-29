@@ -11,7 +11,7 @@ $status_list = "'" . implode("','", $loanable_statuses) . "'";
 
 // QUERY ASET YANG VALID UNTUK DI-LOAN
 $all_loan_query = mysqli_query($koneksi, "
-    SELECT id, hostname, status
+    SELECT id, hostname, status, ram, storage, win AS os
     FROM inventori
     WHERE status IN ($status_list)
       AND id != {$id_aset_saat_ini}
@@ -106,9 +106,13 @@ if ($all_loan_query) {
 
                             <div class="mb-3">
                                 <label for="selectLoanAset" class="form-label">Pilih Aset Pengganti (Hostname)</label>
-                                <select class="form-select" id="selectLoanAset" name="loan_hostname" required disabled>
-                                    <option value="">-- Pilih Aset setelah Filter --</option>
-                                </select>
+                                <div class="input-group">
+                                    <input type="hidden" id="loan_id_selected" name="loan_id">
+                                    <input type="text" class="form-control" id="displayLoanAset" name="loan_hostname" placeholder="Klik cari aset..." readonly required disabled>
+                                    <button class="btn btn-outline-secondary" type="button" id="btnCariAsetLoan" disabled>
+                                        <i class="bi bi-search"></i> Cari
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="mb-3">

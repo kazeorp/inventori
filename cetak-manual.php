@@ -177,7 +177,7 @@ while ($row = mysqli_fetch_assoc($query_types)) {
                         <input type="text" name="host${rowCount}" id="host${rowCount}" class="form-control uppercase-input" oninput="makeUppercase(this)" placeholder="CARI HOSTNAME...">
                         <button class="btn btn-primary" type="button" onclick="searchAsset(${rowCount})">
                             <i class="bi bi-search" id="icon-${rowCount}"></i>
-                            <span class="spinner-border spinner-border-sm spinner-search" id="load-${rowCount}"></span>
+                            <span class="spinner-border spinner-border-sm spinner-search d-none" id="load-${rowCount}"></span>
                         </button>
                     </div>
                 </div>

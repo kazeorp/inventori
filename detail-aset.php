@@ -204,10 +204,12 @@ elseif (isset($_GET['hostname'])) {
             <tr><th>Type</th><td><?= e($aset['type'] ?? '') ?></td></tr>
             <tr><th>Device Category</th><td><?= e($aset['device_category'] ?? '') ?></td></tr>
             <tr><th>Domain</th><td><?= e($aset['domain'] ?? '') ?></td></tr>
+            <tr><th>Serial Number</th><td><?= e($aset['serial_number'] ?? '') ?></td></tr>
             <tr><th>RAM</th><td><?= e($aset['ram'] ?? '') ?></td></tr>
             <tr><th>Storage</th><td><?= e($aset['storage'] ?? '') ?></td></tr>
             <tr><th>Windows</th><td><?= e($aset['win'] ?? '') ?></td></td></tr>
             <tr><th>Kelengkapan</th><td><?= e($aset['kelengkapan'] ?? '') ?></td></tr>
+            <tr><th>Tanggal Register</th><td><?= e($aset['tanggal_register'] ?? '') ?></td></tr>
             <tr><th>Tanggal Masuk</th><td><?= e($aset['tanggal_masuk'] ?? '') ?></td></tr>
             <tr><th>Tanggal Keluar</th><td><?= e($aset['tanggal_keluar'] ?? '') ?></td></tr>
             <tr><th>NIK</th><td><?= e($aset['nik'] ?? '') ?></td></tr>
@@ -242,6 +244,7 @@ elseif (isset($_GET['hostname'])) {
 
     <?php
     include 'modal-aktivitas.php';
+    include 'modal-pencarian.php';
     ?>
   <?php endif; ?>
 
@@ -301,6 +304,7 @@ elseif (isset($_GET['hostname'])) {
             modal.querySelector('#edit-rak').value = button.getAttribute('data-rak');
             modal.querySelector('#edit-status').value = button.getAttribute('data-status');
             modal.querySelector('#edit-type').value = button.getAttribute('data-type');
+            modal.querySelector('#edit-serial_number').value = button.getAttribute('data-serial_number');
             modal.querySelector('#edit-ram').value = button.getAttribute('data-ram');
             modal.querySelector('#edit-storage').value = button.getAttribute('data-storage');
             modal.querySelector('#edit-win').value = button.getAttribute('data-win');
