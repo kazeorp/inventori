@@ -176,3 +176,9 @@ body {
     text-align: center !important;
     padding-left: 0 !important;
 }
+
+.timeline { border-left: 3px solid #e9ecef; padding: 0 0 20px 30px; margin-left: 10px; position: relative; }
+/* Memberikan jarak antar item (margin-bottom lebih besar) */
+.timeline-item { position: relative; margin-bottom: 40px; }
+.timeline-item::before { content: ""; position: absolute; left: -39px; top: 8px; width: 16px; height: 16px; background: #dc3545; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 3px #f8d7da; }
+.timeline-date { font-weight: bold; color: #495057; font-size: 0.85rem; margin-bottom: 12px; display: block; }

@@ -6,7 +6,6 @@
 require 'session.php';
 require 'koneksi.php';
 require 'helpers.php';
-require 'fetch_peripheral_stock.php';
 
 
 // 2. PROTEKSI ROLE
@@ -73,39 +72,31 @@ $data = [
 ];
 
 
-// 💡 DEFENISI DATA PERIPHERAL UNTUK DASHBOARD CARD
-$data_peripheral = [
-    "RAM (DDR)" => [
-        'jumlah' => $total_ram,
-        'unit' => 'Pcs',
-        'link' => 'peripherals.php',
-        'color' => 'success'
-    ],
-    "SSD (SATA/NVMe)" => [
-        'jumlah' => $total_ssd,
-        'unit' => 'Pcs',
-        'link' => 'peripherals.php',
-        'color' => 'info'
-    ],
-    "Keyboard" => [
-        'jumlah' => $total_keyboard,
-        'unit' => 'Unit',
-        'link' => 'peripherals.php',
-        'color' => 'warning'
-    ],
-    "Mouse" => [
-        'jumlah' => $total_mouse,
-        'unit' => 'Unit',
-        'link' => 'peripherals.php',
-        'color' => 'secondary'
-    ],
-    "Monitor" => [
-        'jumlah' => $total_monitor,
-        'unit' => 'Unit',
-        'link' => 'peripherals.php',
-        'color' => 'danger'
-    ]
-];
+// --- LOGIKA QUERY PERIPHERAL DINAMIS ---
+$data_peripheral = [];
+$sql_peripheral = "
+    SELECT
+        pt.tipe_barang,
+        pt.id_tipe,
+        COUNT(pi.id_barang) AS total_stok
+    FROM peripheral_types pt
+    LEFT JOIN peripheral_items pi ON pt.kode_barang = pi.kode_barang AND pi.status = 'Ready'
+    GROUP BY pt.id_tipe
+    ORDER BY pt.tipe_barang ASC
+";
+
+$result_pt = mysqli_query($koneksi, $sql_peripheral);
+
+if ($result_pt) {
+    while ($row_pt = mysqli_fetch_assoc($result_pt)) {
+        $data_peripheral[$row_pt['tipe_barang']] = [
+            'jumlah' => $row_pt['total_stok'],
+            'unit'   => 'Unit',
+            'link'   => 'peripherals.php?id_tipe=' . $row_pt['id_tipe'],
+            'color'  => 'secondary'
+        ];
+    }
+}
 
 // --- LOGIKA QUERY SERVICE (SESUAI VISIBILITAS) ---
 $is_superadmin = ($user_role_login === 'superadmin');
@@ -186,44 +177,42 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
     <main class="main-content">
         <?php include 'notifikasi.php'; ?>
 
-        <h2 class="mb-4">Dashboard Administrator</h2>
+<h2 class="mb-4">Dashboard Administrator</h2>
 
-        <div class="row">
-            <?php foreach ($data as $label => $info):
+        <div class="row g-2"> <?php foreach ($data as $label => $info):
                 $link = ($info['status'] === "all") ? "tampil.php" : "tampil.php?status=" . urlencode($info['status']);
             ?>
-                <div class="col-lg-3 col-md-6 mb-4">
+                <div class="col-lg-3 col-md-6 mb-2">
                     <a href="<?= e($link) ?>" style="text-decoration: none;">
                         <div class="card border-start border-4 border-primary shadow-sm h-100" style="border-radius: var(--radius-md);">
-                            <div class="card-body text-dark text-center">
-                                <h6 class="card-title fw-bold" style="color: var(--app-blue);"><?= $label ?></h6>
-                                <p class="card-text fs-4 fw-bold"><?= $info['jumlah'] ?> Unit</p>
+                            <div class="card-body p-2 text-center"> <h6 class="card-title fw-bold mb-1" style="color: var(--app-blue); font-size: 0.75rem;"><?= $label ?></h6>
+                                <p class="card-text fw-bold mb-0" style="font-size: 1.1rem;"><?= $info['jumlah'] ?> <span style="font-size: 0.7rem;">Unit</span></p>
                             </div>
                         </div>
                     </a>
                 </div>
             <?php endforeach; ?>
         </div>
-        <hr class="mb-4"> <div class="row">
-            <?php
-            // Definisikan warna seragam
-            $seragam_color = 'secondary';
 
+        <hr class="my-3">
+
+        <div class="row g-2">
+            <?php
+            $seragam_color = 'secondary';
             foreach ($data_peripheral as $label => $info):
             ?>
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <a href="<?= e($info['link']) ?>" style="text-decoration: none;">
-                        <div class="card border-start border-4 border-<?= $seragam_color ?> shadow-sm h-100" style="border-radius: var(--radius-md);">
-                            <div class="card-body text-dark text-center">
-                                <h6 class="card-title fw-bold" style="color: var(--app-blue);"><?= $label ?></h6>
-                                <p class="card-text fs-4 fw-bold"><?= $info['jumlah'] ?> <?= $info['unit'] ?></p>
+                <div class="col-lg-2 col-md-4 col-6 mb-2"> <a href="<?= e($info['link']) ?>" style="text-decoration: none;">
+                        <div class="card border-top border-3 border-<?= $seragam_color ?> shadow-sm h-100" style="border-radius: var(--radius-md);">
+                            <div class="card-body p-2 text-center">
+                                <h6 class="card-title fw-bold mb-1" style="font-size: 0.7rem; color: #555;"><?= $label ?></h6>
+                                <p class="card-text fw-bold mb-0" style="font-size: 1rem;"><?= $info['jumlah'] ?> <span style="font-size: 0.6rem;"><?= $info['unit'] ?></span></p>
                             </div>
                         </div>
                     </a>
                 </div>
             <?php endforeach; ?>
         </div>
-        <hr>
+        <hr class="my-3">
 
 
         <h4 class="mt-5 mb-3 text-danger"> Service Aset Masuk Terbaru</h4>
@@ -296,64 +285,69 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                                     </span>
                                 </td>
 
-                                <td>
+<td>
                                     <div class="d-flex flex-column gap-1 mx-auto" style="max-width: 140px;">
 
-                                        <?php if ($should_show_registration_button): // Aset Belum ada di Inventori ?>
-
-                                            <button type="button"
-                                                class="btn btn-sm btn-primary text-white btn-register-service"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#addModal"
+                                        <?php if ($should_show_registration_button): // Aset Belum Terdaftar ?>
+                                            <button type="button" class="btn btn-sm btn-primary text-white btn-register-service"
+                                                data-bs-toggle="modal" data-bs-target="#addModal"
                                                 data-service-id="<?= e($row['id_service']) ?>"
                                                 data-hostname="<?= e($row['hostname']) ?>"
                                                 data-user="<?= e($row['nama_user']) ?>"
-                                                data-divisi="<?= e($row['divisi']) ?>"
-                                                title="Registrasi aset ke tabel Inventori">
+                                                data-divisi="<?= e($row['divisi']) ?>">
                                                 <i class="bi bi-person-fill-up"></i> Registrasi Aset
                                             </button>
 
-                                        <?php else: // Service biasa (Aset SUDAH ditemukan di Inventori) ?>
+                                        <?php else: ?>
 
-                                            <?php if (!$is_claimed): // Tampilkan tombol Pick Up jika belum diklaim ?>
-
+                                            <?php if (!$is_claimed): // 1. BELUM DI PICKUP ?>
                                                 <button type="button" class="btn btn-sm btn-success btn-claim"
                                                     data-id="<?= e($row['id_service']) ?>"
-                                                    data-hostname="<?= e($row['hostname']) ?>"
-                                                    title="Claim & Mulai Proses Service">
+                                                    data-hostname="<?= e($row['hostname']) ?>">
                                                     <i class="bi bi-person-fill-up"></i> Pick Up
                                                 </button>
 
-                                            <?php else: // Aset SUDAH diklaim dan BELUM selesai ?>
+                                            <?php else: // 2. SUDAH DI PICKUP ?>
 
-                                                <?php if (($_SESSION['role'] ?? 'normal') === 'superadmin'): ?>
-                                                    <button type="button" class="btn btn-sm btn-info text-white btn-reassign"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#reassignModal"
+                                                <?php if ($is_my_claim): // A. Jika saya yang pick up (Admin atau Superadmin) ?>
+
+                                                    <?php if ($is_superadmin_user): ?>
+                                                        <button type="button" class="btn btn-sm btn-info text-white btn-reassign"
+                                                            data-bs-toggle="modal" data-bs-target="#reassignModal"
+                                                            data-id="<?= e($row['id_service']) ?>"
+                                                            data-current-admin-name="Saya Sendiri">
+                                                            <i class="bi bi-person-fill-gear"></i> Reassign
+                                                        </button>
+                                                    <?php endif; ?>
+
+                                                    <a href="detail-service.php?id=<?= e($row['id_service']) ?>" class="btn btn-sm btn-secondary">
+                                                        <i class="bi bi-gear"></i> Proses
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-danger btn-selesai"
                                                         data-id="<?= e($row['id_service']) ?>"
-                                                        data-current-admin-name="<?= e($row['current_admin_name'] ?? 'N/A') ?>"
-                                                        title="Pindahkan penanganan ke Admin lain">
+                                                        data-hostname="<?= e($row['hostname']) ?>">
+                                                        <i class="bi bi-check-circle"></i> Selesaikan
+                                                    </button>
+
+                                                <?php elseif ($is_superadmin_user): // B. Jika orang lain yang pick up DAN saya Superadmin ?>
+                                                    <button type="button" class="btn btn-sm btn-info text-white btn-reassign"
+                                                        data-bs-toggle="modal" data-bs-target="#reassignModal"
+                                                        data-id="<?= e($row['id_service']) ?>"
+                                                        data-current-admin-name="<?= e($row['current_admin_name'] ?? 'N/A') ?>">
                                                         <i class="bi bi-person-fill-gear"></i> Reassign
                                                     </button>
+                                                    <small class="text-muted text-center" style="font-size: 0.65rem italic;">Handled by: <?= e($row['current_admin_name']) ?></small>
+
+                                                <?php else: // C. Jika orang lain yang pick up dan saya Admin biasa ?>
+                                                    <small class="text-muted text-center">Sedang diproses</small>
                                                 <?php endif; ?>
-
-                                                <a href="detail-service.php?id=<?= e($row['id_service']) ?>" class="btn btn-sm btn-secondary" title="Lihat detail & Lanjutkan Proses">
-                                                    <i class="bi bi-gear"></i> Proses
-                                                </a>
-
-                                                <button type="button" class="btn btn-sm btn-danger btn-selesai"
-                                                    data-id="<?= e($row['id_service']) ?>"
-                                                    data-hostname="<?= e($row['hostname']) ?>"
-                                                    title="Tandai Service Selesai">
-                                                    <i class="bi bi-check-circle"></i> Selesaikan
-                                                </button>
 
                                             <?php endif; ?>
 
                                         <?php endif; ?>
                                     </div>
                                 </td>
-                                </tr>
+                            </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
                         <tr>
@@ -443,6 +437,31 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
     <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
     <script src="main.js"></script>
+    <script>
+    // Inisialisasi Toast
+    const toastElement = document.getElementById('liveToast');
+    const toastInstance = toastElement ? new bootstrap.Toast(toastElement, { delay: 4000 }) : null;
+
+    function showToast(message, type = 'primary') {
+        if (!toastInstance) return;
+        const body = document.getElementById('toast-body');
+
+        // Atur warna background (success=hijau, danger=merah, info=biru)
+        toastElement.className = `toast align-items-center text-white bg-${type} border-0`;
+        body.innerText = message;
+        toastInstance.show();
+    }
+
+    // Tangkap notifikasi dari URL hasil redirect PHP
+    <?php if(isset($_GET['msg'])): ?>
+        showToast("<?= $_GET['msg'] ?>", "<?= $_GET['res'] ?? 'primary' ?>");
+
+        // Membersihkan URL tanpa reload (Menghapus ?msg=... di browser)
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.pathname);
+        }
+    <?php endif; ?>
+</script>
 
 </body>
 </html>
