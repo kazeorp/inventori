@@ -285,68 +285,65 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                                     </span>
                                 </td>
 
-<td>
-                                    <div class="d-flex flex-column gap-1 mx-auto" style="max-width: 140px;">
+                        <td>
+                            <div class="d-flex flex-column gap-1 mx-auto" style="max-width: 140px;">
 
-                                        <?php if ($should_show_registration_button): // Aset Belum Terdaftar ?>
-                                            <button type="button" class="btn btn-sm btn-primary text-white btn-register-service"
-                                                data-bs-toggle="modal" data-bs-target="#addModal"
-                                                data-service-id="<?= e($row['id_service']) ?>"
-                                                data-hostname="<?= e($row['hostname']) ?>"
-                                                data-user="<?= e($row['nama_user']) ?>"
-                                                data-divisi="<?= e($row['divisi']) ?>">
-                                                <i class="bi bi-person-fill-up"></i> Registrasi Aset
-                                            </button>
+                                <?php if ($should_show_registration_button): ?>
+                                    <button type="button" class="btn btn-sm btn-primary text-white btn-register-service"
+                                        data-bs-toggle="modal" data-bs-target="#addModal"
+                                        data-service-id="<?= e($row['id_service']) ?>"
+                                        data-hostname="<?= e($row['hostname']) ?>"
+                                        data-user="<?= e($row['nama_user']) ?>"
+                                        data-divisi="<?= e($row['divisi']) ?>">
+                                        <i class="bi bi-plus-circle"></i> Registrasi Aset
+                                    </button>
+                                    <small class="text-danger text-center" style="font-size: 0.65rem;">Aset belum terdaftar</small>
 
-                                        <?php else: ?>
+                                <?php else: ?>
+                                    <?php if (!$is_claimed): ?>
+                                        <button type="button" class="btn btn-sm btn-success btn-claim"
+                                            onclick="if(confirm('Pick up service untuk <?= e($row['hostname']) ?>?')) { window.location.href='proses-service.php?pickup=<?= $row['id_service'] ?>'; }">
+                                            <i class="bi bi-person-fill-up"></i> Pick Up
+                                        </button>
 
-                                            <?php if (!$is_claimed): // 1. BELUM DI PICKUP ?>
-                                                <button type="button" class="btn btn-sm btn-success btn-claim"
+                                    <?php else: ?>
+                                        <?php if ($is_my_claim): ?>
+                                            <?php if ($is_superadmin_user): ?>
+                                                <button type="button" class="btn btn-sm btn-info text-white btn-reassign"
+                                                    data-bs-toggle="modal" data-bs-target="#reassignModal"
                                                     data-id="<?= e($row['id_service']) ?>"
-                                                    data-hostname="<?= e($row['hostname']) ?>">
-                                                    <i class="bi bi-person-fill-up"></i> Pick Up
+                                                    data-current-admin-name="Saya Sendiri">
+                                                    <i class="bi bi-person-fill-gear"></i> Reassign
                                                 </button>
-
-                                            <?php else: // 2. SUDAH DI PICKUP ?>
-
-                                                <?php if ($is_my_claim): // A. Jika saya yang pick up (Admin atau Superadmin) ?>
-
-                                                    <?php if ($is_superadmin_user): ?>
-                                                        <button type="button" class="btn btn-sm btn-info text-white btn-reassign"
-                                                            data-bs-toggle="modal" data-bs-target="#reassignModal"
-                                                            data-id="<?= e($row['id_service']) ?>"
-                                                            data-current-admin-name="Saya Sendiri">
-                                                            <i class="bi bi-person-fill-gear"></i> Reassign
-                                                        </button>
-                                                    <?php endif; ?>
-
-                                                    <a href="detail-service.php?id=<?= e($row['id_service']) ?>" class="btn btn-sm btn-secondary">
-                                                        <i class="bi bi-gear"></i> Proses
-                                                    </a>
-                                                    <button type="button" class="btn btn-sm btn-danger btn-selesai"
-                                                        data-id="<?= e($row['id_service']) ?>"
-                                                        data-hostname="<?= e($row['hostname']) ?>">
-                                                        <i class="bi bi-check-circle"></i> Selesaikan
-                                                    </button>
-
-                                                <?php elseif ($is_superadmin_user): // B. Jika orang lain yang pick up DAN saya Superadmin ?>
-                                                    <button type="button" class="btn btn-sm btn-info text-white btn-reassign"
-                                                        data-bs-toggle="modal" data-bs-target="#reassignModal"
-                                                        data-id="<?= e($row['id_service']) ?>"
-                                                        data-current-admin-name="<?= e($row['current_admin_name'] ?? 'N/A') ?>">
-                                                        <i class="bi bi-person-fill-gear"></i> Reassign
-                                                    </button>
-                                                    <small class="text-muted text-center" style="font-size: 0.65rem italic;">Handled by: <?= e($row['current_admin_name']) ?></small>
-
-                                                <?php else: // C. Jika orang lain yang pick up dan saya Admin biasa ?>
-                                                    <small class="text-muted text-center">Sedang diproses</small>
-                                                <?php endif; ?>
-
                                             <?php endif; ?>
 
+                                            <a href="detail-aset.php?id=<?= e($row['id_inventori']) ?>&action=service_claim" class="btn btn-sm btn-secondary">
+                                                <i class="bi bi-gear"></i> Proses
+                                            </a>
+
+                                            <button type="button" class="btn btn-sm btn-danger btn-selesai"
+                                                onclick="if(confirm('Selesaikan service ini?')) { window.location.href='proses-service.php?selesai=<?= $row['id_service'] ?>'; }">
+                                                <i class="bi bi-check-circle"></i> Selesai
+                                            </button>
+
+                                        <?php elseif ($is_superadmin_user): ?>
+                                            <button type="button" class="btn btn-sm btn-info text-white btn-reassign"
+                                                data-bs-toggle="modal" data-bs-target="#reassignModal"
+                                                data-id="<?= e($row['id_service']) ?>"
+                                                data-current-admin-name="<?= e($row['current_admin_name'] ?? 'Admin Lain') ?>">
+                                                <i class="bi bi-person-fill-gear"></i> Reassign
+                                            </button>
+                                            <small class="text-muted text-center" style="font-size: 0.65rem italic;">Handle: <?= e($row['current_admin_name']) ?></small>
+
+                                        <?php else: ?>
+                                            <small class="text-muted text-center">Sedang diproses</small>
                                         <?php endif; ?>
-                                    </div>
-                                </td>
+
+                                    <?php endif; ?>
+
+                                <?php endif; ?>
+                            </div>
+                        </td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>

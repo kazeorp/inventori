@@ -261,6 +261,10 @@ elseif (isset($_GET['hostname'])) {
 </script>
 
 <script>
+// Cek parameter URL sebelum DOM dimuat
+    const urlParams = new URLSearchParams(window.location.search);
+    window.isServiceClaimRedirect = (urlParams.get('action') === 'service_claim');
+
     document.addEventListener('DOMContentLoaded', function() {
 		if (window.isServiceClaimRedirect) {
 				const modalElement = document.getElementById('aktivitasModal');
