@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.querySelector('#edit-ram').value = this.dataset.ram;
             modal.querySelector('#edit-storage').value = this.dataset.storage;
             modal.querySelector('#edit-win').value = this.dataset.win;
-            modal.querySelector('#edit-serial_number').value = this.dataset.serialnumber;
+            modal.querySelector('#edit-serial_number').value = this.dataset.serial_number;
             modal.querySelector('#edit-keterangan').value = this.dataset.keterangan;
             modal.querySelector('#edit-nik').value = this.dataset.nik;
             modal.querySelector('#edit-nama').value = this.dataset.nama;

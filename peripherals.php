@@ -14,6 +14,19 @@ if (isset($_GET['cek_sn'])) {
     exit;
 }
 
+// API UNTUK AMBIL MODEL BERDASARKAN TIPE
+if (isset($_GET['get_models_by_tipe'])) {
+    $tipe = mysqli_real_escape_string($koneksi, $_GET['get_models_by_tipe']);
+    $query = mysqli_query($koneksi, "SELECT kode_barang, model FROM peripheral_types WHERE tipe_barang = '$tipe' ORDER BY model ASC");
+
+    $models = [];
+    while ($row = mysqli_fetch_assoc($query)) {
+        $models[] = $row;
+    }
+    echo json_encode($models);
+    exit;
+}
+
 // =======================================================
 // 2. LOGIKA PHP: PROSES FORM
 // =======================================================
@@ -39,20 +52,41 @@ if (isset($_POST['update_tipe'])) {
     header("Location: peripherals.php?halaman=2&res=success&msg=Tipe berhasil diupdate"); exit;
 }
 
-// BARANG MASUK
+// BARANG MASUK (NEW MULTI-GROUP LOGIC)
 if (isset($_POST['simpan_masuk'])) {
-    $kode_barang = $_POST['kode_barang'];
     $no_po = strtoupper(mysqli_real_escape_string($koneksi, $_POST['no_po']));
-    $peruntukan = $_POST['peruntukan'];
-    $nama_user = ($peruntukan == 'User') ? strtoupper(mysqli_real_escape_string($koneksi, $_POST['nama_user'])) : NULL;
-    $sns = $_POST['sn'];
-    foreach ($sns as $sn) {
-        if (!empty(trim($sn))) {
-            $sn_clean = strtoupper(mysqli_real_escape_string($koneksi, trim($sn)));
-            mysqli_query($koneksi, "INSERT INTO peripheral_items (kode_barang, no_po, serial_number, peruntukan, nama_user, tanggal_masuk, admin_input, status) VALUES ('$kode_barang', '$no_po', '$sn_clean', '$peruntukan', '$nama_user', NOW(), '$admin_sekarang', 'Stock')");
+    $groups = $_POST['group']; // Array dari data group
+
+    mysqli_begin_transaction($koneksi);
+
+    try {
+        foreach ($groups as $group) {
+            $kode_barang = mysqli_real_escape_string($koneksi, $group['kode_barang']);
+            $peruntukan  = mysqli_real_escape_string($koneksi, $group['peruntukan']);
+            $nama_user   = ($peruntukan == 'User') ? strtoupper(mysqli_real_escape_string($koneksi, $group['nama_user'])) : NULL;
+            $sns         = $group['sn'];
+
+            foreach ($sns as $sn) {
+                if (!empty(trim($sn))) {
+                    $sn_clean = strtoupper(mysqli_real_escape_string($koneksi, trim($sn)));
+
+                    $sql = "INSERT INTO peripheral_items
+                            (kode_barang, no_po, serial_number, peruntukan, nama_user, tanggal_masuk, admin_input, status)
+                            VALUES
+                            ('$kode_barang', '$no_po', '$sn_clean', '$peruntukan', '$nama_user', NOW(), '$admin_sekarang', 'Stock')";
+
+                    if (!mysqli_query($koneksi, $sql)) {
+                        throw new Exception("Gagal simpan SN: $sn_clean");
+                    }
+                }
+            }
         }
+        mysqli_commit($koneksi);
+        header("Location: peripherals.php?halaman=1&res=success&msg=Barang masuk PO $no_po berhasil disimpan"); exit;
+    } catch (Exception $e) {
+        mysqli_rollback($koneksi);
+        header("Location: peripherals.php?halaman=1&res=danger&msg=Error: " . $e->getMessage()); exit;
     }
-    header("Location: peripherals.php?halaman=1&res=success&msg=Barang masuk berhasil disimpan"); exit;
 }
 
 // BARANG KELUAR
@@ -390,36 +424,35 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
     </div>
 
     <div class="modal fade" id="modalMasuk" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered"><form class="modal-content border-0" method="POST">
-            <div class="modal-header bg-primary text-white p-2 px-3"><h6>Barang Masuk</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <div class="row g-2 mb-3">
-                    <div class="col-md-4">
-                        <label class="small fw-bold">Tipe</label>
-                        <select id="select_tipe" class="form-select form-select-sm" required onchange="filterModel()">
-                            <option value="">- Pilih Tipe -</option>
-                            <?php
-                            // Ambil tipe unik saja
-                            $t_q = mysqli_query($koneksi, "SELECT DISTINCT tipe_barang FROM peripheral_types ORDER BY tipe_barang ASC");
-                            while($t = mysqli_fetch_assoc($t_q)) echo "<option value='{$t['tipe_barang']}'>{$t['tipe_barang']}</option>";
-                            ?>
-                        </select>
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <form class="modal-content border-0" method="POST" id="formMasuk">
+                <div class="modal-header bg-primary text-white p-2 px-3">
+                    <h6>Input Barang Masuk Per PO</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-body p-2">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-4">
+                                    <label class="small fw-bold">NOMOR PO</label>
+                                    <input type="text" name="no_po" class="form-control form-control-sm text-uppercase" placeholder="Masukkan No. PO..." required>
+                                </div>
+                                <div class="col-md-8 text-end">
+                                    <button type="button" class="btn btn-sm btn-dark" onclick="addGroup()">+ Tambah Group Item (Tipe/Model)</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="small fw-bold">Model [Kode]</label>
-                        <select name="kode_barang" id="select_model" class="form-select form-select-sm" required disabled>
-                            <option value="">- Pilih Tipe Dulu -</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4"><label class="small fw-bold">No. PO</label><input type="text" name="no_po" class="form-control form-control-sm text-uppercase" required></div>
-                    <div class="col-md-4"><label class="small fw-bold">Peruntukan</label><select name="peruntukan" id="ps" class="form-select form-select-sm" onchange="toggleU()" required><option value="Spare IT">Spare IT</option><option value="User">User</option></select></div>
-                    <div class="col-12 d-none" id="ud"><label class="small fw-bold text-primary">Nama User</label><input type="text" name="nama_user" class="form-control form-control-sm text-uppercase"></div>
+                    <div id="groupContainer">
+                        </div>
                 </div>
-                <div id="sa"><input type="text" name="sn[]" class="form-control form-control-sm mb-2 sn-input text-uppercase" placeholder="S/N (ENTER)..." autocomplete="off"></div>
-            </div>
-            <div class="modal-footer p-2"><button type="submit" name="simpan_masuk" class="btn btn-sm btn-primary px-4">Simpan</button></div>
-        </form></div>
+                <div class="modal-footer p-2">
+                    <button type="submit" name="simpan_masuk" class="btn btn-sm btn-primary px-5 fw-bold">SIMPAN SEMUA DATA</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="modal fade" id="modalKeluar" tabindex="-1" aria-hidden="true">
@@ -435,6 +468,154 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
     </div>
 
     <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>
+    let groupCount = 0;
+
+function addGroup() {
+    groupCount++;
+    const groupHtml = `
+    <div class="card mb-3 border-primary group-item" id="group_${groupCount}">
+        <div class="card-header bg-white p-2 d-flex justify-content-between align-items-center">
+            <span class="badge bg-primary">Group #${groupCount}</span>
+            <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeGroup(${groupCount})"><i class="bi bi-trash"></i></button>
+        </div>
+        <div class="card-body p-3">
+            <div class="row g-2 mb-3">
+                <div class="col-md-3">
+                    <label class="small fw-bold">Tipe</label>
+                    <select class="form-select form-select-sm" required onchange="filterModelGroup(this, ${groupCount})">
+                        <option value="">- Tipe -</option>
+                        <?php
+                        $t_q = mysqli_query($koneksi, "SELECT DISTINCT tipe_barang FROM peripheral_types ORDER BY tipe_barang ASC");
+                        while($t = mysqli_fetch_assoc($t_q)) echo "<option value='{$t['tipe_barang']}'>{$t['tipe_barang']}</option>";
+                        ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold">Model</label>
+                    <select name="group[${groupCount}][kode_barang]" class="form-select form-select-sm select-model" id="model_${groupCount}" required disabled>
+                        <option value="">- Pilih Tipe -</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold">Peruntukan</label>
+                    <select name="group[${groupCount}][peruntukan]" class="form-select form-select-sm" onchange="toggleUserGroup(this, ${groupCount})" required>
+                        <option value="Spare IT">Spare IT</option>
+                        <option value="User">User</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-none" id="user_div_${groupCount}">
+                    <label class="small fw-bold text-primary">Nama User</label>
+                    <input type="text" name="group[${groupCount}][nama_user]" class="form-control form-control-sm text-uppercase">
+                </div>
+            </div>
+
+            <div class="bg-light p-2 rounded">
+                <label class="small fw-bold mb-1">Scan Serial Numbers:</label>
+                <div id="sn_list_${groupCount}" class="d-flex flex-wrap gap-1 mb-2"></div>
+                <input type="text" class="form-control form-control-sm sn-scanner"
+                       placeholder="Scan SN di sini..."
+                       onkeydown="handleScan(event, ${groupCount})">
+            </div>
+        </div>
+    </div>`;
+
+    document.getElementById('groupContainer').insertAdjacentHTML('beforeend', groupHtml);
+    // Otomatis fokus ke pilihan Tipe saat group baru dibuat
+    document.querySelector(`#group_${groupCount} select`).focus();
+}
+
+async function handleScan(e, gId) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const input = e.target;
+        const val = input.value.trim().toUpperCase();
+
+        if (!val) return;
+
+        // 1. CEK DUPLIKASI DI UI (Semua Group)
+        // Kita ambil semua input hidden yang menyimpan SN dari semua group
+        const allScannedSN = Array.from(document.querySelectorAll('input[name*="[sn][]"]'));
+        const isDuplicateInUI = allScannedSN.some(hiddenInput => hiddenInput.value === val);
+
+        if (isDuplicateInUI) {
+            showToast(`S/N ${val} sudah ada di daftar input (mungkin di group lain)!`, "danger");
+            input.value = "";
+            return;
+        }
+
+        // 2. CEK DUPLIKASI DI DATABASE (Server-side via AJAX)
+        try {
+            const response = await fetch(`peripherals.php?cek_sn=${encodeURIComponent(val)}`);
+            const data = await response.json();
+
+            if (data.exists) {
+                showToast(`S/N ${val} sudah terdaftar di Database!`, "danger");
+                input.value = "";
+                return;
+            }
+
+            // 3. JIKA LOLOS VALIDASI, TAMBAHKAN KE LIST
+            const snList = document.getElementById(`sn_list_${gId}`);
+            const badge = `
+                <span class="badge bg-dark d-flex align-items-center p-2 shadow-sm" style="font-family: monospace;">
+                    ${val}
+                    <input type="hidden" name="group[${gId}][sn][]" value="${val}">
+                    <i class="bi bi-x-circle ms-2 text-danger btn-remove-sn"
+                       style="cursor:pointer; font-size: 1rem;"
+                       onclick="this.parentElement.remove()"></i>
+                </span>`;
+
+            snList.insertAdjacentHTML('beforeend', badge);
+            input.value = ""; // Bersihkan field untuk scan berikutnya
+
+        } catch (error) {
+            console.error("Error validasi SN:", error);
+            showToast("Gagal memvalidasi SN ke server", "danger");
+        }
+    }
+}
+
+function removeGroup(id) {
+    if(confirm('Hapus group ini?')) document.getElementById(`group_${id}`).remove();
+}
+
+function toggleUserGroup(sel, id) {
+    document.getElementById(`user_div_${id}`).classList.toggle('d-none', sel.value !== 'User');
+}
+
+function filterModelGroup(selectElement, gId) {
+    const tipe = selectElement.value;
+    const modelSelect = document.getElementById(`model_${gId}`);
+
+    if (!tipe) {
+        modelSelect.innerHTML = '<option value="">- Pilih Tipe Dulu -</option>';
+        modelSelect.disabled = true;
+        return;
+    }
+
+    // Ambil data model berdasarkan tipe via AJAX
+    fetch(`peripherals.php?get_models_by_tipe=${encodeURIComponent(tipe)}`)
+        .then(res => res.json())
+        .then(data => {
+            let options = '<option value="">- Pilih Model -</option>';
+            data.forEach(item => {
+                options += `<option value="${item.kode_barang}">${item.model} [${item.kode_barang}]</option>`;
+            });
+            modelSelect.innerHTML = options;
+            modelSelect.disabled = false;
+        })
+        .catch(err => {
+            console.error("Gagal memuat model:", err);
+            showToast("Gagal memuat daftar model", "danger");
+        });
+}
+
+// Inisialisasi satu group saat modal dibuka
+document.getElementById('modalMasuk').addEventListener('shown.bs.modal', function () {
+    if(document.querySelectorAll('.group-item').length === 0) addGroup();
+});
+</script>
 <script>
         const toast = new bootstrap.Toast(document.getElementById('liveToast'));
         function showToast(m, t='danger'){ document.getElementById('toast-body').innerText=m; document.getElementById('liveToast').className=`toast align-items-center text-white bg-${t} border-0`; toast.show(); }

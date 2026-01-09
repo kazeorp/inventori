@@ -258,6 +258,8 @@ $result = mysqli_query($koneksi, $query);
   <?php include 'modal-tambahdata.php'; ?>
   <?php include 'modal-import.php'; ?>
   <?php include 'modal-tipe-laptop.php'; ?>
+  <?php include 'toast.php'; ?>
+
 
 <script>
   const userRole = '<?= isset($_SESSION['role']) ? htmlspecialchars($_SESSION['role']) : 'normal' ?>';
