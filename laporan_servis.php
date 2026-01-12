@@ -33,15 +33,16 @@ $bulan_indo = [
 ];
 
 // 2. Tentukan Bulan dan Tahun yang dipilih
-$selected_month = isset($_GET['bulan']) ? (int)$_GET['bulan'] : date('m');
-$selected_year = isset($_GET['tahun']) ? (int)$_GET['tahun'] : date('Y');
+$selected_month = isset($_GET['bulan']) ? (int)$_GET['bulan'] : (int)date('n'); // 'n' adalah bulan tanpa nol di depan (1-12)
+$selected_year = isset($_GET['tahun']) ? (int)$_GET['tahun'] : (int)date('Y');
 
-// Validasi sederhana
-if ($selected_month < 1 || $selected_month > 12) $selected_month = date('m');
-if ($selected_year < 2020 || $selected_year > date('Y') + 1) $selected_year = date('Y');
+// Validasi jika input manual lewat URL ngawur
+if ($selected_month < 1 || $selected_month > 12) $selected_month = (int)date('n');
+if ($selected_year < 2020 || $selected_year > (int)date('Y') + 1) $selected_year = (int)date('Y');
 
 // 💡 HITUNG NAMA BULAN UNTUK JUDUL
-$month_name_indo = $bulan_indo[$selected_month] ?? 'Bulan Tidak Valid';
+// Pastikan index bulan_indo menggunakan (int) agar match
+$month_name_indo = isset($bulan_indo[$selected_month]) ? $bulan_indo[$selected_month] : 'Januari';
 $current_month_name = "{$month_name_indo} {$selected_year}";
 
 // 3. Query Laporan Servis Selesai berdasarkan Bulan & Tahun
@@ -90,12 +91,11 @@ $result_admins = mysqli_query($koneksi, $sql_admins);
         <h2 class="mb-4">📈 Laporan Servis Bulanan</h2>
         <p class="text-muted">Laporan kinerja berdasarkan jumlah servis yang diselesaikan.</p>
 
-        <form method="GET" class="row g-3 mb-5 align-items-end">
+    <form method="GET" id="filterForm" class="row g-3 mb-5 align-items-end">
         <div class="col-md-3">
             <label for="bulan" class="form-label">Pilih Bulan</label>
-            <select name="bulan" id="bulan" class="form-select">
+            <select name="bulan" id="bulan" class="form-select" onchange="this.form.submit()">
                 <?php
-                // 💡 GUNAKAN ARRAY YANG SUDAH DIDEFINISIKAN DI ATAS FILE
                 foreach ($bulan_indo as $month_num => $month_name):
                 ?>
                 <option value="<?= $month_num ?>" <?= ($selected_month == $month_num) ? 'selected' : '' ?>>
@@ -104,17 +104,14 @@ $result_admins = mysqli_query($koneksi, $sql_admins);
                 <?php endforeach; ?>
             </select>
         </div>
-            <div class="col-md-2">
-                <label for="tahun" class="form-label">Pilih Tahun</label>
-                <select name="tahun" id="tahun" class="form-select">
-                    <?php for ($y = date('Y'); $y >= 2020; $y--): ?>
-                    <option value="<?= $y ?>" <?= ($selected_year == $y) ? 'selected' : '' ?>><?= $y ?></option>
-                    <?php endfor; ?>
-                </select>
-            </div>
-            <div class="col-md-auto">
-                <button type="submit" class="btn btn-primary">Tampilkan Laporan</button>
-            </div>
+        <div class="col-md-2">
+            <label for="tahun" class="form-label">Pilih Tahun</label>
+            <select name="tahun" id="tahun" class="form-select" onchange="this.form.submit()">
+                <?php for ($y = date('Y'); $y >= 2020; $y--): ?>
+                <option value="<?= $y ?>" <?= ($selected_year == $y) ? 'selected' : '' ?>><?= $y ?></option>
+                <?php endfor; ?>
+            </select>
+        </div>
         </form>
 
         <h4 class="mt-4 mb-3 text-success">Total Servis Selesai Bulan: <?= $current_month_name ?></h4>

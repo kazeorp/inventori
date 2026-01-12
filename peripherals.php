@@ -2,6 +2,19 @@
 require 'session.php';
 require 'koneksi.php';
 
+// Tambahkan ini jika belum ada
+$nama_bulan = [
+    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+];
+
+// Pastikan variabel filter bulan & tahun juga memiliki nilai default agar tidak error
+$f_bulan = isset($_GET['bulan']) ? (int)$_GET['bulan'] : (int)date('m');
+$f_tahun = isset($_GET['tahun']) ? (int)$_GET['tahun'] : (int)date('Y');
+$keyword = isset($_GET['q']) ? $_GET['q'] : '';
+$halaman_aktif = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
+
 $admin_sekarang = $_SESSION['nama_lengkap'] ?? 'Admin IT';
 
 // =======================================================
@@ -159,9 +172,10 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
 
                         <select name="tahun" class="form-select form-select-sm shadow-sm" style="width: 100px;" onchange="this.form.submit()">
                             <?php
-                            $start_year = 2020;
-                            $end_year = date('Y') + 10;
-                            for($y=$start_year; $y<=$end_year; $y++) {
+                            $current_year = (int)date('Y');
+                            // Menampilkan 10 tahun ke belakang dari tahun sekarang
+                            // Contoh: 2026, 2025, 2024, ... 2016
+                            for($y = $current_year; $y >= ($current_year - 10); $y--) {
                                 $sel = ($f_tahun == $y) ? 'selected' : '';
                                 echo "<option value='$y' $sel>$y</option>";
                             }
