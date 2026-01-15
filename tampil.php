@@ -148,6 +148,7 @@ $result = mysqli_query($koneksi, $query);
 <main class="main-content">
   <div class="container-fluid pt-4">
     <?php include 'notifikasi.php'; ?>
+    <?php include 'toast.php'; ?>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="text-dark fw-bold m-0">

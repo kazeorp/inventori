@@ -106,9 +106,10 @@ if (isset($_POST['simpan_masuk'])) {
 if (isset($_POST['simpan_keluar'])) {
     $sn = strtoupper(mysqli_real_escape_string($koneksi, $_POST['serial_number']));
     $no_tkt = strtoupper(mysqli_real_escape_string($koneksi, $_POST['no_ticket']));
+    $no_pr = strtoupper(mysqli_real_escape_string($koneksi, $_POST['no_pr']));
     $ket = strtoupper(mysqli_real_escape_string($koneksi, $_POST['keterangan']));
 
-    mysqli_query($koneksi, "UPDATE peripheral_items SET no_ticket='$no_tkt', keterangan='$ket', tanggal_keluar=NOW(), admin_keluar='$admin_sekarang', status='Out' WHERE serial_number='$sn' AND status='Stock'");
+    mysqli_query($koneksi, "UPDATE peripheral_items SET no_ticket='$no_tkt', no_pr='$no_pr', keterangan='$ket', tanggal_keluar=NOW(), admin_keluar='$admin_sekarang', status='Out' WHERE serial_number='$sn' AND status='Stock'");
     $res = mysqli_affected_rows($koneksi) > 0 ? "success" : "danger";
     $msg = $res == "success" ? "Barang keluar berhasil diproses" : "Gagal! S/N tidak ditemukan atau sudah OUT";
     header("Location: peripherals.php?halaman=3&res=$res&msg=$msg"); exit;
@@ -142,6 +143,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
 
     <main class="main-content">
         <?php include 'notifikasi.php'; ?>
+        <?php include 'toast.php'; ?>
 
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
             <div class="d-flex align-items-center flex-grow-1 flex-wrap">
@@ -366,8 +368,18 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                                             </div>
 
                                             <div class="col-2 border-end">
-                                                <small class="text-muted d-block" style="font-size: 0.65rem;">No. PO</small>
-                                                <span class="badge bg-dark px-2" style="font-size: 0.75rem;"><?= !empty($row['no_po']) ? $row['no_po'] : '-' ?></span>
+                                                <div class="mb-2">
+                                                    <small class="text-muted d-block" style="font-size: 0.65rem;">No. PO</small>
+                                                    <span class="badge bg-dark px-2" style="font-size: 0.75rem;">
+                                                        <?= !empty($row['no_po']) ? $row['no_po'] : '-' ?>
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted d-block" style="font-size: 0.65rem;">No. PR</small>
+                                                    <span class="badge bg-secondary px-2" style="font-size: 0.75rem;">
+                                                        <?= !empty($row['no_pr']) ? $row['no_pr'] : '-' ?>
+                                                    </span>
+                                                </div>
                                             </div>
 
                                             <div class="col-2 border-end">
@@ -475,6 +487,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
             <div class="modal-body">
                 <label class="small fw-bold">S/N</label><input type="text" name="serial_number" class="form-control form-control-sm text-uppercase mb-2" required autofocus>
                 <label class="small fw-bold">No. Ticket</label><input type="text" name="no_ticket" class="form-control form-control-sm text-uppercase mb-2" required>
+                <label class="form-label small fw-bold">No. PR</label><input type="text" name="no_pr" class="form-control form-control-sm">
                 <label class="small fw-bold">Keterangan</label><textarea name="keterangan" class="form-control form-control-sm text-uppercase" rows="2" placeholder="Contoh: Ganti Mouse..."></textarea>
             </div>
             <div class="modal-footer p-2"><button type="submit" name="simpan_keluar" class="btn btn-sm btn-danger w-100">Konfirmasi Keluar</button></div>
@@ -514,8 +527,8 @@ function addGroup() {
                 <div class="col-md-3">
                     <label class="small fw-bold">Peruntukan</label>
                     <select name="group[${groupCount}][peruntukan]" class="form-select form-select-sm" onchange="toggleUserGroup(this, ${groupCount})" required>
-                        <option value="Spare IT">Spare IT</option>
-                        <option value="User">User</option>
+                        <option value="SSC">SSC</option>
+                        <option value="APP">APP</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-none" id="user_div_${groupCount}">

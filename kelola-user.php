@@ -36,7 +36,7 @@ if ($role_login === 'superadmin') {
 
     <main class="main-content">
         <div class="container-fluid">
-            <h2 class="mb-4"><i class="bi bi-people-fill"></i> Manage Admin</h2>
+            <h2 class="mb-4"><i class="bi bi-people-fill"></i> Manage Admin Account</h2>
 
             <?php if ($role_login === 'admin'):
                 $me = mysqli_fetch_assoc($query_users);

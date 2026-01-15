@@ -30,7 +30,7 @@ $display_name = $_SESSION['nama_lengkap'] ?? ($_SESSION['username'] ?? 'Guest');
             </div>
             <a href="detail-aset.php"><i class="bi bi-card-list me-2"></i> Asset Detail</a>
             <a href="cetak-manual.php"><i class="bi bi-printer me-2"></i> Print Form</a>
-            <a href="kelola-user.php"><i class="bi bi-people me-2"></i> Manage Admin</a>
+            <a href="kelola-user.php"><i class="bi bi-people me-2"></i> Manage Account</a>
         <?php endif; ?>
 
         <?php if ($role === 'superadmin'): ?>

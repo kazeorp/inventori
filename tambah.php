@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (mysqli_num_rows($cek_duplikat) > 0) {
         $msg = urlencode("Hostname $hostname sudah ada di inventori.");
         // Redirect ke tampil.php (halaman inventori utama) dengan pesan error
-        header("Location: tampil.php?status=danger&msg=$msg");
+        header("Location: tampil.php?res=danger&msg=$msg");
         exit;
     }
 
@@ -79,13 +79,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Sukses Registrasi dan Claim
                 pushWebSocketUpdate($service_id_to_update, 'service_claim');
                 $msg = urlencode("Aset berhasil diregistrasi (ID #$new_inventori_id) dan otomatis diclaim untuk service request #$service_id_to_update.");
-                header("Location: index2.php?status=success&msg=$msg");
+                header("Location: index2.php?res=success&msg=$msg");
                 exit;
             } else {
                 // Sukses Registrasi, Gagal Claim
                 pushWebSocketUpdate($new_inventori_id, 'asset_insert');
                 $msg = urlencode("Aset berhasil diregistrasi, tetapi gagal mengklaim service request #$service_id_to_update. Silakan klaim secara manual.");
-                header("Location: index2.php?status=warning&msg=$msg");
+                header("Location: index2.php?res=warning&msg=$msg");
                 exit;
             }
         }
@@ -93,13 +93,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // 3. Logika untuk Tambah Inventori Biasa (Jika service_id_to_update tidak ada)
         pushWebSocketUpdate($new_inventori_id, 'asset_insert');
         $msg = urlencode("Data inventori berhasil ditambahkan!");
-        header("Location: tampil.php?status=success&msg=$msg"); // Redirect ke halaman inventori
+        header("Location: tampil.php?res=success&msg=$msg"); // Redirect ke halaman inventori
         exit;
 
     } else {
         // Gagal INSERT ke inventori
         $msg = urlencode("Gagal menambahkan data: " . mysqli_error($koneksi));
-        header("Location: tampil.php?status=danger&msg=$msg"); // Redirect ke halaman inventori
+        header("Location: tampil.php?res=danger&msg=$msg"); // Redirect ke halaman inventori
         exit;
     }
 } else {
