@@ -1,8 +1,9 @@
 <?php
+
 // koneksi.php
 date_default_timezone_set('Asia/Jakarta');
 
-$koneksi = mysqli_connect("localhost","root","","inventori_test");
+$koneksi = mysqli_connect("localhost", "root", "", "inventori_test");
 
 if (!defined('NODE_API_HOST')) {
     define('NODE_API_HOST', 'http://172.16.3.60:3000');
@@ -17,7 +18,8 @@ if (!function_exists('logActivity')) {
     /**
      * Fungsi Log Activity + Real-time Notification via WebSocket
      */
-    function logActivity($koneksi, $aksi, $hostname, $detail) {
+    function logActivity($koneksi, $aksi, $hostname, $detail)
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -43,7 +45,7 @@ if (!function_exists('logActivity')) {
             'aksi'     => $aksi,
             'hostname' => $hostname,
             'detail'   => $detail,
-            'waktu'    => date('H:i')
+            'waktu'    => date('H:i'),
         ]);
 
         $ch = curl_init(NODE_FULL_BROADCAST_URL);

@@ -2,7 +2,7 @@
 // modal-aktivitas.php (Di-include dari detail_aset.php)
 // Pastikan $koneksi dan $aset (dari detail_aset.php) tersedia di scope ini
 
-$id_aset_saat_ini = (int)($aset['id'] ?? 0);
+$id_aset_saat_ini = (int) ($aset['id'] ?? 0);
 $hostname_saat_ini = e($aset['hostname'] ?? 'N/A');
 
 // DAFTAR STATUS YANG VALID UNTUK DI-LOAN (sebagai aset pengganti)
@@ -100,7 +100,7 @@ if ($all_loan_query) {
                                     foreach ($loanable_statuses as $status) {
                                         echo "<option value=\"$status\">$status</option>";
                                     }
-                                    ?>
+?>
                                 </select>
                             </div>
 

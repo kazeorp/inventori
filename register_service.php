@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result_inventori = mysqli_query($koneksi, $check_inventori_query);
 
     if (mysqli_num_rows($result_inventori) > 0) {
-        $msg = "error&msg=Aset_dengan_Hostname_".$hostname."_sudah_terdaftar_di_Inventori._Silakan_cek_status_aset_di_aplikasi.";
+        $msg = "error&msg=Aset_dengan_Hostname_" . $hostname . "_sudah_terdaftar_di_Inventori._Silakan_cek_status_aset_di_aplikasi.";
     }
 
     // 2. Cek apakah Hostname sudah memiliki request 'Registrasi Aset' yang pending di service_list
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result_service_check = mysqli_query($koneksi, $check_service_query);
 
         if (mysqli_num_rows($result_service_check) > 0) {
-            $msg = "error&msg=Aset_dengan_Hostname_".$hostname."_sudah_memiliki_Request_Registrasi_yang_sedang_menunggu_diproses.";
+            $msg = "error&msg=Aset_dengan_Hostname_" . $hostname . "_sudah_memiliki_Request_Registrasi_yang_sedang_menunggu_diproses.";
         }
     }
 
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // pushWebSocketUpdate(mysqli_insert_id($koneksi), 'service_insert');
             $msg = "success&msg=Request_Registrasi_Aset_untuk_$hostname_telah_disimpan";
         } else {
-            $msg = "error&msg=Gagal_menyimpan_request_ke_Service_List_Error:_".mysqli_error($koneksi);
+            $msg = "error&msg=Gagal_menyimpan_request_ke_Service_List_Error:_" . mysqli_error($koneksi);
         }
     }
 

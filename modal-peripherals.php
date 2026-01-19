@@ -4,7 +4,8 @@
 // PENTING: File ini harus di-include di peripherals.php
 // Pastikan fungsi e() sudah didefinisikan di file induk (peripherals.php)
 if (!function_exists('e')) {
-    function e($text) {
+    function e($text)
+    {
         return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
     }
 }

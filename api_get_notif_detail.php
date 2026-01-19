@@ -26,6 +26,6 @@ if (mysqli_num_rows($res) > 0) {
             </div>
         </div>
     <?php }
-} else {
-    echo '<div class="p-5 text-center text-muted">Antrean service bersih.</div>';
-}
+    } else {
+        echo '<div class="p-5 text-center text-muted">Antrean service bersih.</div>';
+    }

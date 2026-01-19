@@ -3,182 +3,211 @@
 /* ======================================================= */
 
 :root {
-    --app-red: #E51A22;
-    --app-dark: #212529;
-    --app-blue: #004899;
-    --bg-light: #f8f9fa;
-    --radius-md: 4px; /* Sudut lebih tegas untuk kesan profesional */
-    --header-height: 60px; /* Kita kecilkan dari 120px ke 60px */
+	--app-red: #e51a22;
+	--app-dark: #212529;
+	--app-blue: #004899;
+	--bg-light: #f8f9fa;
+	--radius-md: 4px; /* Sudut lebih tegas untuk kesan profesional */
+	--header-height: 60px; /* Kita kecilkan dari 120px ke 60px */
 }
 
 body {
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--bg-light);
-    font-size: 0.85rem; /* Ukuran font global diperkecil */
-    margin: 0;
+	font-family: "Segoe UI", Roboto, sans-serif;
+	background-color: var(--bg-light);
+	font-size: 0.85rem; /* Ukuran font global diperkecil */
+	margin: 0;
 }
 
 /* --- Header Styling (Full Width) --- */
 .logo-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: var(--header-height);
-    z-index: 1100;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-    background-color: #ffffff;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: var(--header-height);
+	z-index: 1100;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+	background-color: #ffffff;
+	display: flex;
+	align-items: center;
+	padding: 0 20px;
 }
 
 .logo-img {
-    height: 40px; /* Ukuran logo lebih proporsional */
-    width: auto;
+	height: 40px; /* Ukuran logo lebih proporsional */
+	width: auto;
 }
 
 /* --- Sidebar Styling (Tetap di bawah Header) --- */
 .sidebar {
-    position: fixed;
-    top: var(--header-height);
-    left: 0;
-    width: 220px;
-    height: calc(100vh - var(--header-height));
-    background-color: var(--app-dark);
-    color: white;
-    padding: 15px 10px;
-    overflow-y: auto;
-    z-index: 1000;
+	position: fixed;
+	top: var(--header-height);
+	left: 0;
+	width: 220px;
+	height: calc(100vh - var(--header-height));
+	background-color: var(--app-dark);
+	color: white;
+	padding: 15px 10px;
+	overflow-y: auto;
+	z-index: 1000;
 }
 
 .sidebar a {
-    color: #ced4da;
-    text-decoration: none;
-    display: block;
-    padding: 8px 12px;
-    margin-bottom: 2px;
-    font-size: 0.8rem; /* Font sidebar diperkecil */
-    font-weight: 500;
-    border-radius: var(--radius-md);
-    transition: all 0.2s;
+	color: #ced4da;
+	text-decoration: none;
+	display: block;
+	padding: 8px 12px;
+	margin-bottom: 2px;
+	font-size: 0.8rem; /* Font sidebar diperkecil */
+	font-weight: 500;
+	border-radius: var(--radius-md);
+	transition: all 0.2s;
 }
 
 .sidebar a:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: #fff;
+	background-color: rgba(255, 255, 255, 0.1);
+	color: #fff;
 }
 
 .sidebar a.active {
-    background-color: var(--app-red);
-    color: #ffffff;
+	background-color: var(--app-red);
+	color: #ffffff;
 }
 
 /* --- Main Content Styling --- */
 .main-content {
-    margin-left: 220px; /* Pas dengan lebar sidebar */
-    margin-top: var(--header-height); /* Pas dengan tinggi header */
-    padding: 20px;
-    min-height: calc(100vh - var(--header-height));
+	margin-left: 220px; /* Pas dengan lebar sidebar */
+	margin-top: var(--header-height); /* Pas dengan tinggi header */
+	padding: 20px;
+	min-height: calc(100vh - var(--header-height));
 }
 
 /* --- Tabel & Komponen Kompak (VERSI GLOBAL BARU) --- */
 .table {
-    font-size: 0.8rem;
-    width: 100% !important;
-    border-collapse: collapse;
+	font-size: 0.8rem;
+	width: 100% !important;
+	border-collapse: collapse;
 }
 
 /* Header Tabel Global */
 .table thead th {
-    background-color: var(--app-dark);
-    color: #ffffff;
-    padding: 12px 15px; /* Padding kiri-kanan ditambah agar tidak mepet */
-    text-align: left;    /* UBAH DARI CENTER KE LEFT AGAR SIMETRIS */
-    vertical-align: middle;
-    border-bottom: 2px solid var(--app-red);
-    font-weight: 600;
-    text-transform: uppercase;
+	background-color: var(--app-dark);
+	color: #ffffff;
+	padding: 12px 15px; /* Padding kiri-kanan ditambah agar tidak mepet */
+	text-align: left; /* UBAH DARI CENTER KE LEFT AGAR SIMETRIS */
+	vertical-align: middle;
+	border-bottom: 2px solid var(--app-red);
+	font-weight: 600;
+	text-transform: uppercase;
 }
 
 /* Isi Tabel Global */
 .table td {
-    padding: 10px 15px; /* Padding disamakan dengan header */
-    vertical-align: middle;
-    text-align: left;    /* Pastikan isi selalu rata kiri */
-    border-bottom: 1px solid #dee2e6;
+	padding: 10px 15px; /* Padding disamakan dengan header */
+	vertical-align: middle;
+	text-align: left; /* Pastikan isi selalu rata kiri */
+	border-bottom: 1px solid #dee2e6;
 }
 
 /* Utilitas untuk kolom yang ingin tetap di tengah (misal: No, Aksi) */
 .text-center {
-    text-align: center !important;
+	text-align: center !important;
 }
 
 /* Menjaga konsistensi lebar kolom jika diperlukan */
 .table-fixed {
-    table-layout: fixed;
+	table-layout: fixed;
 }
 
 /* Hover Effect agar lebih interaktif */
 .table-hover tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+	background-color: rgba(0, 0, 0, 0.03);
 }
 
 /* --- Penyesuaian Modal Stacking --- */
-.modal-backdrop { z-index: 1200 !important; }
-.modal { z-index: 1250 !important; }
+.modal-backdrop {
+	z-index: 1200 !important;
+}
+.modal {
+	z-index: 1250 !important;
+}
 
 /* Tambahan untuk menjaga spesifikasi tetap rapi */
 .spec-container {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
+	display: flex;
+	flex-direction: column;
+	line-height: 1.2;
 }
 
 /* --- Badge Status --- */
 .badge {
-    font-size: 0.7rem;
-    padding: 4px 6px;
+	font-size: 0.7rem;
+	padding: 4px 6px;
 }
 
 /* --- Fix Modal Stacking Context --- */
 
 /* Modal Backdrop (layar hitam) */
 .modal-backdrop {
-    z-index: 1200 !important;
+	z-index: 1200 !important;
 }
 
 /* Kotak Modal */
 .modal {
-    z-index: 1250 !important;
+	z-index: 1250 !important;
 }
 
 /* Spesifik untuk tabel di dalam Modal Pencarian agar tidak miring */
 #searchAssetModal .table {
-    table-layout: fixed; /* Mengunci lebar kolom */
-    width: 100% !important;
+	table-layout: fixed; /* Mengunci lebar kolom */
+	width: 100% !important;
 }
 
 #searchAssetModal .table thead th {
-    text-align: left !important; /* Paksa header ke kiri mengikuti isi */
-    padding-left: 15px !important;
+	text-align: left !important; /* Paksa header ke kiri mengikuti isi */
+	padding-left: 15px !important;
 }
 
 #searchAssetModal .table td {
-    text-align: left !important; /* Pastikan isi tetap di kiri */
-    padding-left: 15px !important;
-    vertical-align: middle;
+	text-align: left !important; /* Pastikan isi tetap di kiri */
+	padding-left: 15px !important;
+	vertical-align: middle;
 }
 
 /* Kolom terakhir (Aksi) tetap di tengah agar rapi */
 #searchAssetModal .table th:last-child,
 #searchAssetModal .table td:last-child {
-    text-align: center !important;
-    padding-left: 0 !important;
+	text-align: center !important;
+	padding-left: 0 !important;
 }
 
-.timeline { border-left: 3px solid #e9ecef; padding: 0 0 20px 30px; margin-left: 10px; position: relative; }
+.timeline {
+	border-left: 3px solid #e9ecef;
+	padding: 0 0 20px 30px;
+	margin-left: 10px;
+	position: relative;
+}
 /* Memberikan jarak antar item (margin-bottom lebih besar) */
-.timeline-item { position: relative; margin-bottom: 40px; }
-.timeline-item::before { content: ""; position: absolute; left: -39px; top: 8px; width: 16px; height: 16px; background: #dc3545; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 3px #f8d7da; }
-.timeline-date { font-weight: bold; color: #495057; font-size: 0.85rem; margin-bottom: 12px; display: block; }
+.timeline-item {
+	position: relative;
+	margin-bottom: 40px;
+}
+.timeline-item::before {
+	content: "";
+	position: absolute;
+	left: -39px;
+	top: 8px;
+	width: 16px;
+	height: 16px;
+	background: #dc3545;
+	border-radius: 50%;
+	border: 3px solid #fff;
+	box-shadow: 0 0 0 3px #f8d7da;
+}
+.timeline-date {
+	font-weight: bold;
+	color: #495057;
+	font-size: 0.85rem;
+	margin-bottom: 12px;
+	display: block;
+}

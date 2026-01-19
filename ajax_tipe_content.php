@@ -8,7 +8,8 @@ if (($_SESSION['role'] ?? 'normal') !== 'superadmin') {
     die("Akses ditolak.");
 }
 
-function e($text) {
+function e($text)
+{
     return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
 }
 
@@ -47,7 +48,7 @@ if (!$result_tipe) {
 <?php
 // 3. Tampilkan Tabel Tipe yang Sudah Ada
 if (mysqli_num_rows($result_tipe) > 0):
-?>
+    ?>
 <div class="table-responsive">
     <table class="table table-sm table-bordered table-striped">
         <thead class="table-dark">

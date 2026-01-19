@@ -1,4 +1,5 @@
 <?php
+
 // WAJIB: Memulai sesi
 session_start();
 include 'koneksi.php';
@@ -29,9 +30,9 @@ if (password_verify($password, $user['password'])) {
     $_SESSION['admin_id']  = $user['id'];
     $_SESSION['username'] = $user['username'];
     $_SESSION['role']     = $user['role']; // Role sudah ter-set dengan benar
-	$_SESSION['nama_lengkap'] = $user['nama_lengkap'];
-    
-	// Redirect ke Dashboard (index.php)
+    $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
+
+    // Redirect ke Dashboard (index.php)
     header("Location: index.php");
     exit;
 } else {
@@ -39,5 +40,3 @@ if (password_verify($password, $user['password'])) {
     header("Location: index.php?error=pass");
     exit;
 }
-
-?>

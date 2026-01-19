@@ -8,8 +8,8 @@
             <form action="import_inventori.php" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="alert alert-warning">
-                        Pastikan urutan kolom pada file Excel Anda sesuai dengan urutan yang digunakan saat Export: Hostname, Status, Rak, 
-						Tipe, RAM, Storage, OS, Keterangan, Kelengkapan, 
+                        Pastikan urutan kolom pada file Excel Anda sesuai dengan urutan yang digunakan saat Export: Hostname, Status, Rak,
+						Tipe, RAM, Storage, OS, Keterangan, Kelengkapan,
 						Tanggal Masuk, Tanggal Keluar, NIK User, Nama User, Divisi.
                     </div>
                     <div class="mb-3">

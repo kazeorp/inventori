@@ -7,22 +7,23 @@ include "koneksi.php";
 // Mengambil role dari session
 $role = isset($_SESSION['role']) ? $_SESSION['role'] : 'normal';
 
-function e($text) {
-  // Fungsi untuk keamanan (mencegah XSS)
-  return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
+function e($text)
+{
+    // Fungsi untuk keamanan (mencegah XSS)
+    return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
 }
 
 // --- Daftar Status yang Tersedia (Digunakan untuk Tombol) ---
 $status_options = [
-  'all' => 'Semua Data',
-  'Assign' => 'Assign',
-  'Spare' => 'Spare',
-  'Loan' => 'Loan',
-  'Pending Service' => 'Pending Service',
-  'Grace Period' => 'Grace Period',
-  'Scrap' => 'Scrap',
-  'MT' => 'MT',
-  'Ready to Assign' => 'Ready to Assign'
+    'all' => 'Semua Data',
+    'Assign' => 'Assign',
+    'Spare' => 'Spare',
+    'Loan' => 'Loan',
+    'Pending Service' => 'Pending Service',
+    'Grace Period' => 'Grace Period',
+    'Scrap' => 'Scrap',
+    'MT' => 'MT',
+    'Ready to Assign' => 'Ready to Assign',
 ];
 
 // --- Logika Query Inventori ---
@@ -37,18 +38,18 @@ $where = [];
 
 // Filter Status
 if ($status_filter !== 'all' && array_key_exists($status_filter, $status_options)) {
-  $where[] = "status = '" . mysqli_real_escape_string($koneksi, $status_filter) . "'";
+    $where[] = "status = '" . mysqli_real_escape_string($koneksi, $status_filter) . "'";
 }
 // Tambahkan filter pencarian (hostname, nama, nik)
 if (!empty($cari)) {
-  $where[] = "(hostname LIKE '%$cari%' OR nama LIKE '%$cari%' OR nik LIKE '%$cari%')";
+    $where[] = "(hostname LIKE '%$cari%' OR nama LIKE '%$cari%' OR nik LIKE '%$cari%')";
 }
 // Tambahkan filter Rak dan Type (jika ada di URL)
 if (!empty($rak_filter)) {
-  $where[] = "rak = '$rak_filter'";
+    $where[] = "rak = '$rak_filter'";
 }
 if (!empty($type_filter)) {
-  $where[] = "type = '$type_filter'";
+    $where[] = "type = '$type_filter'";
 }
 
 $where_clause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -162,14 +163,20 @@ $result = mysqli_query($koneksi, $query);
         <div class="col-12 mb-2 border-bottom pb-2">
           <small class="fw-bold text-muted d-block mb-1">Filter Status:</small>
           <?php foreach ($status_options as $status_key => $label):
-            $is_active = $status_filter === $status_key;
-            $btn_class = $is_active ? 'btn-primary' : 'btn-outline-secondary'; // Ubah warna tidak aktif jadi abu-abu agar lebih soft
+              $is_active = $status_filter === $status_key;
+              $btn_class = $is_active ? 'btn-primary' : 'btn-outline-secondary'; // Ubah warna tidak aktif jadi abu-abu agar lebih soft
 
-            $url = 'tampil.php?status=' . urlencode($status_key);
-            if (!empty($cari)) $url .= '&cari=' . urlencode($cari);
-            if (!empty($rak_filter)) $url .= '&rak=' . urlencode($rak_filter);
-            if (!empty($type_filter)) $url .= '&type=' . urlencode($type_filter);
-          ?>
+              $url = 'tampil.php?status=' . urlencode($status_key);
+              if (!empty($cari)) {
+                  $url .= '&cari=' . urlencode($cari);
+              }
+              if (!empty($rak_filter)) {
+                  $url .= '&rak=' . urlencode($rak_filter);
+              }
+              if (!empty($type_filter)) {
+                  $url .= '&type=' . urlencode($type_filter);
+              }
+              ?>
             <a href="<?= e($url) ?>" class="btn <?= $btn_class ?> btn-sm filter-buttons">
               <?= e($label) ?>
             </a>

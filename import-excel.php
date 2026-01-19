@@ -1,4 +1,5 @@
 <?php
+
 include "koneksi.php";
 require_once 'Classes/PHPExcel.php';
 
@@ -33,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file']['tmp_na
 
             // Konversi tanggal
             if (PHPExcel_Shared_Date::isDateTime($sheet->getCellByColumnAndRow(10, $row))) {
-                $tanggal_keluar = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($tanggal_keluar));
+                $tanggal_keluar = date('Y-m-d', (int) PHPExcel_Shared_Date::ExcelToPHP($tanggal_keluar));
             } else {
                 $tanggal_keluar = date('Y-m-d', strtotime($tanggal_keluar));
             }
@@ -87,4 +88,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excel_file']['tmp_na
 } else {
     echo "❌ File tidak ditemukan atau metode tidak sesuai.";
 }
-?>

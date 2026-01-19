@@ -124,11 +124,11 @@
                         <?php
                         // ASUMSI: Variabel $role tersedia
                         if (isset($role) && $role === 'superadmin') {
-                        ?>
+                            ?>
                             <a href="#" id="deleteBtn" class="btn btn-danger" onclick="return confirmDelete()">Hapus</a>
                         <?php
                         }
-                        ?>
+                            ?>
                     </div>
                 </div>
             </div>

@@ -6,14 +6,14 @@ require 'koneksi.php';
 $nama_bulan = [
     1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
     5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
 ];
 
 // Pastikan variabel filter bulan & tahun juga memiliki nilai default agar tidak error
-$f_bulan = isset($_GET['bulan']) ? (int)$_GET['bulan'] : (int)date('m');
-$f_tahun = isset($_GET['tahun']) ? (int)$_GET['tahun'] : (int)date('Y');
+$f_bulan = isset($_GET['bulan']) ? (int) $_GET['bulan'] : (int) date('m');
+$f_tahun = isset($_GET['tahun']) ? (int) $_GET['tahun'] : (int) date('Y');
 $keyword = isset($_GET['q']) ? $_GET['q'] : '';
-$halaman_aktif = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
+$halaman_aktif = isset($_GET['halaman']) ? (int) $_GET['halaman'] : 1;
 
 $admin_sekarang = $_SESSION['nama_lengkap'] ?? 'Admin IT';
 
@@ -51,7 +51,8 @@ if (isset($_POST['simpan_tipe'])) {
     $model = strtoupper(mysqli_real_escape_string($koneksi, $_POST['model'])); // Tambah ini
     $deskripsi_tipe = strtoupper(mysqli_real_escape_string($koneksi, $_POST['deskripsi_tipe']));
     mysqli_query($koneksi, "INSERT INTO peripheral_types (kode_barang, tipe_barang, model, deskripsi_tipe) VALUES ('$kode_barang', '$tipe_barang', '$model', '$deskripsi_tipe')");
-    header("Location: peripherals.php?halaman=2&res=success&msg=Tipe berhasil ditambah"); exit;
+    header("Location: peripherals.php?halaman=2&res=success&msg=Tipe berhasil ditambah");
+    exit;
 }
 
 // UPDATE TIPE
@@ -62,7 +63,8 @@ if (isset($_POST['update_tipe'])) {
     $model = strtoupper(mysqli_real_escape_string($koneksi, $_POST['model'])); // Tambah ini
     $deskripsi_tipe = strtoupper(mysqli_real_escape_string($koneksi, $_POST['deskripsi_tipe']));
     mysqli_query($koneksi, "UPDATE peripheral_types SET kode_barang='$kode_barang', tipe_barang='$tipe_barang', model='$model', deskripsi_tipe='$deskripsi_tipe' WHERE id_tipe='$id_tipe'");
-    header("Location: peripherals.php?halaman=2&res=success&msg=Tipe berhasil diupdate"); exit;
+    header("Location: peripherals.php?halaman=2&res=success&msg=Tipe berhasil diupdate");
+    exit;
 }
 
 // BARANG MASUK (NEW MULTI-GROUP LOGIC)
@@ -76,7 +78,7 @@ if (isset($_POST['simpan_masuk'])) {
         foreach ($groups as $group) {
             $kode_barang = mysqli_real_escape_string($koneksi, $group['kode_barang']);
             $peruntukan  = mysqli_real_escape_string($koneksi, $group['peruntukan']);
-            $nama_user   = ($peruntukan == 'User') ? strtoupper(mysqli_real_escape_string($koneksi, $group['nama_user'])) : NULL;
+            $nama_user   = ($peruntukan == 'User') ? strtoupper(mysqli_real_escape_string($koneksi, $group['nama_user'])) : null;
             $sns         = $group['sn'];
 
             foreach ($sns as $sn) {
@@ -95,10 +97,12 @@ if (isset($_POST['simpan_masuk'])) {
             }
         }
         mysqli_commit($koneksi);
-        header("Location: peripherals.php?halaman=1&res=success&msg=Barang masuk PO $no_po berhasil disimpan"); exit;
+        header("Location: peripherals.php?halaman=1&res=success&msg=Barang masuk PO $no_po berhasil disimpan");
+        exit;
     } catch (Exception $e) {
         mysqli_rollback($koneksi);
-        header("Location: peripherals.php?halaman=1&res=danger&msg=Error: " . $e->getMessage()); exit;
+        header("Location: peripherals.php?halaman=1&res=danger&msg=Error: " . $e->getMessage());
+        exit;
     }
 }
 
@@ -112,10 +116,11 @@ if (isset($_POST['simpan_keluar'])) {
     mysqli_query($koneksi, "UPDATE peripheral_items SET no_ticket='$no_tkt', no_pr='$no_pr', keterangan='$ket', tanggal_keluar=NOW(), admin_keluar='$admin_sekarang', status='Out' WHERE serial_number='$sn' AND status='Stock'");
     $res = mysqli_affected_rows($koneksi) > 0 ? "success" : "danger";
     $msg = $res == "success" ? "Barang keluar berhasil diproses" : "Gagal! S/N tidak ditemukan atau sudah OUT";
-    header("Location: peripherals.php?halaman=3&res=$res&msg=$msg"); exit;
+    header("Location: peripherals.php?halaman=3&res=$res&msg=$msg");
+    exit;
 }
 
-$halaman_aktif = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
+$halaman_aktif = isset($_GET['halaman']) ? (int) $_GET['halaman'] : 1;
 $keyword = isset($_GET['q']) ? mysqli_real_escape_string($koneksi, $_GET['q']) : '';
 $f_bulan = isset($_GET['bulan']) ? $_GET['bulan'] : date('m');
 $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
@@ -162,26 +167,26 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                         <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
                     </div>
 
-                    <?php if($halaman_aktif == 3): ?>
+                    <?php if ($halaman_aktif == 3): ?>
                         <select name="bulan" class="form-select form-select-sm shadow-sm me-1" style="width: 130px;" onchange="this.form.submit()">
                             <?php
-                            foreach($nama_bulan as $num => $nama) {
+                            foreach ($nama_bulan as $num => $nama) {
                                 $sel = ($f_bulan == $num) ? 'selected' : '';
                                 echo "<option value='$num' $sel>$nama</option>";
                             }
-                            ?>
+                        ?>
                         </select>
 
                         <select name="tahun" class="form-select form-select-sm shadow-sm" style="width: 100px;" onchange="this.form.submit()">
                             <?php
-                            $current_year = (int)date('Y');
-                            // Menampilkan 10 tahun ke belakang dari tahun sekarang
-                            // Contoh: 2026, 2025, 2024, ... 2016
-                            for($y = $current_year; $y >= ($current_year - 10); $y--) {
-                                $sel = ($f_tahun == $y) ? 'selected' : '';
-                                echo "<option value='$y' $sel>$y</option>";
-                            }
-                            ?>
+                        $current_year = (int) date('Y');
+                        // Menampilkan 10 tahun ke belakang dari tahun sekarang
+                        // Contoh: 2026, 2025, 2024, ... 2016
+                        for ($y = $current_year; $y >= ($current_year - 10); $y--) {
+                            $sel = ($f_tahun == $y) ? 'selected' : '';
+                            echo "<option value='$y' $sel>$y</option>";
+                        }
+                        ?>
                         </select>
                     <?php endif; ?>
                 </form>
@@ -197,27 +202,27 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
         <div class="card border-0 shadow-sm">
             <div class="card-body <?= $halaman_aktif == 3 ? 'p-4' : 'p-0' ?>">
 
-            <?php if($halaman_aktif == 1): ?>
+            <?php if ($halaman_aktif == 1): ?>
                 <div class="accordion accordion-flush" id="accordionStok">
                     <?php
                     $filter = $keyword ? "AND (p.serial_number LIKE '%$keyword%' OR t.tipe_barang LIKE '%$keyword%' OR t.model LIKE '%$keyword%' OR p.no_po LIKE '%$keyword%')" : "";
 
-                    // Ambil daftar PO unik
-                    $sql_po = "SELECT p.no_po
+                // Ambil daftar PO unik
+                $sql_po = "SELECT p.no_po
                                FROM peripheral_items p
                                JOIN peripheral_types t ON p.kode_barang = t.kode_barang
                                WHERE p.status='Stock' $filter
                                GROUP BY p.no_po
                                ORDER BY p.id_barang DESC";
-                    $res_po = mysqli_query($koneksi, $sql_po);
+                $res_po = mysqli_query($koneksi, $sql_po);
 
-                    $i = 0;
-                    while ($po = mysqli_fetch_assoc($res_po)):
-                        $current_po = $po['no_po'];
-                        $i++;
+                $i = 0;
+                while ($po = mysqli_fetch_assoc($res_po)):
+                    $current_po = $po['no_po'];
+                    $i++;
 
-                        $count_q = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM peripheral_items WHERE no_po = '$current_po' AND status = 'Stock'");
-                        $count_data = mysqli_fetch_assoc($count_q);
+                    $count_q = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM peripheral_items WHERE no_po = '$current_po' AND status = 'Stock'");
+                    $count_data = mysqli_fetch_assoc($count_q);
                     ?>
                     <div class="accordion-item border-bottom">
                         <h2 class="accordion-header" id="heading<?= $i ?>">
@@ -258,7 +263,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                                                                               JOIN peripheral_types t ON p.kode_barang = t.kode_barang
                                                                               WHERE p.status='Stock' AND p.no_po = '$current_po' $filter
                                                                               ORDER BY p.id_barang DESC");
-                                        while ($row = mysqli_fetch_assoc($query_item)): ?>
+                    while ($row = mysqli_fetch_assoc($query_item)): ?>
                                         <tr>
                                             <td class="ps-4">
                                                 <small class="text-muted fw-bold d-block" style="font-size: 0.65rem;"><?= $row['tipe_barang'] ?></small>
@@ -277,7 +282,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     </div>
                     <?php endwhile; ?>
 
-                    <?php if(mysqli_num_rows($res_po) == 0): ?>
+                    <?php if (mysqli_num_rows($res_po) == 0): ?>
                         <div class="text-center py-5">
                             <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
                             <p class="text-muted mt-2">Data tidak ditemukan.</p>
@@ -285,7 +290,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     <?php endif; ?>
                 </div>
 
-<?php elseif($halaman_aktif == 2): ?>
+<?php elseif ($halaman_aktif == 2): ?>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
@@ -300,8 +305,8 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                         <tbody>
                             <?php
                             $filter = $keyword ? "WHERE tipe_barang LIKE '%$keyword%' OR model LIKE '%$keyword%' OR kode_barang LIKE '%$keyword%'" : "";
-                            $query = mysqli_query($koneksi, "SELECT * FROM peripheral_types $filter ORDER BY tipe_barang ASC");
-                            while ($row = mysqli_fetch_assoc($query)): ?>
+    $query = mysqli_query($koneksi, "SELECT * FROM peripheral_types $filter ORDER BY tipe_barang ASC");
+    while ($row = mysqli_fetch_assoc($query)): ?>
                             <tr>
                                 <td><code class="fw-bold"><?= $row['kode_barang'] ?></code></td>
                                 <td><?= $row['tipe_barang'] ?></td>
@@ -317,7 +322,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                                         <i class="bi bi-pencil-square"></i> Edit
                                     </button>
 
-                                    <?php if(isset($_SESSION['role']) && $_SESSION['role'] == 'superadmin'): ?>
+                                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'superadmin'): ?>
                                     <a href="proses_tipe.php?aksi=hapus&id=<?= $row['kode_barang'] ?>"
                                        class="btn btn-sm btn-outline-danger"
                                        onclick="return confirm('Apakah Anda yakin ingin menghapus tipe ini?')">
@@ -331,7 +336,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     </table>
                 </div>
 
-<?php elseif($halaman_aktif == 3): ?>
+<?php elseif ($halaman_aktif == 3): ?>
                 <div class="p-3">
                     <h5 class="fw-bold mb-5 text-muted"><i class="bi bi-clock-history me-2"></i>Timeline Riwayat Keluar</h5>
 
@@ -339,18 +344,18 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                         <?php
                         // Filter Data Berdasarkan Bulan dan Tahun
                         $filter = "AND MONTH(p.tanggal_keluar) = '$f_bulan' AND YEAR(p.tanggal_keluar) = '$f_tahun'";
-                        if($keyword) {
-                            $filter .= " AND (p.serial_number LIKE '%$keyword%' OR t.tipe_barang LIKE '%$keyword%' OR t.model LIKE '%$keyword%' OR p.no_ticket LIKE '%$keyword%')";
-                        }
+    if ($keyword) {
+        $filter .= " AND (p.serial_number LIKE '%$keyword%' OR t.tipe_barang LIKE '%$keyword%' OR t.model LIKE '%$keyword%' OR p.no_ticket LIKE '%$keyword%')";
+    }
 
-                        $query = mysqli_query($koneksi, "SELECT p.*, t.tipe_barang, t.model
+    $query = mysqli_query($koneksi, "SELECT p.*, t.tipe_barang, t.model
                                                          FROM peripheral_items p
                                                          JOIN peripheral_types t ON p.kode_barang = t.kode_barang
                                                          WHERE p.status='Out' $filter
                                                          ORDER BY p.tanggal_keluar DESC");
 
-                        if (mysqli_num_rows($query) > 0):
-                            while ($row = mysqli_fetch_assoc($query)): ?>
+    if (mysqli_num_rows($query) > 0):
+        while ($row = mysqli_fetch_assoc($query)): ?>
 
                             <div class="timeline-item">
                                 <span class="timeline-date">
@@ -405,10 +410,10 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                             </div>
 
                             <?php endwhile;
-                        else: ?>
+    else: ?>
                             <div class="text-center py-5">
                                 <i class="bi bi-cloud-slash text-muted" style="font-size: 3rem;"></i>
-                                <p class="text-muted mt-3">Tidak ada riwayat keluar pada periode <?= $nama_bulan[(int)$f_bulan] ?> <?= $f_tahun ?></p>
+                                <p class="text-muted mt-3">Tidak ada riwayat keluar pada periode <?= $nama_bulan[(int) $f_bulan] ?> <?= $f_tahun ?></p>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -514,8 +519,10 @@ function addGroup() {
                         <option value="">- Tipe -</option>
                         <?php
                         $t_q = mysqli_query($koneksi, "SELECT DISTINCT tipe_barang FROM peripheral_types ORDER BY tipe_barang ASC");
-                        while($t = mysqli_fetch_assoc($t_q)) echo "<option value='{$t['tipe_barang']}'>{$t['tipe_barang']}</option>";
-                        ?>
+while ($t = mysqli_fetch_assoc($t_q)) {
+    echo "<option value='{$t['tipe_barang']}'>{$t['tipe_barang']}</option>";
+}
+?>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -647,7 +654,7 @@ document.getElementById('modalMasuk').addEventListener('shown.bs.modal', functio
         const toast = new bootstrap.Toast(document.getElementById('liveToast'));
         function showToast(m, t='danger'){ document.getElementById('toast-body').innerText=m; document.getElementById('liveToast').className=`toast align-items-center text-white bg-${t} border-0`; toast.show(); }
 
-        <?php if(isset($_GET['msg'])): ?>
+        <?php if (isset($_GET['msg'])): ?>
             showToast("<?= $_GET['msg'] ?>", "<?= $_GET['res'] ?? 'primary' ?>");
             window.history.replaceState({}, document.title, "peripherals.php?halaman=<?= $halaman_aktif ?>");
         <?php endif; ?>
@@ -690,10 +697,10 @@ document.getElementById('modalMasuk').addEventListener('shown.bs.modal', functio
         const dataRelasi = [
             <?php
             $all_types = mysqli_query($koneksi, "SELECT kode_barang, tipe_barang, model FROM peripheral_types");
-            while($row = mysqli_fetch_assoc($all_types)) {
-                echo "{kode: '{$row['kode_barang']}', tipe: '{$row['tipe_barang']}', model: '{$row['model']}'},";
-            }
-            ?>
+while ($row = mysqli_fetch_assoc($all_types)) {
+    echo "{kode: '{$row['kode_barang']}', tipe: '{$row['tipe_barang']}', model: '{$row['model']}'},";
+}
+?>
         ];
 
         function filterModel() {

@@ -1,4 +1,5 @@
 <?php
+
 // Wajib ada untuk memuat PhpSpreadsheet (asumsi sudah diinstal via Composer)
 require 'vendor/autoload.php';
 
@@ -25,15 +26,17 @@ $statusToRak = [
     "MT" => "GD-R8",
     "Ready to Assign" => "GD-R9",
     "Assign" => "Assign",
-    "Loan" => "Loan"
+    "Loan" => "Loan",
 ];
 
 // --- Fungsi Helper untuk Redirect (Sesuai dengan sistem Toast di index2) ---
-function redirect_success($msg) {
+function redirect_success($msg)
+{
     header("Location: tampil.php?res=success&msg=" . urlencode($msg));
     exit;
 }
-function redirect_error($msg) {
+function redirect_error($msg)
+{
     header("Location: tampil.php?res=danger&msg=" . urlencode($msg));
     exit;
 }
@@ -74,28 +77,30 @@ if (isset($_POST['import_submit'])) {
     for ($row = 2; $row <= $highestRow; $row++) {
 
         // Ambil nilai mentah
-    $hostname_raw        = $sheet->getCell('A'.$row)->getCalculatedValue();
-    $status_raw          = $sheet->getCell('B'.$row)->getCalculatedValue();
-    $domain_raw          = $sheet->getCell('C'.$row)->getCalculatedValue();
-    $type_raw            = $sheet->getCell('D'.$row)->getCalculatedValue();
-    $sn_raw              = $sheet->getCell('E'.$row)->getCalculatedValue(); // KOLOM BARU (Serial Number)
-    $device_category_raw = $sheet->getCell('F'.$row)->getCalculatedValue();
-    $rak_excel_raw       = $sheet->getCell('G'.$row)->getCalculatedValue();
-    $ram_raw             = $sheet->getCell('H'.$row)->getCalculatedValue();
-    $storage_raw         = $sheet->getCell('I'.$row)->getCalculatedValue();
-    $win_raw             = $sheet->getCell('J'.$row)->getCalculatedValue();
-    $keterangan_raw      = $sheet->getCell('K'.$row)->getCalculatedValue();
-    $kelengkapan_raw     = $sheet->getCell('L'.$row)->getCalculatedValue();
-    $tgl_masuk_excel     = $sheet->getCell('M'.$row)->getCalculatedValue();
-    $tgl_keluar_excel    = $sheet->getCell('N'.$row)->getCalculatedValue();
-    $nik_raw             = $sheet->getCell('O'.$row)->getCalculatedValue();
-    $nama_raw            = $sheet->getCell('P'.$row)->getCalculatedValue();
-    $divisi_raw          = $sheet->getCell('Q'.$row)->getCalculatedValue();
+        $hostname_raw        = $sheet->getCell('A' . $row)->getCalculatedValue();
+        $status_raw          = $sheet->getCell('B' . $row)->getCalculatedValue();
+        $domain_raw          = $sheet->getCell('C' . $row)->getCalculatedValue();
+        $type_raw            = $sheet->getCell('D' . $row)->getCalculatedValue();
+        $sn_raw              = $sheet->getCell('E' . $row)->getCalculatedValue(); // KOLOM BARU (Serial Number)
+        $device_category_raw = $sheet->getCell('F' . $row)->getCalculatedValue();
+        $rak_excel_raw       = $sheet->getCell('G' . $row)->getCalculatedValue();
+        $ram_raw             = $sheet->getCell('H' . $row)->getCalculatedValue();
+        $storage_raw         = $sheet->getCell('I' . $row)->getCalculatedValue();
+        $win_raw             = $sheet->getCell('J' . $row)->getCalculatedValue();
+        $keterangan_raw      = $sheet->getCell('K' . $row)->getCalculatedValue();
+        $kelengkapan_raw     = $sheet->getCell('L' . $row)->getCalculatedValue();
+        $tgl_masuk_excel     = $sheet->getCell('M' . $row)->getCalculatedValue();
+        $tgl_keluar_excel    = $sheet->getCell('N' . $row)->getCalculatedValue();
+        $nik_raw             = $sheet->getCell('O' . $row)->getCalculatedValue();
+        $nama_raw            = $sheet->getCell('P' . $row)->getCalculatedValue();
+        $divisi_raw          = $sheet->getCell('Q' . $row)->getCalculatedValue();
 
         // --- NORMALISASI DATA ---
         $hostname = mysqli_real_escape_string($koneksi, strtoupper(trim($hostname_raw ?? '')));
 
-        if (empty($hostname)) continue;
+        if (empty($hostname)) {
+            continue;
+        }
 
         $status_normalized = ucwords(strtolower(trim($status_raw ?? '')));
         $status      = mysqli_real_escape_string($koneksi, $status_normalized);
@@ -163,24 +168,23 @@ if (isset($_POST['import_submit'])) {
         }
     }
 
-        // ===================================
-        // 4. WebSocket dan Redirect
-        // ===================================
+    // ===================================
+    // 4. WebSocket dan Redirect
+    // ===================================
 
-        // Kirim sinyal update ke WebSocket agar semua layar admin refresh otomatis
-        if (function_exists('pushWebSocketUpdate')) {
-            pushWebSocketUpdate(0, 'asset_bulk_insert');
-        }
+    // Kirim sinyal update ke WebSocket agar semua layar admin refresh otomatis
+    if (function_exists('pushWebSocketUpdate')) {
+        pushWebSocketUpdate(0, 'asset_bulk_insert');
+    }
 
-        // Redirect dengan pesan yang jelas
-        if ($error_count > 0) {
-            // Jika ada yang gagal, beri warna 'danger' (merah)
-            $pesan = "Impor selesai. " . $imported_count . " data berhasil, " . $error_count . " gagal.";
-            redirect_error($pesan);
-        } else {
-            // Jika semua sukses, beri warna 'success' (hijau)
-            $pesan = $imported_count . " data berhasil diimpor atau diperbarui.";
-            redirect_success($pesan);
-        }
+    // Redirect dengan pesan yang jelas
+    if ($error_count > 0) {
+        // Jika ada yang gagal, beri warna 'danger' (merah)
+        $pesan = "Impor selesai. " . $imported_count . " data berhasil, " . $error_count . " gagal.";
+        redirect_error($pesan);
+    } else {
+        // Jika semua sukses, beri warna 'success' (hijau)
+        $pesan = $imported_count . " data berhasil diimpor atau diperbarui.";
+        redirect_success($pesan);
+    }
 }
-?>

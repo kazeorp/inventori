@@ -18,7 +18,8 @@ if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'superadmin') {
     exit;
 }
 
-function e($text) {
+function e($text)
+{
     return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
 }
 
@@ -225,17 +226,18 @@ elseif (isset($_GET['hostname'])) {
         <ul class="timeline">
           <?php
           $histori_query = mysqli_query($koneksi, "SELECT * FROM histori_aset WHERE inventori_id = $id ORDER BY tanggal DESC");
-          // Pastikan $histori_query berhasil dieksekusi sebelum fetch
-          if ($histori_query && mysqli_num_rows($histori_query) > 0):
+        // Pastikan $histori_query berhasil dieksekusi sebelum fetch
+        if ($histori_query && mysqli_num_rows($histori_query) > 0):
             while ($row = mysqli_fetch_assoc($histori_query)):
-          ?>
+                ?>
             <li>
               <div class="timestamp"><?= e($row['hari'] ?? '') ?><?= e(date('d-m-Y H:i', strtotime($row['tanggal'] ?? ''))) ?></div>
               <div class="status"><strong><?= e($row['aksi'] ?? '') ?></strong> oleh <?= e($row['oleh'] ?? '') ?></div>
               <div class="ticket"> Ticket: <?= e($row['ticket'] ?? 'N/A') ?></div>
               <div class="note"> <?= e($row['catatan'] ?? 'Tidak ada catatan.') ?></div>
             </li>
-          <?php endwhile; else: ?>
+          <?php endwhile;
+        else: ?>
             <li><div class="note text-muted">Belum ada histori aktivitas.</div></li>
           <?php endif; ?>
         </ul>
@@ -244,8 +246,8 @@ elseif (isset($_GET['hostname'])) {
 
     <?php
     include 'modal-aktivitas.php';
-    include 'modal-pencarian.php';
-    ?>
+        include 'modal-pencarian.php';
+        ?>
   <?php endif; ?>
 
     <?php if ($_SESSION['role'] !== 'normal'): ?>

@@ -1,4 +1,5 @@
 <?php
+
 // Wajib ada untuk memuat PhpSpreadsheet (asumsi sudah diinstal via Composer)
 require 'vendor/autoload.php';
 
@@ -52,10 +53,10 @@ $header = [
     'Tgl Keluar',      // N
     'NIK',             // O
     'Nama',            // P
-    'Divisi'           // Q
+    'Divisi',           // Q
 ];
 
-$sheet->fromArray($header, NULL, 'A1');
+$sheet->fromArray($header, null, 'A1');
 
 // ===================================
 // 3. Aplikasikan Styling pada Header
@@ -113,10 +114,10 @@ while ($data = mysqli_fetch_assoc($result)) {
         $data['tanggal_keluar'],  // N
         $data['nik'],             // O
         $data['nama'],            // P
-        $data['divisi']           // Q
+        $data['divisi'],           // Q
     ];
 
-    $sheet->fromArray($rowData, NULL, 'A' . $rowNum);
+    $sheet->fromArray($rowData, null, 'A' . $rowNum);
     $rowNum++;
 }
 
@@ -134,4 +135,3 @@ header('Cache-Control: max-age=0');
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
 exit;
-?>

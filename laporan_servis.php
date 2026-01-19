@@ -4,7 +4,8 @@ include 'koneksi.php';
 
 // Fungsi untuk keamanan (mencegah XSS)
 if (!function_exists('e')) {
-    function e($text) {
+    function e($text)
+    {
         return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
     }
 }
@@ -29,16 +30,20 @@ $bulan_indo = [
     9 => 'September',
     10 => 'Oktober',
     11 => 'November',
-    12 => 'Desember'
+    12 => 'Desember',
 ];
 
 // 2. Tentukan Bulan dan Tahun yang dipilih
-$selected_month = isset($_GET['bulan']) ? (int)$_GET['bulan'] : (int)date('n'); // 'n' adalah bulan tanpa nol di depan (1-12)
-$selected_year = isset($_GET['tahun']) ? (int)$_GET['tahun'] : (int)date('Y');
+$selected_month = isset($_GET['bulan']) ? (int) $_GET['bulan'] : (int) date('n'); // 'n' adalah bulan tanpa nol di depan (1-12)
+$selected_year = isset($_GET['tahun']) ? (int) $_GET['tahun'] : (int) date('Y');
 
 // Validasi jika input manual lewat URL ngawur
-if ($selected_month < 1 || $selected_month > 12) $selected_month = (int)date('n');
-if ($selected_year < 2020 || $selected_year > (int)date('Y') + 1) $selected_year = (int)date('Y');
+if ($selected_month < 1 || $selected_month > 12) {
+    $selected_month = (int) date('n');
+}
+if ($selected_year < 2020 || $selected_year > (int) date('Y') + 1) {
+    $selected_year = (int) date('Y');
+}
 
 // 💡 HITUNG NAMA BULAN UNTUK JUDUL
 // Pastikan index bulan_indo menggunakan (int) agar match
@@ -97,7 +102,7 @@ $result_admins = mysqli_query($koneksi, $sql_admins);
             <select name="bulan" id="bulan" class="form-select" onchange="this.form.submit()">
                 <?php
                 foreach ($bulan_indo as $month_num => $month_name):
-                ?>
+                    ?>
                 <option value="<?= $month_num ?>" <?= ($selected_month == $month_num) ? 'selected' : '' ?>>
                     <?= $month_name ?>
                 </option>
@@ -127,7 +132,7 @@ $result_admins = mysqli_query($koneksi, $sql_admins);
                 </thead>
                 <tbody>
                     <?php if ($result_laporan && mysqli_num_rows($result_laporan) > 0): ?>
-                        <?php while($row_laporan = mysqli_fetch_assoc($result_laporan)): ?>
+                        <?php while ($row_laporan = mysqli_fetch_assoc($result_laporan)): ?>
                             <tr>
                                 <td><?= e($row_laporan['admin_finish_name']) ?></td>
                                 <td><span class="badge bg-success fs-6"><?= e($row_laporan['total_servis_selesai']) ?></span> Unit</td>

@@ -1,4 +1,5 @@
 <?php
+
 // ajax_add_service.php - VERSI FINAL DENGAN LOGIKA DUPLIKASI BARU
 
 // 1. PENGATURAN ERROR DAN HEADER
@@ -12,19 +13,19 @@ include "koneksi.php"; // Koneksi DB
 include "helpers.php"; // <--- TAMBAH: Sertakan helper untuk fungsi WebSocket
 
 if (mysqli_connect_errno()) {
-  http_response_code(500);
-  echo json_encode(['status' => 'error', 'message' => 'Kesalahan koneksi database.']);
-  exit;
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Kesalahan koneksi database.']);
+    exit;
 }
 
 // 2. VALIDASI REQUEST & PENGAMBILAN DATA
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['id_inventori'])) {
-  http_response_code(400);
-  echo json_encode(['status' => 'error', 'message' => 'Permintaan tidak valid.']);
-  exit;
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Permintaan tidak valid.']);
+    exit;
 }
 
-$id_inventori = (int)$_POST['id_inventori'];
+$id_inventori = (int) $_POST['id_inventori'];
 $hostname = trim($_POST['hostname'] ?? 'N/A');
 
 // Ambil data Nama dan Divisi dari SESSION yang dibuat oleh ajax_scan_handler.php
@@ -51,21 +52,21 @@ $sql_check = "SELECT id_service FROM service_list
        LIMIT 1";
 
 if ($stmt_check = $koneksi->prepare($sql_check)) {
-  $stmt_check->bind_param("i", $id_inventori);
-  $stmt_check->execute();
-  $stmt_check->store_result();
+    $stmt_check->bind_param("i", $id_inventori);
+    $stmt_check->execute();
+    $stmt_check->store_result();
 
-  if ($stmt_check->num_rows > 0) {
+    if ($stmt_check->num_rows > 0) {
+        $stmt_check->close();
+        // Mengembalikan sukses agar kamera restart, tetapi beri status 'warning'
+        echo json_encode([
+            'status' => 'warning',
+            'message' => "Aset {$hostname} masih memiliki servis aktif yang belum diselesaikan pada hari ini. Aksi dibatalkan.",
+        ]);
+        $koneksi->close();
+        exit;
+    }
     $stmt_check->close();
-    // Mengembalikan sukses agar kamera restart, tetapi beri status 'warning'
-    echo json_encode([
-      'status' => 'warning',
-      'message' => "Aset {$hostname} masih memiliki servis aktif yang belum diselesaikan pada hari ini. Aksi dibatalkan."
-    ]);
-    $koneksi->close();
-    exit;
-  }
-  $stmt_check->close();
 }
 
 
@@ -74,58 +75,58 @@ if ($stmt_check = $koneksi->prepare($sql_check)) {
 $sql_insert = "INSERT INTO service_list (id_inventori, hostname, nama_user, divisi, tanggal_masuk, catatan) VALUES (?, ?, ?, ?, ?, ?)";
 
 if ($stmt = $koneksi->prepare($sql_insert)) {
-  // Binding: isss s s (integer, string, string, string, string, string)
-  $stmt->bind_param("isssss",
-    $id_inventori,
-    $hostname,
-    $nama_user,
-    $divisi,
-    $tanggal_masuk,
-    $default_catatan
-  );
+    // Binding: isss s s (integer, string, string, string, string, string)
+    $stmt->bind_param(
+        "isssss",
+        $id_inventori,
+        $hostname,
+        $nama_user,
+        $divisi,
+        $tanggal_masuk,
+        $default_catatan,
+    );
 
     if ($stmt->execute()) {
 
-      $new_service_id = $koneksi->insert_id; // Ambil ID service yang baru dibuat
-      pushWebSocketUpdate($new_service_id, 'service_insert');
+        $new_service_id = $koneksi->insert_id; // Ambil ID service yang baru dibuat
+        pushWebSocketUpdate($new_service_id, 'service_insert');
 
-    // --- LOGIKA RIWAYAT SCAN DARI SESI ---
+        // --- LOGIKA RIWAYAT SCAN DARI SESI ---
 
-    // Hapus item yang baru saja di-service dari array riwayat
+        // Hapus item yang baru saja di-service dari array riwayat
         if (isset($_SESSION['scan_history']) && is_array($_SESSION['scan_history'])) {
-          $hostname_to_remove = $hostname;
-          $updated_history = [];
+            $hostname_to_remove = $hostname;
+            $updated_history = [];
 
-          foreach ($_SESSION['scan_history'] as $item) {
-            // HANYA pertahankan item yang TIDAK SAMA
-            if (isset($item['hostname']) && $item['hostname'] !== $hostname_to_remove) {
-              $updated_history[] = $item;
+            foreach ($_SESSION['scan_history'] as $item) {
+                // HANYA pertahankan item yang TIDAK SAMA
+                if (isset($item['hostname']) && $item['hostname'] !== $hostname_to_remove) {
+                    $updated_history[] = $item;
+                }
             }
-          }
-          $_SESSION['scan_history'] = $updated_history;
+            $_SESSION['scan_history'] = $updated_history;
         }
 
         // Hapus last_scan setelah data berhasil dimasukkan ke DB
         unset($_SESSION['last_scan']);
 
-    echo json_encode([
-      'status' => 'success',
-      'message' => "Service aset {$hostname} berhasil dicatat. Admin kini dapat memprosesnya."
-    ]);
-  }else {
-    http_response_code(500);
-    echo json_encode([
-      'status' => 'error',
-      'message' => "Gagal eksekusi query service: " . $stmt->error
-    ]);
-  }
+        echo json_encode([
+            'status' => 'success',
+            'message' => "Service aset {$hostname} berhasil dicatat. Admin kini dapat memprosesnya.",
+        ]);
+    } else {
+        http_response_code(500);
+        echo json_encode([
+            'status' => 'error',
+            'message' => "Gagal eksekusi query service: " . $stmt->error,
+        ]);
+    }
 
-  $stmt->close();
+    $stmt->close();
 } else {
-  http_response_code(500);
-  echo json_encode(['status' => 'error', 'message' => 'Gagal menyiapkan query database untuk service list.']);
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Gagal menyiapkan query database untuk service list.']);
 }
 
 $koneksi->close();
 exit;
-?>

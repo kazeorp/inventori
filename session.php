@@ -1,4 +1,5 @@
 <?php
+
 // session.php - Pastikan ini adalah KODE PERTAMA di file
 // Hapus semua baris kosong atau spasi sebelum tag pembuka <?php
 
@@ -11,7 +12,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // 1. Tentukan status Role SAAT INI
 // ----------------------------------------------------
 
-$current_role = 'normal'; 
+$current_role = 'normal';
 
 if (isset($_SESSION['admin_id']) && isset($_SESSION['role'])) {
     $current_role = $_SESSION['role'];
@@ -21,4 +22,4 @@ if (isset($_SESSION['admin_id']) && isset($_SESSION['role'])) {
     $current_role = 'normal';
 }
 
-// HINDARI TAG PENUTUP PHP SAMA SEKALI 
+// HINDARI TAG PENUTUP PHP SAMA SEKALI

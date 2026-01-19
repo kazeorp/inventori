@@ -1,4 +1,5 @@
 <?php
+
 // Pastikan session dan koneksi database di-include
 include 'session.php';
 include 'koneksi.php';
@@ -11,11 +12,13 @@ if (($_SESSION['role'] ?? 'normal') !== 'superadmin') {
 
 // --- Fungsi Helper untuk Redirect ---
 // Redirect kembali ke tampil.php dan memberikan pesan status
-function redirect_success($msg) {
+function redirect_success($msg)
+{
     header("Location: tampil.php?status=success&msg=" . urlencode($msg));
     exit;
 }
-function redirect_error($msg) {
+function redirect_error($msg)
+{
     header("Location: tampil.php?status=error&msg=" . urlencode($msg));
     exit;
 }
@@ -38,7 +41,7 @@ if (isset($_POST['submit_tambah_tipe']) && $_POST['action'] == 'tambah') {
     if (mysqli_query($koneksi, $query)) {
         redirect_success("Tipe_'$type_name'_berhasil_ditambahkan");
     } else {
-        redirect_error("Gagal_menambah_tipe:_".mysqli_error($koneksi));
+        redirect_error("Gagal_menambah_tipe:_" . mysqli_error($koneksi));
     }
 }
 
@@ -60,7 +63,7 @@ if (isset($_POST['submit_edit_tipe']) && $_POST['action'] == 'edit') {
     if (mysqli_query($koneksi, $query)) {
         redirect_success("Tipe_berhasil_diubah_menjadi_'$type_name'");
     } else {
-        redirect_error("Gagal_mengedit_tipe:_".mysqli_error($koneksi));
+        redirect_error("Gagal_mengedit_tipe:_" . mysqli_error($koneksi));
     }
 }
 
@@ -81,7 +84,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'hapus' && isset($_GET['id_tipe
     if (mysqli_query($koneksi, $query)) {
         redirect_success("Tipe_berhasil_dihapus");
     } else {
-        redirect_error("Gagal_menghapus_tipe:_".mysqli_error($koneksi));
+        redirect_error("Gagal_menghapus_tipe:_" . mysqli_error($koneksi));
     }
 }
 
@@ -103,7 +106,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_all_tipe') {
             // Penting: Pastikan nama kolom di sini cocok dengan nama kolom database Anda (id dan type_name)
             $tipe_array[] = [
                 'id_tipe' => $row['id'], // Gunakan nama yang konsisten dengan frontend (id_tipe)
-                'nama_tipe' => $row['type_name']
+                'nama_tipe' => $row['type_name'],
             ];
         }
         mysqli_free_result($result);
@@ -119,4 +122,3 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_all_tipe') {
 // Jika tidak ada aksi yang dikenali, redirect default
 header("Location: tampil.php");
 exit;
-?>

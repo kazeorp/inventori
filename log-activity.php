@@ -39,27 +39,27 @@ $logs = mysqli_query($koneksi, $query);
                             <select name="bulan" class="form-select">
                                 <?php
                                 $bulan_nama = [
-                                    '01'=>'Januari', '02'=>'Februari', '03'=>'Maret', '04'=>'April',
-                                    '05'=>'Mei', '06'=>'Juni', '07'=>'Juli', '08'=>'Agustus',
-                                    '09'=>'September', '10'=>'Oktober', '11'=>'November', '12'=>'Desember'
+                                    '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+                                    '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+                                    '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
                                 ];
-                                foreach ($bulan_nama as $val => $nama) {
-                                    $sel = ($val == $selected_month) ? 'selected' : '';
-                                    echo "<option value='$val' $sel>$nama</option>";
-                                }
-                                ?>
+foreach ($bulan_nama as $val => $nama) {
+    $sel = ($val == $selected_month) ? 'selected' : '';
+    echo "<option value='$val' $sel>$nama</option>";
+}
+?>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Tahun</label>
                             <select name="tahun" class="form-select">
                                 <?php
-                                $year_now = date('Y');
-                                for ($i = $year_now; $i >= 2023; $i--) {
-                                    $sel = ($i == $selected_year) ? 'selected' : '';
-                                    echo "<option value='$i' $sel>$i</option>";
-                                }
-                                ?>
+$year_now = date('Y');
+for ($i = $year_now; $i >= 2023; $i--) {
+    $sel = ($i == $selected_year) ? 'selected' : '';
+    echo "<option value='$i' $sel>$i</option>";
+}
+?>
                             </select>
                         </div>
                         <div class="col-md-2">
@@ -91,10 +91,14 @@ $logs = mysqli_query($koneksi, $query);
                                         <td><strong><?= htmlspecialchars($row['admin_nama_lengkap']) ?></strong></td>
                                         <td>
                                             <?php
-                                                $badge = 'bg-info';
-                                                if(strpos($row['aksi'], 'ADD') !== false) $badge = 'bg-success';
-                                                if(strpos($row['aksi'], 'DELETE') !== false) $badge = 'bg-danger';
-                                            ?>
+                $badge = 'bg-info';
+                                    if (strpos($row['aksi'], 'ADD') !== false) {
+                                        $badge = 'bg-success';
+                                    }
+                                    if (strpos($row['aksi'], 'DELETE') !== false) {
+                                        $badge = 'bg-danger';
+                                    }
+                                    ?>
                                             <span class="badge <?= $badge ?>"><?= $row['aksi'] ?></span>
                                         </td>
                                         <td><code class="fw-bold"><?= htmlspecialchars($row['hostname']) ?></code></td>

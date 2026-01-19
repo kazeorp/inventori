@@ -1,4 +1,5 @@
 <?php
+
 // redirect.php
 
 // 1. PASTIKAN SESI DIMULAI
@@ -10,18 +11,17 @@ if (!isset($_SESSION['role'])) {
     exit;
 }
 
-$user_role = $_SESSION['role']; 
+$user_role = $_SESSION['role'];
 
 // 2. LOGIKA PENGARAHAN BERDASARKAN ROLE
 if ($user_role === 'normal') {
-    header("Location: index.php"); 
+    header("Location: index.php");
     exit;
-} else if ($user_role === 'admin' || $user_role === 'superadmin') {
-    header("Location: index2.php"); 
+} elseif ($user_role === 'admin' || $user_role === 'superadmin') {
+    header("Location: index2.php");
     exit;
 }
 
 // 3. JIKA ROLE TIDAK JELAS (PENGAMAN)
-header("Location: index.php"); 
+header("Location: index.php");
 exit;
-?>

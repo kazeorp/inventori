@@ -3,7 +3,7 @@ include 'session.php';
 include 'koneksi.php';
 
 $role_login = $_SESSION['role'];
-$current_user_id = (int)($_SESSION['admin_id'] ?? 0);
+$current_user_id = (int) ($_SESSION['admin_id'] ?? 0);
 
 // Izinkan Superadmin DAN Admin masuk
 if ($role_login !== 'superadmin' && $role_login !== 'admin') {
@@ -40,7 +40,7 @@ if ($role_login === 'superadmin') {
 
             <?php if ($role_login === 'admin'):
                 $me = mysqli_fetch_assoc($query_users);
-            ?>
+                ?>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="card shadow-sm">
@@ -94,7 +94,7 @@ if ($role_login === 'superadmin') {
                                   $is_me = ($user['id'] == $current_user_id);
                                   $is_other_sa = ($user['role'] === 'superadmin' && !$is_me);
                                   $is_normal = ($user['role'] === 'normal'); // Cek apakah role normal
-                              ?>
+                                  ?>
                                   <tr>
                                       <td class="fw-bold"><?= htmlspecialchars($user['username']) ?></td>
                                       <td><?= htmlspecialchars($user['nama_lengkap']) ?></td>
@@ -170,7 +170,9 @@ if ($role_login === 'superadmin') {
         </div>
     </div>
 
-    <?php if($role_login === 'superadmin') include 'modal-tambah-user.php'; ?>
+    <?php if ($role_login === 'superadmin') {
+        include 'modal-tambah-user.php';
+    } ?>
 
     <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
     <script>

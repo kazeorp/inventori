@@ -1,4 +1,5 @@
 <?php
+
 header('Content-Type: application/json');
 include 'koneksi.php';
 
@@ -22,7 +23,7 @@ if (!empty($hostname)) {
             'sn' => $row['serial_number'],
             'nik' => $row['nik'],
             'nama' => $row['nama'],
-            'divisi' => $row['divisi']
+            'divisi' => $row['divisi'],
         ]);
     } else {
         echo json_encode(['status' => 'not_found']);

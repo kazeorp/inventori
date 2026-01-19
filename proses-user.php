@@ -1,4 +1,5 @@
 <?php
+
 include 'session.php';
 include 'koneksi.php';
 
@@ -9,13 +10,14 @@ if ($role_login !== 'superadmin' && $role_login !== 'admin') {
     exit;
 }
 
-$current_admin_id = (int)($_SESSION['admin_id'] ?? 0);
+$current_admin_id = (int) ($_SESSION['admin_id'] ?? 0);
 $current_admin_nama_lengkap = mysqli_real_escape_string($koneksi, $_SESSION['nama_lengkap'] ?? 'System User');
 
 /**
  * Mencatat aksi ke tabel admin_log.
  */
-function logAdminAction($koneksi, $aksi, $detail) {
+function logAdminAction($koneksi, $aksi, $detail)
+{
     global $current_admin_id, $current_admin_nama_lengkap;
     $aksi_safe = mysqli_real_escape_string($koneksi, $aksi);
     $detail_safe = mysqli_real_escape_string($koneksi, $detail);
@@ -63,7 +65,7 @@ if (isset($_POST['tambah_user'])) {
 // 2. PROSES EDIT USER
 // =======================================================
 if (isset($_POST['edit_user'])) {
-    $id            = (int)$_POST['id'];
+    $id            = (int) $_POST['id'];
     $username      = mysqli_real_escape_string($koneksi, $_POST['username']);
     $nama_lengkap  = mysqli_real_escape_string($koneksi, $_POST['nama_lengkap']);
     $role_input    = mysqli_real_escape_string($koneksi, $_POST['role']); // Role dari form
@@ -146,7 +148,7 @@ if (isset($_POST['hapus_user'])) {
         exit;
     }
 
-    $id = (int)$_POST['id'];
+    $id = (int) $_POST['id'];
 
     $cek_target = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT role, username FROM admin WHERE id='$id'"));
 

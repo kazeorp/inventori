@@ -1,4 +1,5 @@
 <?php
+
 include "koneksi.php";
 
 // tipe-laptop.php - Mengambil daftar tipe/model dari tabel device_types
@@ -26,4 +27,3 @@ if (isset($koneksi)) {
     // Fallback jika koneksi gagal (Error ini jarang terjadi jika koneksi.php sudah di-include)
     echo '<option value="">Error: Koneksi database tidak tersedia.</option>';
 }
-?>

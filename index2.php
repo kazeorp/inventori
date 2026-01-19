@@ -24,8 +24,10 @@ $admin_id_login = $_SESSION['admin_id'] ?? 0;
 
 // --- LOGIKA PAGINATION (Untuk Inventori Utama) ---
 $data_per_page = 10;
-$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-if ($current_page < 1) $current_page = 1;
+$current_page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+if ($current_page < 1) {
+    $current_page = 1;
+}
 
 $start_from = ($current_page - 1) * $data_per_page;
 
@@ -38,8 +40,9 @@ if ($current_page > $total_pages && $total_pages > 0) {
     $start_from = ($current_page - 1) * $data_per_page;
 }
 
-$inventori_query = mysqli_query($koneksi,
-    "SELECT * FROM inventori ORDER BY hostname ASC LIMIT $start_from, $data_per_page"
+$inventori_query = mysqli_query(
+    $koneksi,
+    "SELECT * FROM inventori ORDER BY hostname ASC LIMIT $start_from, $data_per_page",
 );
 
 // --- LOGIKA SUMMARY CARDS ---
@@ -57,10 +60,10 @@ if (isset($koneksi)) {
 
     if ($summary_query && mysqli_num_rows($summary_query) > 0) {
         $summary_data = mysqli_fetch_assoc($summary_query);
-        $stok_total     = (int)$summary_data['stok_total'];
-        $stok_spare     = (int)$summary_data['stok_spare'];
-        $stok_loan      = (int)$summary_data['stok_loan'];
-        $stok_pending   = (int)$summary_data['stok_pending'];
+        $stok_total     = (int) $summary_data['stok_total'];
+        $stok_spare     = (int) $summary_data['stok_spare'];
+        $stok_loan      = (int) $summary_data['stok_loan'];
+        $stok_pending   = (int) $summary_data['stok_pending'];
     }
 }
 
@@ -93,7 +96,7 @@ if ($result_pt) {
             'jumlah' => $row_pt['total_stok'],
             'unit'   => 'Unit',
             'link'   => 'peripherals.php?id_tipe=' . $row_pt['id_tipe'],
-            'color'  => 'secondary'
+            'color'  => 'secondary',
         ];
     }
 }
@@ -180,7 +183,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
 <h2 class="mb-4">Dashboard Administrator</h2>
 
         <div class="row g-2"> <?php foreach ($data as $label => $info):
-                $link = ($info['status'] === "all") ? "tampil.php" : "tampil.php?status=" . urlencode($info['status']);
+            $link = ($info['status'] === "all") ? "tampil.php" : "tampil.php?status=" . urlencode($info['status']);
             ?>
                 <div class="col-lg-3 col-md-6 mb-2">
                     <a href="<?= e($link) ?>" style="text-decoration: none;">
@@ -199,8 +202,8 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
         <div class="row g-2">
             <?php
             $seragam_color = 'secondary';
-            foreach ($data_peripheral as $label => $info):
-            ?>
+foreach ($data_peripheral as $label => $info):
+    ?>
                 <div class="col-lg-2 col-md-4 col-6 mb-2"> <a href="<?= e($info['link']) ?>" style="text-decoration: none;">
                         <div class="card border-top border-3 border-<?= $seragam_color ?> shadow-sm h-100" style="border-radius: var(--radius-md);">
                             <div class="card-body p-2 text-center">
@@ -235,11 +238,11 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                 </thead>
                 <tbody id="service-list-body">
                     <?php if ($result_service && mysqli_num_rows($result_service) > 0): ?>
-                        <?php while($row = mysqli_fetch_assoc($result_service)):
+                        <?php while ($row = mysqli_fetch_assoc($result_service)):
 
                             // Logika Klaim yang Sudah Ada
                             $is_claimed = !empty($row['current_admin_id']) && $row['current_admin_id'] != 0;
-                            $is_my_claim = $is_claimed && ((int)$row['current_admin_id'] === (int)($admin_id_login ?? 0));
+                            $is_my_claim = $is_claimed && ((int) $row['current_admin_id'] === (int) ($admin_id_login ?? 0));
                             $is_superadmin_user = $user_role_login === 'superadmin';
                             $can_reassign = $is_claimed && $is_superadmin_user;
 
@@ -379,8 +382,8 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                     <tbody>
                         <?php
                         $no = $start_from + 1;
-                        while ($row = mysqli_fetch_assoc($inventori_query)):
-                        ?>
+            while ($row = mysqli_fetch_assoc($inventori_query)):
+                ?>
                         <tr>
                             <td><?= $no++ ?></td>
                             <td><a href="detail-aset.php?id=<?= e($row['id']) ?>" class="text-primary text-decoration-none fw-bold"><?= e($row['hostname']) ?></a></td>
@@ -401,15 +404,15 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
 
                     <?php
                     $page_range = 5;
-                    $start_loop = max(1, $current_page - floor($page_range / 2));
-                    $end_loop = min($total_pages, $current_page + floor($page_range / 2));
+            $start_loop = max(1, $current_page - floor($page_range / 2));
+            $end_loop = min($total_pages, $current_page + floor($page_range / 2));
 
-                    if ($end_loop - $start_loop + 1 < $page_range) {
-                        $start_loop = max(1, $end_loop - $page_range + 1);
-                    }
+            if ($end_loop - $start_loop + 1 < $page_range) {
+                $start_loop = max(1, $end_loop - $page_range + 1);
+            }
 
-                    for ($i = $start_loop; $i <= $end_loop; $i++):
-                    ?>
+            for ($i = $start_loop; $i <= $end_loop; $i++):
+                ?>
                     <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>">
                         <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
                     </li>
@@ -428,8 +431,8 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
 
     <?php
     include 'modal-tambahdata.php';
-    include 'modal-reassign.php';
-    ?>
+include 'modal-reassign.php';
+?>
 
     <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
@@ -450,7 +453,7 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
     }
 
     // Tangkap notifikasi dari URL hasil redirect PHP
-    <?php if(isset($_GET['msg'])): ?>
+    <?php if (isset($_GET['msg'])): ?>
         showToast("<?= $_GET['msg'] ?>", "<?= $_GET['res'] ?? 'primary' ?>");
 
         // Membersihkan URL tanpa reload (Menghapus ?msg=... di browser)

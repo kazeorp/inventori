@@ -1,4 +1,5 @@
 <?php
+
 // Query mengambil semua tipe peripheral dan menjumlahkan stoknya
 $sql_peripheral_dinamis = "
     SELECT
@@ -11,5 +12,3 @@ $sql_peripheral_dinamis = "
 ";
 
 $result_peripheral = mysqli_query($koneksi, $sql_peripheral_dinamis);
-
-?>

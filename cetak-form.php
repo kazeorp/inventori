@@ -7,15 +7,15 @@ include 'koneksi.php';
 if (isset($_GET['manual']) && $_GET['manual'] == 'true') {
     // Mode Manual: Ambil 3 baris perangkat dari URL
     $d1_type = !empty($_GET['type1']) ? htmlspecialchars($_GET['type1']) : '&nbsp;';
-    $d1_sn   = !empty($_GET['sn1'])   ? htmlspecialchars($_GET['sn1'])   : '&nbsp;';
+    $d1_sn   = !empty($_GET['sn1']) ? htmlspecialchars($_GET['sn1']) : '&nbsp;';
     $d1_host = !empty($_GET['host1']) ? htmlspecialchars($_GET['host1']) : '&nbsp;';
 
     $d2_type = !empty($_GET['type2']) ? htmlspecialchars($_GET['type2']) : '&nbsp;';
-    $d2_sn   = !empty($_GET['sn2'])   ? htmlspecialchars($_GET['sn2'])   : '&nbsp;';
+    $d2_sn   = !empty($_GET['sn2']) ? htmlspecialchars($_GET['sn2']) : '&nbsp;';
     $d2_host = !empty($_GET['host2']) ? htmlspecialchars($_GET['host2']) : '&nbsp;';
 
     $d3_type = !empty($_GET['type3']) ? htmlspecialchars($_GET['type3']) : '&nbsp;';
-    $d3_sn   = !empty($_GET['sn3'])   ? htmlspecialchars($_GET['sn3'])   : '&nbsp;';
+    $d3_sn   = !empty($_GET['sn3']) ? htmlspecialchars($_GET['sn3']) : '&nbsp;';
     $d3_host = !empty($_GET['host3']) ? htmlspecialchars($_GET['host3']) : '&nbsp;';
 
     // Data Karyawan Manual

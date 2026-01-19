@@ -1,17 +1,22 @@
 <?php
+
 // helpers.php
 
 // Fungsi untuk keamanan (mencegah XSS)
 if (!function_exists('e')) {
-  function e($text) {
-    return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
-  }
+    function e($text)
+    {
+        return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
+    }
 }
 
 ## FUNGSI BARU UNTUK WEBSOCKETS
 if (!function_exists('pushWebSocketUpdate')) {
-    function pushWebSocketUpdate($id, $action) {
-        if (!defined('NODE_FULL_BROADCAST_URL')) return;
+    function pushWebSocketUpdate($id, $action)
+    {
+        if (!defined('NODE_FULL_BROADCAST_URL')) {
+            return;
+        }
 
         $url = NODE_FULL_BROADCAST_URL;
         $broadcast_data = json_encode(['id' => $id, 'action' => $action]);
@@ -22,7 +27,7 @@ if (!function_exists('pushWebSocketUpdate')) {
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => $broadcast_data,
             CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Content-Length: ' . strlen($broadcast_data)],
-            CURLOPT_TIMEOUT => 2 // Batasan waktu singkat agar tidak memblokir
+            CURLOPT_TIMEOUT => 2, // Batasan waktu singkat agar tidak memblokir
         ]);
 
         $response = curl_exec($ch);

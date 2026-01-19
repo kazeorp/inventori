@@ -5,44 +5,44 @@ include "helpers.php"; // 1. Sertakan helpers.php
 // --- 1. AMBIL DATA INVENTORI ---
 $id = $_GET['id'] ?? '';
 if (empty($id)) {
-  die("ID data tidak ditemukan!");
+    die("ID data tidak ditemukan!");
 }
 
 $data = mysqli_query($koneksi, "SELECT * FROM inventori WHERE id='$id'");
 $row = mysqli_fetch_assoc($data);
 
 if (!$row) {
-  die("Data inventori tidak ditemukan!");
+    die("Data inventori tidak ditemukan!");
 }
 
 // --- 2. LOGIKA UPDATE DATA ---
 if (isset($_POST['update'])) {
-  // Ambil dan sanitasi semua data input
-  $id_update = mysqli_real_escape_string($koneksi, $_POST['id']);
-  $rak = mysqli_real_escape_string($koneksi, $_POST['rak']);
-  $status = mysqli_real_escape_string($koneksi, $_POST['status']);
+    // Ambil dan sanitasi semua data input
+    $id_update = mysqli_real_escape_string($koneksi, $_POST['id']);
+    $rak = mysqli_real_escape_string($koneksi, $_POST['rak']);
+    $status = mysqli_real_escape_string($koneksi, $_POST['status']);
 
-  // DATA BARU
-  $domain = mysqli_real_escape_string($koneksi, $_POST['domain']);
-  $device_category = mysqli_real_escape_string($koneksi, $_POST['device_category']);
+    // DATA BARU
+    $domain = mysqli_real_escape_string($koneksi, $_POST['domain']);
+    $device_category = mysqli_real_escape_string($koneksi, $_POST['device_category']);
 
-  // HOSTNAME di-UPPERCASE
-  $hostname = strtoupper(mysqli_real_escape_string($koneksi, $_POST['hostname']));
+    // HOSTNAME di-UPPERCASE
+    $hostname = strtoupper(mysqli_real_escape_string($koneksi, $_POST['hostname']));
 
-  $type = mysqli_real_escape_string($koneksi, $_POST['type']);
-  $serial_number  = strtoupper(mysqli_real_escape_string($koneksi, $_POST['serial_number'] ?? ''));
-  $ram = mysqli_real_escape_string($koneksi, $_POST['ram']);
-  $storage = strtoupper(mysqli_real_escape_string($koneksi, $_POST['storage'] ?? ''));
-  $win = mysqli_real_escape_string($koneksi, $_POST['win']);
-  $keterangan = mysqli_real_escape_string($koneksi, $_POST['keterangan']);
-  $kelengkapan = mysqli_real_escape_string($koneksi, $_POST['kelengkapan']);
-  $tanggal_keluar = mysqli_real_escape_string($koneksi, $_POST['tanggal_keluar']);
-  $nik = mysqli_real_escape_string($koneksi, $_POST['nik']);
-  $nama = mysqli_real_escape_string($koneksi, $_POST['nama']);
-  $divisi = mysqli_real_escape_string($koneksi, $_POST['divisi']);
+    $type = mysqli_real_escape_string($koneksi, $_POST['type']);
+    $serial_number  = strtoupper(mysqli_real_escape_string($koneksi, $_POST['serial_number'] ?? ''));
+    $ram = mysqli_real_escape_string($koneksi, $_POST['ram']);
+    $storage = strtoupper(mysqli_real_escape_string($koneksi, $_POST['storage'] ?? ''));
+    $win = mysqli_real_escape_string($koneksi, $_POST['win']);
+    $keterangan = mysqli_real_escape_string($koneksi, $_POST['keterangan']);
+    $kelengkapan = mysqli_real_escape_string($koneksi, $_POST['kelengkapan']);
+    $tanggal_keluar = mysqli_real_escape_string($koneksi, $_POST['tanggal_keluar']);
+    $nik = mysqli_real_escape_string($koneksi, $_POST['nik']);
+    $nama = mysqli_real_escape_string($koneksi, $_POST['nama']);
+    $divisi = mysqli_real_escape_string($koneksi, $_POST['divisi']);
 
-  // Tambahkan domain dan device_category ke query UPDATE
-  $sql = "UPDATE inventori SET
+    // Tambahkan domain dan device_category ke query UPDATE
+    $sql = "UPDATE inventori SET
       rak='$rak', status='$status', hostname='$hostname', type='$type',
       domain='$domain', device_category='$device_category', serial_number='$serial_number',
       ram='$ram', storage='$storage', win='$win', keterangan='$keterangan',
@@ -50,14 +50,14 @@ if (isset($_POST['update'])) {
       nik='$nik', nama='$nama', divisi='$divisi'
       WHERE id='$id_update'";
 
-  if (mysqli_query($koneksi, $sql)) {
+    if (mysqli_query($koneksi, $sql)) {
         // 2. Panggil fungsi untuk memicu WebSocket setelah update berhasil
         pushWebSocketUpdate($id_update, 'asset_update');
 
-    echo "<script>alert('Data berhasil diupdate!'); window.location='tampil.php';</script>";
-  } else {
-    echo "<script>alert('Error: Gagal mengupdate data: " . mysqli_error($koneksi) . "');</script>";
-  }
+        echo "<script>alert('Data berhasil diupdate!'); window.location='tampil.php';</script>";
+    } else {
+        echo "<script>alert('Error: Gagal mengupdate data: " . mysqli_error($koneksi) . "');</script>";
+    }
 }
 ?>
 
@@ -83,20 +83,20 @@ if (isset($_POST['update'])) {
           <?php
             // Mengambil opsi status dan memastikan nilai yang tersimpan di DB terpilih
             $current_status = $row['status'];
-            // Opsi status harus konsisten dengan status.php Anda
-            $status_options = [
-              '', 'Spare', 'Grace Period', 'Pending Service',
-              'Scrap', 'MT', 'Ready To Assign', 'Assign', 'Loan'
-            ];
+// Opsi status harus konsisten dengan status.php Anda
+$status_options = [
+    '', 'Spare', 'Grace Period', 'Pending Service',
+    'Scrap', 'MT', 'Ready To Assign', 'Assign', 'Loan',
+];
 
-            echo '<option value="">-- Pilih Status --</option>';
-            foreach ($status_options as $option) {
-              $selected = (strcasecmp($option, $current_status) == 0) ? 'selected' : '';
-              if (!empty($option)) {
-                echo "<option value=\"$option\" $selected>$option</option>";
-              }
-            }
-          ?>
+echo '<option value="">-- Pilih Status --</option>';
+foreach ($status_options as $option) {
+    $selected = (strcasecmp($option, $current_status) == 0) ? 'selected' : '';
+    if (!empty($option)) {
+        echo "<option value=\"$option\" $selected>$option</option>";
+    }
+}
+?>
         </select>
       </div>
       <div class="col-md-6">
@@ -110,25 +110,25 @@ if (isset($_POST['update'])) {
         <label>Domain</label>
         <select name="domain" id="domain" class="form-control" required>
           <?php
-            $domain_options = ['APP', 'SMF', 'CKP', 'TGR', 'KRW'];
-            foreach ($domain_options as $option) {
-              $selected = ($row['domain'] == $option) ? 'selected' : '';
-              echo "<option value=\"$option\" $selected>$option</option>";
-            }
-          ?>
+  $domain_options = ['APP', 'SMF', 'CKP', 'TGR', 'KRW'];
+foreach ($domain_options as $option) {
+    $selected = ($row['domain'] == $option) ? 'selected' : '';
+    echo "<option value=\"$option\" $selected>$option</option>";
+}
+?>
         </select>
       </div>
       <div class="col-md-6">
         <label>Kategori Perangkat</label>
         <select name="device_category" id="device_category" class="form-control" required>
           <?php
-            $category_options = ['', 'Laptop', 'Desktop', 'Server', 'Printer', 'Monitor'];
-            foreach ($category_options as $option) {
-              $selected = ($row['device_category'] == $option) ? 'selected' : '';
-              $display = empty($option) ? '-- Pilih Kategori --' : $option;
-              echo "<option value=\"$option\" $selected>$display</option>";
-            }
-          ?>
+  $category_options = ['', 'Laptop', 'Desktop', 'Server', 'Printer', 'Monitor'];
+foreach ($category_options as $option) {
+    $selected = ($row['device_category'] == $option) ? 'selected' : '';
+    $display = empty($option) ? '-- Pilih Kategori --' : $option;
+    echo "<option value=\"$option\" $selected>$display</option>";
+}
+?>
         </select>
       </div>
     </div>
@@ -142,25 +142,25 @@ if (isset($_POST['update'])) {
         <label>Type</label>
         <select name="type" class="form-control" required>
           <?php
-          // Mengambil data tipe dari tabel device_types
-          $current_type = $row['type'];
-          $query_tipe = "SELECT type_name FROM device_types ORDER BY type_name ASC";
-          $result_tipe = mysqli_query($koneksi, $query_tipe);
+// Mengambil data tipe dari tabel device_types
+$current_type = $row['type'];
+$query_tipe = "SELECT type_name FROM device_types ORDER BY type_name ASC";
+$result_tipe = mysqli_query($koneksi, $query_tipe);
 
-          echo '<option value="">-- Pilih Type --</option>';
+echo '<option value="">-- Pilih Type --</option>';
 
-          if ($result_tipe && mysqli_num_rows($result_tipe) > 0) {
-            while ($tipe_row = mysqli_fetch_assoc($result_tipe)) {
-              $tipe_val = htmlspecialchars($tipe_row['type_name']);
-              // Perbandingan untuk menentukan opsi yang dipilih (case-insensitive)
-              $selected = (strcasecmp($tipe_val, $current_type) == 0) ? 'selected' : '';
-              echo "<option value=\"$tipe_val\" $selected>$tipe_val</option>";
-            }
-          } else {
-            // Fallback: Jika DB kosong, tampilkan nilai yang tersimpan
-            echo "<option value=\"$current_type\" selected>$current_type</option>";
-          }
-          ?>
+if ($result_tipe && mysqli_num_rows($result_tipe) > 0) {
+    while ($tipe_row = mysqli_fetch_assoc($result_tipe)) {
+        $tipe_val = htmlspecialchars($tipe_row['type_name']);
+        // Perbandingan untuk menentukan opsi yang dipilih (case-insensitive)
+        $selected = (strcasecmp($tipe_val, $current_type) == 0) ? 'selected' : '';
+        echo "<option value=\"$tipe_val\" $selected>$tipe_val</option>";
+    }
+} else {
+    // Fallback: Jika DB kosong, tampilkan nilai yang tersimpan
+    echo "<option value=\"$current_type\" selected>$current_type</option>";
+}
+?>
         </select>
       </div>
     </div>
@@ -190,18 +190,18 @@ if (isset($_POST['update'])) {
       <select name="kelengkapan" id="kelengkapan" class="form-control">
         <?php
         $kelengkapan_options = [
-          'Tas', 'Adaptor', 'Tas dan Adaptor', 'Tas dan Converter VGA',
-          'Tas dan Converter LAN', 'Tas, Adaptor, Converter LAN',
-          'Tas, Adaptor, Converter VGA', 'Tas, Adaptor, Converter LAN & VGA'
+  'Tas', 'Adaptor', 'Tas dan Adaptor', 'Tas dan Converter VGA',
+  'Tas dan Converter LAN', 'Tas, Adaptor, Converter LAN',
+  'Tas, Adaptor, Converter VGA', 'Tas, Adaptor, Converter LAN & VGA',
         ];
-        $current_kel = $row['kelengkapan'];
+$current_kel = $row['kelengkapan'];
 
-        echo '<option value="">-- Pilih Kelengkapan --</option>';
-        foreach ($kelengkapan_options as $option) {
-          $selected = ($current_kel == $option) ? 'selected' : '';
-          echo "<option value=\"$option\" $selected>$option</option>";
-        }
-        ?>
+echo '<option value="">-- Pilih Kelengkapan --</option>';
+foreach ($kelengkapan_options as $option) {
+    $selected = ($current_kel == $option) ? 'selected' : '';
+    echo "<option value=\"$option\" $selected>$option</option>";
+}
+?>
       </select>
     </div>
 

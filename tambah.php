@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 include 'koneksi.php';
 include 'helpers.php'; // Digunakan untuk fungsi pushWebSocketUpdate
@@ -38,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $device_category = mysqli_real_escape_string($koneksi, $_POST['device_category'] ?? '');
 
     // 🚀 DATA BARU: Ambil service_id_to_update dari hidden field
-    $service_id_to_update = (int)($_POST['service_id_to_update'] ?? 0);
+    $service_id_to_update = (int) ($_POST['service_id_to_update'] ?? 0);
 
     // KONVERSI HOSTNAME KE UPPERCASE
     $hostname = strtoupper(mysqli_real_escape_string($koneksi, $_POST['hostname'] ?? ''));
@@ -107,4 +108,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     header("Location: tampil.php");
     exit;
 }
-?>
