@@ -71,7 +71,7 @@ if ($koneksi) {
 // >>> REVISI INI: Mengambil data Aset yang SEDANG DALAM SERVICE (On Service)
 $service_list_on_service = [];
 if ($koneksi) {
-// Query On Service: Sudah diklaim (claim_status='On Service') DAN Belum Selesai (finish_status IS NULL)
+    // Query On Service: Sudah diklaim (claim_status='On Service') DAN Belum Selesai (finish_status IS NULL)
     $sql_service = "SELECT sl.id_service, sl.hostname, sl.tanggal_masuk,
                            sl.claim_status, sl.admin_claim_name,
                            i.nama AS nama_user, i.divisi
@@ -142,7 +142,7 @@ if ($koneksi) {
                 </form>
             </div>
 
-            <hr class="mb-5">
+            <hr class="mb-1">
 
             <div id="status-alert-container">
                 <?php if (isset($_SESSION['scan_error'])): ?>
@@ -153,12 +153,12 @@ if ($koneksi) {
         </div>
     </div>
 
-    <div class="row justify-content-center mt-4">
+    <div class="row justify-content-center mt-2">
 
 <div class="col-md-6">
             <h5 class="mb-3 text-center">User Dalam Antrian</h5>
 
-            <?php $scan_chunks = array_chunk($service_list_pending, 5); // Bagi data menjadi potongan 5 ?>
+            <?php $scan_chunks = array_chunk($service_list_pending, 5); // Bagi data menjadi potongan 5?>
 
             <div id="assetScanCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner" id="scanHistoryInner">
@@ -192,7 +192,8 @@ if ($koneksi) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php $no = ($index * 5) + 1; foreach ($chunk as $data): ?>
+                                    <?php $no = ($index * 5) + 1;
+                        foreach ($chunk as $data): ?>
                                     <tr>
                                         <td><?= $no++ ?></td>
                                         <td><?= htmlspecialchars($data['hostname'] ?? '-') ?></td>
@@ -211,7 +212,7 @@ if ($koneksi) {
 
                 </div>
 
-                <?php if (count($scan_chunks) > 1): // Tampilkan kontrol jika lebih dari 1 halaman ?>
+                <?php if (count($scan_chunks) > 1): // Tampilkan kontrol jika lebih dari 1 halaman?>
                 <button class="carousel-control-prev" type="button" data-bs-target="#assetScanCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Previous</span>
@@ -228,7 +229,7 @@ if ($koneksi) {
 <div class="col-md-6">
             <h5 class="mb-3 text-center"> Daftar Aset On Service</h5>
 
-            <?php $service_chunks = array_chunk($service_list_on_service, 5); // Bagi data menjadi potongan 5 ?>
+            <?php $service_chunks = array_chunk($service_list_on_service, 5); // Bagi data menjadi potongan 5?>
 
             <div id="serviceOnCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
@@ -261,7 +262,8 @@ if ($koneksi) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php $no = ($index * 5) + 1; foreach ($chunk as $service): ?>
+                                    <?php $no = ($index * 5) + 1;
+                        foreach ($chunk as $service): ?>
                                     <tr>
                                         <td><?= $no++ ?></td>
                                         <td><?= htmlspecialchars($service['hostname'] ?? '-') ?></td>
@@ -279,7 +281,7 @@ if ($koneksi) {
 
                 </div>
 
-                <?php if (count($service_chunks) > 1): // Tampilkan kontrol jika lebih dari 1 halaman ?>
+                <?php if (count($service_chunks) > 1): // Tampilkan kontrol jika lebih dari 1 halaman?>
                 <button class="carousel-control-prev" type="button" data-bs-target="#serviceOnCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Previous</span>
