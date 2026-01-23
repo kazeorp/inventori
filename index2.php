@@ -178,7 +178,6 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
     <?php include 'sidebar.php'; ?>
 
     <main class="main-content">
-        <?php include 'notifikasi.php'; ?>
 
 <h2 class="mb-4">Dashboard Administrator</h2>
 
@@ -304,11 +303,12 @@ foreach ($data_peripheral as $label => $info):
 
                                 <?php else: ?>
                                     <?php if (!$is_claimed): ?>
-                                        <button type="button" class="btn btn-sm btn-success btn-claim"
-                                            onclick="if(confirm('Pick up service untuk <?= e($row['hostname']) ?>?')) { window.location.href='proses-service.php?pickup=<?= $row['id_service'] ?>'; }">
+                                        <button type="button"
+                                                class="btn btn-sm btn-success btn-claim"
+                                                data-id="<?= $row['id_service'] ?>"
+                                                data-hostname="<?= e($row['hostname']) ?>">
                                             <i class="bi bi-person-fill-up"></i> Pick Up
                                         </button>
-
                                     <?php else: ?>
                                         <?php if ($is_my_claim): ?>
                                             <?php if ($is_superadmin_user): ?>
@@ -324,10 +324,12 @@ foreach ($data_peripheral as $label => $info):
                                                 <i class="bi bi-gear"></i> Proses
                                             </a>
 
-                                            <button type="button" class="btn btn-sm btn-danger btn-selesai"
-                                                onclick="if(confirm('Selesaikan service ini?')) { window.location.href='proses-service.php?selesai=<?= $row['id_service'] ?>'; }">
-                                                <i class="bi bi-check-circle"></i> Selesai
-                                            </button>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-danger btn-selesai"
+                                                        data-id="<?= $row['id_service'] ?>"
+                                                        data-hostname="<?= e($row['hostname']) ?>">
+                                                    <i class="bi bi-check-circle"></i> Selesai
+                                                </button>
 
                                         <?php elseif ($is_superadmin_user): ?>
                                             <button type="button" class="btn btn-sm btn-info text-white btn-reassign"
@@ -434,29 +436,87 @@ foreach ($data_peripheral as $label => $info):
 include 'modal-reassign.php';
 ?>
 
-    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
-    <script src="main.js"></script>
-    <script>
-    // Inisialisasi Toast
+<script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
+<script src="main.js"></script>
+<script>
+    // --- 1. FUNGSI UNTUK PICKUP/CLAIM ---
+    function prosesPickup(idService, hostname) {
+        if (!confirm('Pick up service untuk ' + hostname + '?')) return;
+
+        const formData = new FormData();
+        formData.append('id_service', idService);
+        formData.append('hostname', hostname);
+        formData.append('loan_hostname', '');
+
+        fetch('ajax_claim_service.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Berhasil: Redirect ke detail-aset.php sesuai response JSON Anda
+                window.location.href = data.redirect_url;
+            } else {
+                showToast(data.message, "danger");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast("Kesalahan sistem saat memproses pick up.", "danger");
+        });
+    }
+
+    // --- 2. FUNGSI UNTUK SELESAIKAN SERVICE (Sesuai ajax_selesaikan_service.php Anda) ---
+    function prosesSelesai(idService, hostname) {
+        if (!confirm('Selesaikan service untuk ' + hostname + '?')) return;
+
+        const formData = new FormData();
+        formData.append('id_service', idService); // Mengirim parameter id_service via POST
+
+        fetch('ajax_selesaikan_service.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Tampilkan pesan sukses dari server
+                showToast(data.message, "success");
+
+                // Hilangkan baris tabel secara otomatis dengan efek transisi
+                const row = document.getElementById('service-row-' + idService);
+                if (row) {
+                    row.style.transition = "all 0.5s ease";
+                    row.style.opacity = "0";
+                    row.style.background = "#d1e7dd"; // Hijau muda menandakan selesai
+                    setTimeout(() => row.remove(), 500);
+                }
+            } else {
+                showToast(data.message, "danger");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast("Terjadi kesalahan sistem saat menyelesaikan servis.", "danger");
+        });
+    }
+
+    // --- 3. LOGIKA TOAST & NOTIFIKASI BAWAAN ANDA ---
     const toastElement = document.getElementById('liveToast');
     const toastInstance = toastElement ? new bootstrap.Toast(toastElement, { delay: 4000 }) : null;
 
     function showToast(message, type = 'primary') {
         if (!toastInstance) return;
         const body = document.getElementById('toast-body');
-
-        // Atur warna background (success=hijau, danger=merah, info=biru)
         toastElement.className = `toast align-items-center text-white bg-${type} border-0`;
         body.innerText = message;
         toastInstance.show();
     }
 
-    // Tangkap notifikasi dari URL hasil redirect PHP
     <?php if (isset($_GET['msg'])): ?>
         showToast("<?= $_GET['msg'] ?>", "<?= $_GET['res'] ?? 'primary' ?>");
-
-        // Membersihkan URL tanpa reload (Menghapus ?msg=... di browser)
         if (window.history.replaceState) {
             window.history.replaceState(null, null, window.location.pathname);
         }

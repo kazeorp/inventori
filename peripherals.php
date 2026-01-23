@@ -147,7 +147,6 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
     <?php include 'sidebar.php'; ?>
 
     <main class="main-content">
-        <?php include 'notifikasi.php'; ?>
         <?php include 'toast.php'; ?>
 
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">

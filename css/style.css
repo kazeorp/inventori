@@ -145,18 +145,6 @@ body {
 	padding: 4px 6px;
 }
 
-/* --- Fix Modal Stacking Context --- */
-
-/* Modal Backdrop (layar hitam) */
-.modal-backdrop {
-	z-index: 1200 !important;
-}
-
-/* Kotak Modal */
-.modal {
-	z-index: 1250 !important;
-}
-
 /* Spesifik untuk tabel di dalam Modal Pencarian agar tidak miring */
 #searchAssetModal .table {
 	table-layout: fixed; /* Mengunci lebar kolom */

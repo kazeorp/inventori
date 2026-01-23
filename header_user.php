@@ -18,6 +18,8 @@
   </a>
 
   <div class="d-flex align-items-center">
-    <?php include "notifikasi.php"; ?>
+    <button type="button" class="btn btn-primary position-relative" data-bs-toggle="modal" data-bs-target="#registerModal">
+        <i class="bi bi-plus-circle"></i> Register
+    </button>
   </div>
 </div>

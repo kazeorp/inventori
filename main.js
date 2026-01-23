@@ -450,7 +450,9 @@ document.addEventListener("DOMContentLoaded", function () {
 							alert(data.message);
 
 							if (data.success) {
-								window.location.reload();
+								const row = document.getElementById(`service-row-${serviceId}`);
+								if (row) row.remove();
+								showToast(data.message, "success");
 							} else {
 								selesaiButton.disabled = false;
 								selesaiButton.innerHTML =

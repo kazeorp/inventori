@@ -118,15 +118,10 @@ if ($koneksi) {
     </style>
 </head>
 <body class="bg-light">
-<?php include 'header.php'; ?>
+<?php include 'header_user.php'; ?>
 <?php include 'sidebar.php'; ?>
 
 <main class="main-content container py-4">
-    <div class="d-flex justify-content-middle mb-3">
-    <button type="button" class="btn btn-primary position-relative" data-bs-toggle="modal" data-bs-target="#registerModal">
-        <i class="bi bi-plus-circle"></i> Register
-    </button>
-    </div>
     <h2 class="mb-4 text-center">Scan Barcode</h2>
 
     <div class="row justify-content-center">
