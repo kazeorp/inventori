@@ -95,6 +95,7 @@ $result = mysqli_query($koneksi, $query);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Inventori Gudang</title>
   <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
@@ -148,7 +149,6 @@ $result = mysqli_query($koneksi, $query);
 
 <main class="main-content">
   <div class="container-fluid pt-4">
-    <?php include 'toast.php'; ?>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="text-dark fw-bold m-0">
@@ -261,43 +261,36 @@ $result = mysqli_query($koneksi, $query);
   </div>
 </main>
 
+<?php include 'toast.php'; ?>
   <?php include 'modal-edit.php'; ?>
   <?php include 'modal-tambahdata.php'; ?>
   <?php include 'modal-import.php'; ?>
   <?php include 'modal-tipe-laptop.php'; ?>
-  <?php include 'toast.php'; ?>
+
+  <script>
+    const userRole = '<?= isset($_SESSION['role']) ? htmlspecialchars($_SESSION['role']) : 'normal' ?>';
+    // Hapus baris fireToast jika ada di sini
+  </script>
 
 
-<script>
-  const userRole = '<?= isset($_SESSION['role']) ? htmlspecialchars($_SESSION['role']) : 'normal' ?>';
-  const currentURLParams = window.location.search;
 
-    // --- LOGIKA EXPORT EXCEL ---
+  <script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
+
+  <script src="main.js"></script>
+  <script src="tipe_inventori.js"></script>
+
+  <script>
+    // Logika Export diletakkan paling bawah setelah DOM siap
     document.addEventListener('DOMContentLoaded', function() {
         const exportLink = document.getElementById('export-link');
         if (exportLink) {
-            let exportUrl = 'export_inventori.php?';
-            exportUrl += 'status=' + encodeURIComponent('<?= e($status_filter); ?>');
-
-            if ('<?= e($cari); ?>' !== '') {
-                exportUrl += '&cari=' + encodeURIComponent('<?= e($cari); ?>');
-            }
-            if ('<?= e($rak_filter); ?>' !== '') {
-                exportUrl += '&rak=' + encodeURIComponent('<?= e($rak_filter); ?>');
-            }
-            if ('<?= e($type_filter); ?>' !== '') {
-                exportUrl += '&type=' + encodeURIComponent('<?= e($type_filter); ?>');
-            }
-
+            let exportUrl = 'export_inventori.php?status=' + encodeURIComponent('<?= e($status_filter); ?>');
+            <?php if (!empty($cari)): ?> exportUrl += '&cari=' + encodeURIComponent('<?= e($cari); ?>'); <?php endif; ?>
+            <?php if (!empty($rak_filter)): ?> exportUrl += '&rak=' + encodeURIComponent('<?= e($rak_filter); ?>'); <?php endif; ?>
+            <?php if (!empty($type_filter)): ?> exportUrl += '&type=' + encodeURIComponent('<?= e($type_filter); ?>'); <?php endif; ?>
             exportLink.href = exportUrl;
         }
     });
   </script>
-
-  <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
-  <script src="main.js"></script>
-  <script src="tipe_inventori.js"></script>
-
 </body>
 </html>

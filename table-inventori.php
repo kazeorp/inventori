@@ -153,9 +153,11 @@ if (isset($result) && mysqli_num_rows($result) > 0) {
         }
         echo "</td>";
 
-        // 4. Hostname & Tipe (dengan modal link)
+        // Ganti bagian Hostname & Tipe (Kolom 4) dengan kode ini:
         echo "<td>
-      <a href='#' class='$editClass text-decoration-none fw-bold' data-bs-toggle='modal' data-bs-target='#editModal'
+      <a href='#' class='edit-btn text-decoration-none fw-bold'
+        data-bs-toggle='modal'
+        data-bs-target='#editModal'
         data-id='{$row['id']}'
         data-rak='{$row['rak']}'
         data-status='{$row['status']}'
@@ -163,6 +165,7 @@ if (isset($result) && mysqli_num_rows($result) > 0) {
         data-type='{$row['type']}'
         data-domain='{$row['domain']}'
         data-device_category='{$row['device_category']}'
+        data-serial_number='{$row['serial_number']}'
         data-ram='{$row['ram']}'
         data-storage='{$row['storage']}'
         data-win='{$row['win']}'
@@ -173,7 +176,6 @@ if (isset($result) && mysqli_num_rows($result) > 0) {
         data-nik='{$row['nik']}'
         data-nama='{$row['nama']}'
         data-divisi='{$row['divisi']}'
-        data-tanggal_register='{$row['tanggal_register']}'
       >
       <i class='bi bi-pc-display-horizontal me-1'></i> {$hostname_display}</a>
       {$warningBadge}
@@ -182,7 +184,7 @@ if (isset($result) && mysqli_num_rows($result) > 0) {
       <div class='small text-muted mt-1'>
         Kategori: <strong>{$device_category_display}</strong> | Tipe: {$type_display}
       </div>
-    </td>"; // 4. Penutup Hostname
+    </td>";
 
         echo "<td>{$specs}</td>"; // 5. Spesifikasi
 

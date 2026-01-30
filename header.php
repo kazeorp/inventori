@@ -21,3 +21,5 @@
     <?php include "notifikasi.php"; ?>
   </div>
 </div>
+
+<?php include "notifikasi_modal.php"; ?>

@@ -126,9 +126,17 @@ body {
 
 /* --- Penyesuaian Modal Stacking --- */
 .modal-backdrop {
-	z-index: 1200 !important;
+	z-index: 1150 !important;
 }
 .modal {
+	z-index: 1200 !important;
+}
+
+/* Tambahan: Jika Anda menggunakan Offcanvas untuk notifikasi */
+.offcanvas {
+	z-index: 1300 !important;
+}
+.offcanvas-backdrop {
 	z-index: 1250 !important;
 }
 
@@ -169,33 +177,47 @@ body {
 	padding-left: 0 !important;
 }
 
+/* Update CSS Timeline agar mendukung Icon Bootstrap */
 .timeline {
-	border-left: 3px solid #e9ecef;
-	padding: 0 0 20px 30px;
+	border-left: 3px solid #dee2e6;
+	padding-left: 30px;
 	margin-left: 10px;
 	position: relative;
 }
-/* Memberikan jarak antar item (margin-bottom lebih besar) */
+
 .timeline-item {
 	position: relative;
-	margin-bottom: 40px;
 }
+
 .timeline-item::before {
-	content: "";
+	content: ""; /* Lingkaran titik tetap ada */
 	position: absolute;
 	left: -39px;
-	top: 8px;
-	width: 16px;
-	height: 16px;
-	background: #dc3545;
+	top: 5px;
+	width: 15px;
+	height: 15px;
+	background: #fff;
+	border: 3px solid #007bff;
 	border-radius: 50%;
-	border: 3px solid #fff;
-	box-shadow: 0 0 0 3px #f8d7da;
+	z-index: 1;
 }
+
+/* Warna lingkaran berdasarkan aksi (opsional jika ingin lebih berwarna) */
+.timeline-item:has(.bg-success)::before {
+	border-color: #198754;
+}
+.timeline-item:has(.bg-danger)::before {
+	border-color: #dc3545;
+}
+.timeline-item:has(.bg-warning)::before {
+	border-color: #ffc107;
+}
+
 .timeline-date {
-	font-weight: bold;
-	color: #495057;
-	font-size: 0.85rem;
-	margin-bottom: 12px;
-	display: block;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: #6c757d;
+	margin-bottom: 8px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }

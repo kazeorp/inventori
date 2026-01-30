@@ -29,15 +29,18 @@ $mode_awal = true;
 $is_service_claim_redirect = false;
 
 // Logika Pencarian/Akses Aset
-if (isset($_GET['cari']) && !empty($_GET['keyword'])) {
-    $keyword = mysqli_real_escape_string($koneksi, $_GET['keyword']);
-    $query = mysqli_query($koneksi, "SELECT * FROM inventori WHERE hostname LIKE '%$keyword%' OR ticket LIKE '%$keyword%' LIMIT 1");
 
-    //  KOREKSI 1: Hanya fetch jika query berhasil
-    if ($query) {
+if (isset($_GET['cari']) && !empty($_GET['keyword'])) {
+    // Trim untuk spasi, strtoupper untuk paksa kapital
+    $keyword = strtoupper(trim(mysqli_real_escape_string($koneksi, $_GET['keyword'])));
+
+    // Query mencari di hostname
+    $query = mysqli_query($koneksi, "SELECT * FROM inventori WHERE hostname = '$keyword' OR hostname LIKE '%$keyword%' LIMIT 1");
+
+    if ($query && mysqli_num_rows($query) > 0) {
         $aset = mysqli_fetch_assoc($query);
     } else {
-        $aset = null; // Pastikan $aset null jika query gagal
+        $aset = null;
     }
 
     $id = $aset ? $aset['id'] : 0;
@@ -111,35 +114,37 @@ elseif (isset($_GET['hostname'])) {
 <?php include 'sidebar.php'; ?>
 
 <main class="main-content">
-    <?php if ($mode_awal): ?>
+<?php if ($mode_awal): ?>
         <div class="center-search w-100">
             <form method="GET" class="search-large w-50">
-                <input type="text" name="keyword" class="form-control mb-3" placeholder=" Masukkan hostname" required>
+                <input type="text" name="keyword" class="form-control mb-3" placeholder="Masukkan Hostname atau Nomor Ticket" required autofocus>
                 <button type="submit" name="cari" class="btn btn-primary w-100">Cari Aset</button>
             </form>
         </div>
     <?php elseif (!$aset): ?>
-        <div class="alert alert-warning">
-            Aset dengan keyword tersebut tidak ditemukan. Silakan coba kata kunci lain.
+        <div class="alert alert-warning border-start border-4 border-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            Aset dengan keyword <strong>"<?= e($_GET['keyword'] ?? '') ?>"</strong> tidak ditemukan. Silakan coba Hostname atau Ticket lain.
         </div>
+
         <form method="GET" class="mb-4">
-            <div class="row">
+            <div class="row g-2">
                 <div class="col-md-5">
-                    <input type="text" name="keyword" class="form-control" placeholder="Cari berdasarkan hostname atau ticket" required>
+                    <input type="text" name="keyword" class="form-control" placeholder="Cari hostname atau ticket..." required>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" name="cari" class="btn btn-primary"> Cari</button>
+                    <button type="submit" name="cari" class="btn btn-primary w-100"> Cari</button>
                 </div>
             </div>
         </form>
     <?php else: ?>
         <form method="GET" class="mb-4">
-            <div class="row">
+            <div class="row g-2">
                 <div class="col-md-5">
-                    <input type="text" name="keyword" class="form-control" placeholder="Cari berdasarkan hostname atau ticket" value="<?= isset($_GET['keyword']) ? e($_GET['keyword']) : '' ?>" required>
+                    <input type="text" name="keyword" class="form-control" placeholder="Cari hostname atau ticket..." value="<?= isset($_GET['keyword']) ? e($_GET['keyword']) : '' ?>" required>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" name="cari" class="btn btn-primary"> Cari</button>
+                    <button type="submit" name="cari" class="btn btn-primary w-100"> Cari</button>
                 </div>
             </div>
         </form>
@@ -247,6 +252,7 @@ elseif (isset($_GET['hostname'])) {
     <?php
     include 'modal-aktivitas.php';
         include 'modal-pencarian.php';
+        echo '<script src="aktivitas-modal-handler.js"></script>';
         ?>
   <?php endif; ?>
 
@@ -256,80 +262,76 @@ elseif (isset($_GET['hostname'])) {
 </main>
 
 <script src="main.js"></script>
-<script src="aktivitas-modal-handler.js"></script>
 <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
 <script>
     window.isServiceClaimRedirect = <?= $is_service_claim_redirect ? 'true' : 'false' ?>;
 </script>
 
 <script>
-// Cek parameter URL sebelum DOM dimuat
     const urlParams = new URLSearchParams(window.location.search);
     window.isServiceClaimRedirect = (urlParams.get('action') === 'service_claim');
 
     document.addEventListener('DOMContentLoaded', function() {
-		if (window.isServiceClaimRedirect) {
-				const modalElement = document.getElementById('aktivitasModal');
+        // --- LOGIKA MODAL SERVICE CLAIM ---
+        if (window.isServiceClaimRedirect) {
+            const modalElement = document.getElementById('aktivitasModal');
+            if (modalElement) {
+                const aktivitasModal = new bootstrap.Modal(modalElement);
+                const loanToggle = document.getElementById('toggleLoan');
 
-				if (modalElement) {
-					const aktivitasModal = new bootstrap.Modal(modalElement);
+                if (loanToggle && typeof window.controlLoanFields === 'function') {
+                    loanToggle.checked = false;
+                    window.controlLoanFields(false);
+                }
 
-					// --- PENAMBAHAN UNTUK TOMBOL PROSES (Default ON) ---
-					const loanToggle = document.getElementById('toggleLoan');
+                aktivitasModal.show();
 
-					if (loanToggle && typeof window.controlLoanFields === 'function') {
-						loanToggle.checked = false; // Matikan secara visual
-						window.controlLoanFields(false); // Matikan secara fungsional (tampilkan field NIK/Nama)
-						console.log("JS DEBUG: Proses Claim Selesai. Default Loan diatur OFF.");
-					}
-					// ---------------------------------------------------
+                if (window.history.replaceState) {
+                    const cleanUrl = window.location.href.replace(/[?&]action=service_claim/, '');
+                    history.replaceState(null, null, cleanUrl);
+                }
+            }
+        }
 
-					aktivitasModal.show();
+        // --- LOGIKA TOMBOL EDIT (PERBAIKAN ERROR) ---
+        const editBtn = document.querySelector('.edit-btn'); // Cari tombolnya
+        const modal = document.getElementById('editModal');  // Cari modalnya
 
-					// Hapus parameter URL agar refresh tidak memicu ulang modal
-					if (window.history.replaceState) {
-						const cleanUrl = window.location.protocol + "//" +
-										 window.location.host +
-										 window.location.pathname +
-										 window.location.search.replace(/[?&]action=service_claim/, '');
-						history.replaceState(null, null, cleanUrl);
-					}
-				} else {
-					console.warn('Modal element with ID #aktivitasModal not found.');
-				}
-			}
+        // HANYA jalankan listener jika tombolnya ditemukan di halaman
+        if (editBtn && modal) {
+            editBtn.addEventListener('click', function() {
+                const button = this;
 
-        // Listener untuk Tombol Edit Aset (untuk memuat data ke modal-edit.php)
-        document.querySelector('.edit-btn').addEventListener('click', function() {
-            const button = this;
-            const modal = document.getElementById('editModal');
+                // Fungsi internal untuk mengisi value secara aman
+                const setModalValue = (selector, dataAttr) => {
+                    const input = modal.querySelector(selector);
+                    if (input) {
+                        input.value = button.getAttribute(dataAttr) || '';
+                    }
+                };
 
-            // Memuat data ke form di modal-edit.php
-            modal.querySelector('#edit-id').value = button.getAttribute('data-id');
-            modal.querySelector('#edit-hostname').value = button.getAttribute('data-hostname');
-            modal.querySelector('#edit-rak').value = button.getAttribute('data-rak');
-            modal.querySelector('#edit-status').value = button.getAttribute('data-status');
-            modal.querySelector('#edit-type').value = button.getAttribute('data-type');
-            modal.querySelector('#edit-serial_number').value = button.getAttribute('data-serial_number');
-            modal.querySelector('#edit-ram').value = button.getAttribute('data-ram');
-            modal.querySelector('#edit-storage').value = button.getAttribute('data-storage');
-            modal.querySelector('#edit-win').value = button.getAttribute('data-win');
-            modal.querySelector('#edit-keterangan').value = button.getAttribute('data-keterangan');
-            modal.querySelector('#edit-kelengkapan').value = button.getAttribute('data-kelengkapan');
-            modal.querySelector('#edit-tanggal_masuk').value = button.getAttribute('data-tanggal_masuk');
-            modal.querySelector('#edit-tanggal_keluar').value = button.getAttribute('data-tanggal_keluar');
-            modal.querySelector('#edit-nik').value = button.getAttribute('data-nik');
-            modal.querySelector('#edit-nama').value = button.getAttribute('data-nama');
-            modal.querySelector('#edit-divisi').value = button.getAttribute('data-divisi');
-            // Tambahkan kolom baru ke Modal Edit
-            modal.querySelector('#edit-domain').value = button.getAttribute('data-domain');
-            modal.querySelector('#edit-device_category').value = button.getAttribute('data-device-category');
-        });
+                setModalValue('#edit-id', 'data-id');
+                setModalValue('#edit-hostname', 'data-hostname');
+                setModalValue('#edit-rak', 'data-rak');
+                setModalValue('#edit-status', 'data-status');
+                setModalValue('#edit-type', 'data-type');
+                setModalValue('#edit-serial_number', 'data-serial_number');
+                setModalValue('#edit-ram', 'data-ram');
+                setModalValue('#edit-storage', 'data-storage');
+                setModalValue('#edit-win', 'data-win');
+                setModalValue('#edit-keterangan', 'data-keterangan');
+                setModalValue('#edit-kelengkapan', 'data-kelengkapan');
+                setModalValue('#edit-tanggal_masuk', 'data-tanggal_masuk');
+                setModalValue('#edit-tanggal_keluar', 'data-tanggal_keluar');
+                setModalValue('#edit-nik', 'data-nik');
+                setModalValue('#edit-nama', 'data-nama');
+                setModalValue('#edit-divisi', 'data-divisi');
+                setModalValue('#edit-domain', 'data-domain');
+                setModalValue('#edit-device_category', 'data-device-category');
+            });
+        }
     });
 </script>
-
-
-
 
 </body>
 </html>

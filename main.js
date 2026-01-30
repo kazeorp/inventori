@@ -127,101 +127,76 @@ document.addEventListener("DOMContentLoaded", function () {
 	// 3. LOGIKA PENGISIAN MODAL EDIT INVENTORI (BARU & LENGKAP)
 	// =======================================================
 
-	// Asumsi: userRole didefinisikan secara global di luar script ini, misal: <script>const userRole = 'admin';</script>
-	const editButtons = document.querySelectorAll(".edit-btn");
-	editButtons.forEach((btn) => {
-		btn.addEventListener("click", function () {
-			const modal = document.getElementById("editModal");
-			if (!modal) return;
+	document.addEventListener("click", function (e) {
+		const btn = e.target.closest(".edit-btn");
+		if (!btn) return;
 
-			// --- PENGAMBILAN DATA DENGAN NORMALISASI ---
+		e.preventDefault(); // Mencegah loncatan scroll
+		const modal = document.getElementById("editModal");
+		if (!modal) return;
 
-			// Kelengkapan
-			const kelengkapanRaw = btn.getAttribute("data-kelengkapan");
-			const dataKelengkapan = normalizeKelengkapan(kelengkapanRaw);
+		// --- PENGAMBILAN DATA DARI DATASET ---
+		// Gunakan dataset agar lebih ringkas dan konsisten
+		const ds = btn.dataset;
 
-			// Kategori Perangkat
-			const categoryRaw = btn.getAttribute("data-device_category");
-			const dataDeviceCategory = categoryRaw ? capitalize(categoryRaw) : "";
+		// Normalisasi Data (Gunakan fungsi pembantu yang sudah Anda buat)
+		const dataKelengkapan = normalizeKelengkapan(ds.kelengkapan);
+		const dataDeviceCategory = ds.device_category
+			? capitalize(ds.device_category)
+			: "";
+		const dataTglMasuk = normalizeDateTimeToDate(ds.tanggal_masuk);
+		const dataTglKeluar = normalizeDateTimeToDate(ds.tanggal_keluar);
 
-			// Tanggal
-			const tglMasukRaw = btn.getAttribute("data-tanggal_masuk");
-			const dataTglMasuk = normalizeDateTimeToDate(tglMasukRaw);
+		// --- PENGISIAN DATA KE MODAL ---
+		modal.querySelector("#edit-id").value = ds.id;
+		modal.querySelector("#edit-hostname").value = ds.hostname;
+		modal.querySelector("#edit-rak").value = ds.rak;
+		modal.querySelector("#edit-ram").value = ds.ram;
+		modal.querySelector("#edit-storage").value = ds.storage;
+		modal.querySelector("#edit-win").value = ds.win;
+		modal.querySelector("#edit-serial_number").value = ds.serial_number || "";
+		modal.querySelector("#edit-keterangan").value = ds.keterangan;
+		modal.querySelector("#edit-nik").value = ds.nik;
+		modal.querySelector("#edit-nama").value = ds.nama;
+		modal.querySelector("#edit-divisi").value = ds.divisi;
 
-			const tglKeluarRaw = btn.getAttribute("data-tanggal_keluar");
-			const dataTglKeluar = normalizeDateTimeToDate(tglKeluarRaw);
+		// Select fields
+		modal.querySelector("#edit-status").value = ds.status;
+		modal.querySelector("#edit-type").value = ds.type;
+		modal.querySelector("#edit-domain").value = ds.domain;
+		modal.querySelector("#edit-kelengkapan").value = dataKelengkapan;
+		modal.querySelector("#edit-device_category").value = dataDeviceCategory;
 
-			// --- PENGISIAN DATA KE MODAL ---
+		// Tanggal
+		modal.querySelector("#edit-tanggal_masuk").value = dataTglMasuk;
+		modal.querySelector("#edit-tanggal_keluar").value = dataTglKeluar;
 
-			// Input fields (menggunakan this.dataset)
-			modal.querySelector("#edit-id").value = this.dataset.id;
-			modal.querySelector("#edit-hostname").value = this.dataset.hostname;
-			// Rak diisi dari dataset, akan di-override jika status diubah (oleh Bagian 2)
-			modal.querySelector("#edit-rak").value = this.dataset.rak;
-			modal.querySelector("#edit-ram").value = this.dataset.ram;
-			modal.querySelector("#edit-storage").value = this.dataset.storage;
-			modal.querySelector("#edit-win").value = this.dataset.win;
-			modal.querySelector("#edit-serial_number").value =
-				this.dataset.serial_number;
-			modal.querySelector("#edit-keterangan").value = this.dataset.keterangan;
-			modal.querySelector("#edit-nik").value = this.dataset.nik;
-			modal.querySelector("#edit-nama").value = this.dataset.nama;
-			modal.querySelector("#edit-divisi").value = this.dataset.divisi;
+		// Link Tombol
+		modal.querySelector("#detailBtn").href = "detail-aset.php?id=" + ds.id;
+		modal.querySelector("#deleteBtn").href = "hapus.php?id=" + ds.id;
 
-			// Select fields
-			modal.querySelector("#edit-status").value = this.dataset.status;
-			modal.querySelector("#edit-type").value = this.dataset.type;
-			modal.querySelector("#edit-domain").value = this.dataset.domain;
-
-			// Pengisian Select Field (Kelengkapan & Kategori)
-			modal.querySelector("#edit-kelengkapan").value = dataKelengkapan;
-			modal.querySelector("#edit-device_category").value = dataDeviceCategory;
-
-			// Pengisian Tanggal
-			modal.querySelector("#edit-tanggal_masuk").value = dataTglMasuk;
-			modal.querySelector("#edit-tanggal_keluar").value = dataTglKeluar;
-
-			// Isi link tombol aksi
-			modal.querySelector("#detailBtn").href =
-				"detail-aset.php?id=" + this.dataset.id;
-			modal.querySelector("#deleteBtn").href =
-				"hapus.php?id=" + this.dataset.id;
-
-			//  Cek Hak Akses
-			const role = userRole;
-
-			const elementsToDisable = modal.querySelectorAll(
-				"input, select, textarea",
-			);
-			const submitBtn = modal.querySelector('button[type="submit"]');
-			const deleteBtn = modal.querySelector("#deleteBtn");
-			const detailBtn = modal.querySelector("#detailBtn");
-
-			if (role === "normal") {
-				elementsToDisable.forEach((el) => {
-					el.setAttribute("readonly", true);
-					el.setAttribute("disabled", true);
-				});
-
-				if (submitBtn) submitBtn.style.display = "none";
-				if (deleteBtn) deleteBtn.style.display = "none";
-				if (detailBtn) detailBtn.style.display = "none";
-			} else {
-				elementsToDisable.forEach((el) => {
-					// Hanya rak yang tetap readonly
-					if (el.id !== "edit-rak") {
-						el.removeAttribute("readonly");
-						el.removeAttribute("disabled");
-					}
-				});
-				if (rakInputEdit) rakInputEdit.setAttribute("readonly", true); // Pastikan Rak tetap readonly
-
-				if (submitBtn) submitBtn.style.display = "inline-block";
-				// Kontrol tampilan tombol Delete dan Detail (asumsi tombol Detail selalu visible untuk admin)
-				if (deleteBtn) deleteBtn.style.display = "inline-block";
-				if (detailBtn) detailBtn.style.display = "inline-block";
-			}
-		});
+		// Hak Akses (Gunakan userRole global)
+		if (typeof userRole !== "undefined" && userRole === "normal") {
+			modal.querySelectorAll("input, select, textarea").forEach((el) => {
+				el.setAttribute("disabled", true);
+			});
+			if (modal.querySelector('button[type="submit"]'))
+				modal.querySelector('button[type="submit"]').style.display = "none";
+			if (modal.querySelector("#deleteBtn"))
+				modal.querySelector("#deleteBtn").style.display = "none";
+		} else {
+			modal.querySelectorAll("input, select, textarea").forEach((el) => {
+				if (el.id !== "edit-rak") {
+					el.removeAttribute("disabled");
+					el.removeAttribute("readonly");
+				}
+			});
+			if (modal.querySelector('button[type="submit"]'))
+				modal.querySelector('button[type="submit"]').style.display =
+					"inline-block";
+			if (modal.querySelector("#deleteBtn"))
+				modal.querySelector("#deleteBtn").style.display = "inline-block";
+		}
 	});
 
 	//  Konfirmasi hapus (Fungsi Global)
@@ -584,3 +559,37 @@ document.addEventListener("DOMContentLoaded", function () {
 		});
 	}
 }); // Penutup DOMContentLoaded
+
+// Fungsi global untuk memanggil toast dari mana saja (Socket.io atau event lain)
+window.showToast = function (message, res = "success") {
+	if (typeof bootstrap === "undefined") {
+		console.warn("Bootstrap belum siap untuk menampilkan toast.");
+		return;
+	}
+
+	const toastElement = document.getElementById("liveToast");
+	const toastBody = document.getElementById("toast-body");
+
+	if (toastElement && toastBody) {
+		// Reset class warna
+		toastElement.classList.remove(
+			"bg-success",
+			"bg-danger",
+			"bg-warning",
+			"bg-info",
+			"text-dark",
+		);
+
+		// Pilih warna
+		let bgClass = "bg-primary";
+		if (res === "success") bgClass = "bg-success";
+		if (res === "danger") bgClass = "bg-danger";
+		if (res === "warning") bgClass = "bg-warning text-dark";
+
+		toastElement.classList.add(...bgClass.split(" "));
+		toastBody.textContent = message;
+
+		const toast = new bootstrap.Toast(toastElement);
+		toast.show();
+	}
+};

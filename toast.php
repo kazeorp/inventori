@@ -9,25 +9,31 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+// Bungkus dalam fungsi agar bisa dipanggil kapan saja
+function checkAndShowToast() {
     const urlParams = new URLSearchParams(window.location.search);
     const msg = urlParams.get('msg');
     const res = urlParams.get('res');
 
     if (msg) {
+        // CEK: Jika bootstrap belum load, tunggu 100ms lalu coba lagi
+        if (typeof bootstrap === 'undefined') {
+            setTimeout(checkAndShowToast, 100);
+            return;
+        }
+
         const toastElement = document.getElementById('liveToast');
         const toastBody = document.getElementById('toast-body');
 
-        // Pilih warna berdasarkan parameter 'res'
-        let bgClass = 'bg-primary'; // Default
+        if (!toastElement || !toastBody) return;
+
+        let bgClass = 'bg-primary';
         if (res === 'success') bgClass = 'bg-success';
         if (res === 'danger') bgClass = 'bg-danger';
         if (res === 'warning') bgClass = 'bg-warning text-dark';
         if (res === 'info') bgClass = 'bg-info text-dark';
 
         toastElement.classList.add(...bgClass.split(' '));
-
-        // Bersihkan dan tampilkan pesan
         toastBody.textContent = decodeURIComponent(msg.replace(/\+/g, ' '));
 
         const toast = new bootstrap.Toast(toastElement, {
@@ -36,11 +42,15 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         toast.show();
 
-        // Bersihkan URL agar saat refresh pesan hilang
         if (window.history.replaceState) {
-            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.search.replace(/[?&]res=[^&]+/, '').replace(/[?&]msg=[^&]+/, '').replace(/^[?&]/, '');
-            window.history.replaceState(null, null, cleanUrl);
+            const url = new URL(window.location);
+            url.searchParams.delete('msg');
+            url.searchParams.delete('res');
+            window.history.replaceState(null, null, url);
         }
     }
-});
+}
+
+// Jalankan saat DOM siap
+document.addEventListener("DOMContentLoaded", checkAndShowToast);
 </script>
