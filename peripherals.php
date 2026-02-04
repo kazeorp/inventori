@@ -207,21 +207,20 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     $filter = $keyword ? "AND (p.serial_number LIKE '%$keyword%' OR t.tipe_barang LIKE '%$keyword%' OR t.model LIKE '%$keyword%' OR p.no_po LIKE '%$keyword%')" : "";
 
                 // Ambil daftar PO unik
-                $sql_po = "SELECT p.no_po
-                               FROM peripheral_items p
-                               JOIN peripheral_types t ON p.kode_barang = t.kode_barang
-                               WHERE p.status='Stock' $filter
-                               GROUP BY p.no_po
-                               ORDER BY p.id_barang DESC";
+                $sql_po = "SELECT p.no_po, COUNT(*) as total_stok
+                            FROM peripheral_items p
+                            JOIN peripheral_types t ON p.kode_barang = t.kode_barang
+                            WHERE p.status='Stock' $filter
+                            GROUP BY p.no_po
+                            ORDER BY MAX(p.id_barang) DESC";
+
                 $res_po = mysqli_query($koneksi, $sql_po);
 
                 $i = 0;
                 while ($po = mysqli_fetch_assoc($res_po)):
                     $current_po = $po['no_po'];
+                    $total_per_po = $po['total_stok']; // Ambil hasil hitung langsung dari sini
                     $i++;
-
-                    $count_q = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM peripheral_items WHERE no_po = '$current_po' AND status = 'Stock'");
-                    $count_data = mysqli_fetch_assoc($count_q);
                     ?>
                     <div class="accordion-item border-bottom">
                         <h2 class="accordion-header" id="heading<?= $i ?>">
@@ -236,9 +235,9 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                                         <span class="small text-muted">Klik untuk detail unit</span>
                                     </div>
 
-                                    <div class="text-end me-3">
-                                        <span class="badge rounded-pill bg-primary" style="width: 70px;"><?= $count_data['total'] ?> Unit</span>
-                                    </div>
+                    <div class="text-end me-3">
+                        <span class="badge rounded-pill bg-primary" style="width: 70px;"><?= $total_per_po ?> Unit</span>
+                    </div>
 
                                 </div>
                             </button>
