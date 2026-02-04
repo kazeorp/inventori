@@ -207,22 +207,12 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     $filter = $keyword ? "AND (p.serial_number LIKE '%$keyword%' OR t.tipe_barang LIKE '%$keyword%' OR t.model LIKE '%$keyword%' OR p.no_po LIKE '%$keyword%')" : "";
 
                 // Ambil daftar PO unik
-<<<<<<< HEAD
                 $sql_po = "SELECT p.no_po, COUNT(*) as total_stok
                             FROM peripheral_items p
                             JOIN peripheral_types t ON p.kode_barang = t.kode_barang
                             WHERE p.status='Stock' $filter
                             GROUP BY p.no_po
                             ORDER BY MAX(p.id_barang) DESC";
-=======
-
-                $sql_po = "SELECT p.no_po
-                        FROM peripheral_items p
-                        JOIN peripheral_types t ON p.kode_barang = t.kode_barang
-                        WHERE p.status='Stock' $filter
-                        GROUP BY p.no_po
-                        ORDER BY MAX(p.id_barang) DESC"; // Gunakan MAX di sini
->>>>>>> 0c181ba4e30b967c3a891f7675c79bb2e60aaefd
 
                 $res_po = mysqli_query($koneksi, $sql_po);
 
