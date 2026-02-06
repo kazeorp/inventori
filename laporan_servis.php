@@ -134,7 +134,7 @@ $result_admins = mysqli_query($koneksi, $sql_admins);
                     <?php if ($result_laporan && mysqli_num_rows($result_laporan) > 0): ?>
                         <?php while ($row_laporan = mysqli_fetch_assoc($result_laporan)): ?>
                             <tr>
-                                <td><?= e($row_laporan['admin_finish_name']) ?></td>
+                                <td><?= e($row_laporan['username_admin']) ?></td>
                                 <td><span class="badge bg-success fs-6"><?= e($row_laporan['total_servis_selesai']) ?></span> Unit</td>
                                 <td>
 									<button type="button" class="btn btn-sm btn-info text-white btn-detail"

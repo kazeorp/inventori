@@ -387,62 +387,24 @@ document.addEventListener("DOMContentLoaded", function () {
 				}
 			}
 
-			// --- HANDLE SELESAIKAN ---
+			// --- HANDLE SELESAIKAN (Revisi untuk membuka Modal) ---
 			if (selesaiButton) {
 				const serviceId = selesaiButton.dataset.id;
 				const hostname = selesaiButton.dataset.hostname;
+				const idInv = selesaiButton.dataset.idInv; // Tambahkan data-id-inv di HTML
 
-				if (!serviceId || !hostname) {
-					alert(
-						"Gagal: Data service ID atau Hostname hilang untuk Selesaikan.",
-					);
-					return;
-				}
+				// Alih-alih Fetch, kita buka modal Bootstrap
+				const modalElement = document.getElementById("modalSelesaiService");
+				if (modalElement) {
+					// Isi data ke dalam form modal
+					document.getElementById("modal_id_service").value = serviceId;
+					document.getElementById("modal_id_inventori").value = idInv;
+					document.getElementById("modal_hostname_display").innerText =
+						hostname;
 
-				if (
-					confirm(
-						`PERHATIAN! Yakin service ID #${serviceId} (Hostname: ${hostname}) sudah selesai? Status aset di Inventori TIDAK akan diubah secara otomatis.`,
-					)
-				) {
-					selesaiButton.disabled = true;
-					selesaiButton.innerHTML =
-						'<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Selesai...';
-
-					fetch("ajax_selesaikan_service.php", {
-						method: "POST",
-						headers: { "Content-Type": "application/x-www-form-urlencoded" },
-						// Cukup kirim data minimum yang dibutuhkan PHP
-						body: `id_service=${serviceId}`,
-						// Anda bisa menghapus &hostname=${hostname} karena tidak digunakan di PHP
-					})
-						.then((response) => {
-							if (!response.ok) {
-								throw new Error(`HTTP error! Status: ${response.status}`);
-							}
-							return response.json();
-						})
-						.then((data) => {
-							alert(data.message);
-
-							if (data.success) {
-								const row = document.getElementById(`service-row-${serviceId}`);
-								if (row) row.remove();
-								showToast(data.message, "success");
-							} else {
-								selesaiButton.disabled = false;
-								selesaiButton.innerHTML =
-									'<i class="bi bi-check-circle"></i> Selesaikan';
-							}
-						})
-						.catch((error) => {
-							console.error("JS ERROR: Error Selesaikan:", error);
-							alert(
-								"Terjadi kesalahan jaringan atau server saat menyelesaikan service.",
-							);
-							selesaiButton.disabled = false;
-							selesaiButton.innerHTML =
-								'<i class="bi bi-check-circle"></i> Selesaikan';
-						});
+					// Tampilkan modal
+					const myModal = new bootstrap.Modal(modalElement);
+					myModal.show();
 				}
 			}
 		});

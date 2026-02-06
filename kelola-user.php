@@ -97,7 +97,7 @@ if ($role_login === 'superadmin') {
                                   ?>
                                   <tr>
                                       <td class="fw-bold"><?= htmlspecialchars($user['username']) ?></td>
-                                      <td><?= htmlspecialchars($user['nama_lengkap']) ?></td>
+                                      <td><?= htmlspecialchars($user['nama_lengkap'] ?? '') ?></td>
                                       <td>
                                           <span class="badge <?= $user['role'] === 'superadmin' ? 'bg-danger' : ($user['role'] === 'normal' ? 'bg-secondary' : 'bg-info') ?>">
                                               <?= ucfirst($user['role']) ?>

@@ -221,3 +221,21 @@ body {
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 }
+
+#btnNotifLonceng {
+	z-index: 1101 !important; /* Harus lebih tinggi dari .logo-header (1100) */
+	position: relative; /* Wajib agar z-index berfungsi */
+	cursor: pointer !important;
+	pointer-events: auto !important; /* Memastikan event klik tertangkap */
+}
+
+#badge-notif {
+	pointer-events: none; /* Klik akan 'tembus' melewati angka badge langsung ke tombol */
+	z-index: 1102;
+}
+
+/* Memastikan kontainer tombol tidak tertutup elemen lain */
+.d-flex.justify-content-end.mb-3 {
+	position: relative;
+	z-index: 1101;
+}
