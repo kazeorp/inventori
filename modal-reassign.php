@@ -14,12 +14,12 @@
                             <select name="new_admin_id" id="new_admin_id" class="form-select" required>
                                 <option value="">-- Pilih Admin Baru --</option>
                                 <?php
-                                $query_users = mysqli_query($koneksi, "SELECT id, username, role FROM admin WHERE role IN ('admin', 'superadmin') ORDER BY username ASC");
+                                $query_users = mysqli_query($koneksi, "SELECT id, nama_lengkap, role FROM admin WHERE role IN ('admin', 'superadmin') ORDER BY nama_lengkap ASC");
 
                                 if ($query_users):
                                     while ($u = mysqli_fetch_assoc($query_users)): ?>
-                                        <option value="<?= e($u['id']) ?>" data-username="<?= e($u['username']) ?>">
-                                            <?= e($u['username']) ?> (<?= e($u['role']) ?>)
+                                        <option value="<?= e($u['id']) ?>" data-username="<?= e($u['nama_lengkap']) ?>">
+                                            <?= e($u['nama_lengkap']) ?> (<?= e($u['role']) ?>)
                                         </option>
                                     <?php endwhile;
                                 endif; ?>

@@ -239,3 +239,72 @@ body {
 	position: relative;
 	z-index: 1101;
 }
+
+/* Container Dashboard Card */
+.dash-card-link {
+	text-decoration: none !important;
+	display: block;
+	transition: all 0.2s ease;
+}
+
+.dash-card {
+	border: none !important;
+	/* Kembali ke border-left agar hemat ruang vertikal */
+	border-left: 3px solid #dee2e6 !important;
+	border-radius: 4px !important;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	background-color: #fff;
+	margin-bottom: 0; /* Menghilangkan gap bawah berlebih */
+}
+
+.dash-card .card-body {
+	padding: 8px 12px !important; /* Padding sangat kecil agar card tipis */
+}
+
+.dash-card-label {
+	font-size: 0.6rem; /* Ukuran teks label diperkecil */
+	font-weight: 700;
+	color: #868e96; /* Abu-abu profesional */
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+	margin-bottom: 2px;
+}
+
+.dash-card-value {
+	font-size: 1.1rem; /* Angka tidak terlalu besar */
+	font-weight: 700;
+	color: #343a40;
+	line-height: 1;
+}
+
+.dash-card-unit {
+	font-size: 0.6rem;
+	color: #adb5bd;
+	margin-left: 2px;
+	font-weight: 400;
+}
+
+/* Skema Warna Monokrom (Profesional & Netral) */
+.stat-total-asset {
+	border-left-color: #212529 !important;
+}
+.stat-ready-to-assign,
+.stat-spare {
+	border-left-color: #495057 !important;
+}
+.stat-assign,
+.stat-mt,
+.stat-loan,
+.stat-grace-period {
+	border-left-color: #adb5bd !important;
+}
+.stat-pending-service,
+.stat-scrap {
+	border-left-color: #dee2e6 !important;
+}
+
+/* Hover: Hanya sedikit menggelap agar tetap elegan */
+.dash-card-link:hover .dash-card {
+	background-color: #f1f3f5;
+	border-left-color: #0d6efd !important; /* Aksen biru hanya saat hover */
+}

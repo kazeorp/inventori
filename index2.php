@@ -24,32 +24,49 @@ $admin_id_login = $_SESSION['admin_id'] ?? 0;
 
 
 // --- LOGIKA SUMMARY CARDS ---
-$stok_total = $stok_spare = $stok_loan = $stok_pending = 0;
+$stok_total = $stok_spare = $stok_scrap = $stok_pending = $stok_loan = 0;
+$stok_grace = $stok_ready = $stok_assign = $stok_mt = 0;
 
 if (isset($koneksi)) {
     $summary_query = mysqli_query($koneksi, "
         SELECT
+            COUNT(id) AS stok_total,
             SUM(CASE WHEN status='Spare' THEN 1 ELSE 0 END) AS stok_spare,
-            SUM(CASE WHEN status='Loan' THEN 1 ELSE 0 END) AS stok_loan,
+            SUM(CASE WHEN status='Scrap' THEN 1 ELSE 0 END) AS stok_scrap,
             SUM(CASE WHEN status='Pending Service' THEN 1 ELSE 0 END) AS stok_pending,
-            COUNT(id) AS stok_total
+            SUM(CASE WHEN status='Loan' THEN 1 ELSE 0 END) AS stok_loan,
+            SUM(CASE WHEN status='Grace Period' THEN 1 ELSE 0 END) AS stok_grace,
+            SUM(CASE WHEN status='Ready To Assign' THEN 1 ELSE 0 END) AS stok_ready,
+            SUM(CASE WHEN status='Assign' THEN 1 ELSE 0 END) AS stok_assign,
+            SUM(CASE WHEN status='MT (Management Trainee)' THEN 1 ELSE 0 END) AS stok_mt
         FROM inventori
     ");
 
-    if ($summary_query && mysqli_num_rows($summary_query) > 0) {
-        $summary_data = mysqli_fetch_assoc($summary_query);
-        $stok_total     = (int) $summary_data['stok_total'];
-        $stok_spare     = (int) $summary_data['stok_spare'];
-        $stok_loan      = (int) $summary_data['stok_loan'];
-        $stok_pending   = (int) $summary_data['stok_pending'];
+    if ($summary_query) {
+        $row = mysqli_fetch_assoc($summary_query);
+        $stok_total   = (int) $row['stok_total'];
+        $stok_spare   = (int) $row['stok_spare'];
+        $stok_scrap   = (int) $row['stok_scrap'];
+        $stok_pending = (int) $row['stok_pending'];
+        $stok_loan    = (int) $row['stok_loan'];
+        $stok_grace   = (int) $row['stok_grace'];
+        $stok_ready   = (int) $row['stok_ready'];
+        $stok_assign  = (int) $row['stok_assign'];
+        $stok_mt      = (int) $row['stok_mt'];
     }
 }
 
+// Susun array dengan label yang sudah diperpendek
 $data = [
-    " Total Asset"                 => ["jumlah" => $stok_total, "status" => "all"],
-    " Spare"                       => ["jumlah" => $stok_spare, "status" => "Spare"],
-    " Loan"                        => ["jumlah" => $stok_loan, "status" => "Loan"],
-    " Pending Service"             => ["jumlah" => $stok_pending, "status" => "Pending Service"],
+    "Total Asset"      => ["jumlah" => $stok_total, "status" => "all"],
+    "Ready To Assign"  => ["jumlah" => $stok_ready, "status" => "Ready To Assign"],
+    "Spare"            => ["jumlah" => $stok_spare, "status" => "Spare"],
+    "Assign"           => ["jumlah" => $stok_assign, "status" => "Assign"],
+    "Loan"             => ["jumlah" => $stok_loan, "status" => "Loan"],
+    "Pending Service"  => ["jumlah" => $stok_pending, "status" => "Pending Service"],
+    "Grace Period"     => ["jumlah" => $stok_grace, "status" => "Grace Period"],
+    "MT"               => ["jumlah" => $stok_mt, "status" => "MT (Management Trainee)"],
+    "Scrap"            => ["jumlah" => $stok_scrap, "status" => "Scrap"],
 ];
 
 
@@ -154,22 +171,23 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
     <h2 class="mb-4">Dashboard Administrator</h2>
 
 <div class="row g-2">
-    <?php foreach ($data as $label => $info):
+    <?php
+    foreach ($data as $label => $info):
         $link = ($info['status'] === "all") ? "tampil.php" : "tampil.php?status=" . urlencode($info['status']);
+
+        // Tentukan slug class berdasarkan label untuk warna border
+        $status_slug = strtolower(str_replace([' ', '(', ')'], ['-', '', ''], $label));
         ?>
-    <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-1">
-        <a href="<?= e($link) ?>" style="text-decoration: none;">
-            <div class="card border-0 shadow-sm h-100 overflow-hidden" style="background: #f8f9fa;">
-                <div class="card-body p-2 d-flex align-items-center justify-content-between">
-                    <div class="text-start overflow-hidden">
-                        <h6 class="text-muted mb-0 text-truncate" style="font-size: 0.65rem; text-transform: uppercase;"><?= $label ?></h6>
-                        <p class="fw-bold mb-0 text-primary" style="font-size: 1rem;"><?= $info['jumlah'] ?> <small class="fw-normal text-secondary" style="font-size: 0.6rem;">Unit</small></p>
-                    </div>
-                    <div class="ms-2">
-                        <i class="bi bi-box-seam text-light-emphasis" style="font-size: 1.2rem; opacity: 0.5;"></i>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+        <a href="<?= e($link) ?>" class="dash-card-link">
+            <div class="card dash-card stat-<?= $status_slug ?>">
+                <div class="card-body">
+                    <div class="dash-card-label"><?= $label ?></div>
+                    <div class="dash-card-value">
+                        <?= number_format($info['jumlah'], 0, ',', '.') ?>
+                        <span class="dash-card-unit">Unit</span>
                     </div>
                 </div>
-                <div style="height: 3px; background-color: var(--bs-primary);"></div>
             </div>
         </a>
     </div>
@@ -178,22 +196,37 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
 
     <hr class="my-3">
 
-    <h4 class="mt-4 mb-3 text-danger"><i class="bi bi-megaphone-fill"></i> Antrean Service Masuk (Belum Pick Up)</h4>
-    <div class="table-responsive shadow-sm mb-5">
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th width="80" class="text-center">No. Antrean</th>
-                    <th>Hostname</th>
-                    <th>User / Pelapor</th>
-                    <th>Divisi</th>
-                    <th>Waktu Masuk</th>
-                    <th>Keluhan / Catatan</th>
-                    <th width="150" class="text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="service-list-body">
-<?php
+<ul class="nav nav-pills mb-3 shadow-sm p-1 bg-light rounded" id="serviceTab" role="tablist" style="width: fit-content;">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold" id="antrean-tab" data-bs-toggle="tab" data-bs-target="#antrean-content" type="button" role="tab">
+                <i class="bi bi-megaphone-fill me-1"></i> Antrean Masuk
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="progress-tab" data-bs-toggle="tab" data-bs-target="#progress-content" type="button" role="tab">
+                <i class="bi bi-gear-fill me-1"></i> On Progress
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="serviceTabContent">
+
+        <div class="tab-pane fade show active" id="antrean-content" role="tabpanel">
+            <div class="table-responsive shadow-sm">
+                <table class="table table-bordered table-hover bg-white">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="50" class="text-center">No.</th>
+                            <th>Hostname</th>
+                            <th>User</th>
+                            <th>Divisi</th>
+                            <th>Waktu Masuk</th>
+                            <th>Informasi</th>
+                            <th width="120" class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="service-list-body">
+                        <?php
 $antrean = 1;
 if ($result_service_masuk && mysqli_num_rows($result_service_masuk) > 0):
     while ($row = mysqli_fetch_assoc($result_service_masuk)):
@@ -221,7 +254,7 @@ if ($result_service_masuk && mysqli_num_rows($result_service_masuk) > 0):
                         data-hostname="<?= e($row['hostname']) ?>"
                         data-user="<?= e($row['nama_user'] ?? '') ?>"
                         data-divisi="<?= e($row['divisi'] ?? '') ?>">
-                    <i class="bi bi-plus-circle"></i> Registrasi Aset
+                    <i class="bi bi-plus-circle"></i> Registrasi
                 </button>
             <?php endif; ?>
         </td>
@@ -230,24 +263,25 @@ if ($result_service_masuk && mysqli_num_rows($result_service_masuk) > 0):
 else: ?>
                     <tr><td colspan="7" class="text-center text-muted">Tidak ada antrean service saat ini.</td></tr>
                 <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-<h4 class="mt-4 mb-3 text-primary"><i class="bi bi-gear-fill animate__animated animate__rotateIn animate__infinite"></i> Service On Progress</h4>
-<div class="table-responsive shadow-sm">
-    <table class="table table-bordered table-hover">
-        <thead class="table-primary">
-            <tr>
-                <th width="50" class="text-center">No.</th>
-                <th>Hostname</th>
-                <th>Teknisi (PIC)</th>
-                <th>Waktu Masuk</th>
-                <th width="180" class="text-center">Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php
+        <div class="tab-pane fade" id="progress-content" role="tabpanel">
+            <div class="table-responsive shadow-sm">
+                <table class="table table-bordered table-hover bg-white">
+                    <thead class="table-primary">
+                        <tr>
+                            <th width="50" class="text-center">No.</th>
+                            <th>Hostname</th>
+                            <th>Teknisi (PIC)</th>
+                            <th>Waktu Masuk</th>
+                            <th width="180" class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="progress-list-body">
+<?php
         $no_p = 1; // Inisialisasi nomor urut
 if ($result_service_progress && mysqli_num_rows($result_service_progress) > 0):
     while ($row = mysqli_fetch_assoc($result_service_progress)):
@@ -295,11 +329,13 @@ else:
                 <td colspan="5" class="text-center text-muted">Belum ada service yang sedang dikerjakan.</td>
             </tr>
         <?php endif; ?>
-        </tbody>
-    </table>
-</div>
-</main>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
+    </div>
+</main>
     <?php
     include 'modal-tambahdata.php';
 include 'modal-reassign.php';
