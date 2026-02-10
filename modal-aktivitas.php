@@ -39,7 +39,7 @@ if ($all_loan_query) {
                     <input type="hidden" name="hostname" value="<?= e($aset['hostname'] ?? '') ?>">
                     <input type="hidden" name="oleh" value="<?= e($_SESSION['nama_lengkap'] ?? $_SESSION['username'] ?? 'Admin') ?>">
 
-                    <input type="hidden" name="id_service" value="<?= e($id_service_terkait ?? '0') ?>">
+                    <input type="hidden" name="id_service" id="modal_id_service" value="<?= e($_GET['id_service'] ?? '0') ?>">
 
                     <div class="row">
                         <div class="col-md-6 border-end">

@@ -23,7 +23,7 @@ if ($current_admin_role !== 'superadmin' && $current_admin_role !== 'admin') {
 }
 
 // 1. Ambil dan Bersihkan Data Input
-$id_service = isset($_POST['service_id']) ? (int) $_POST['service_id'] : 0;
+$id_service = isset($_POST['reassign_service_id']) ? (int) $_POST['reassign_service_id'] : (isset($_POST['service_id']) ? (int) $_POST['service_id'] : 0);
 $new_admin_id = isset($_POST['new_admin_id']) ? (int) $_POST['new_admin_id'] : 0;
 
 if ($id_service <= 0 || $new_admin_id <= 0) {

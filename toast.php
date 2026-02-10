@@ -53,4 +53,27 @@ function checkAndShowToast() {
 
 // Jalankan saat DOM siap
 document.addEventListener("DOMContentLoaded", checkAndShowToast);
+
+// Tambahkan fungsi ini di dalam script toast.php Anda
+function showToastManual(message, type = 'success') {
+    const toastElement = document.getElementById('liveToast');
+    const toastBody = document.getElementById('toast-body');
+    if (!toastElement || !toastBody) return;
+
+    // Reset warna sebelumnya
+    toastElement.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-primary', 'text-dark');
+
+    // Tentukan warna baru
+    let bgClass = 'bg-primary';
+    if (type === 'success') bgClass = 'bg-success';
+    if (type === 'danger') bgClass = 'bg-danger';
+    if (type === 'warning') bgClass = 'bg-warning text-dark';
+    if (type === 'info') bgClass = 'bg-info text-dark';
+
+    toastElement.classList.add(...bgClass.split(' '));
+    toastBody.textContent = message;
+
+    const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
+    toast.show();
+}
 </script>

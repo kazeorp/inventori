@@ -11,25 +11,19 @@
                     <input type="hidden" name="service_id" id="reassign-service-input">
                     <div class="mb-3">
                         <label for="new_admin_id" class="form-label">Pilih Admin Baru:</label>
-                        <select name="new_admin_id" id="new_admin_id" class="form-select" required>
-                            <option value="">-- Pilih Admin --</option>
-                            <?php
-                            // ASUMSI: $koneksi sudah tersedia dari index2.php
-                            // Query untuk mendapatkan daftar Admin/Superadmin
-                            // Menggunakan kolom ID di tabel 'admin' adalah 'id'
-                            $query_users = mysqli_query($koneksi, "SELECT id, username, role FROM admin WHERE role IN ('admin', 'superadmin') ORDER BY username ASC");
+                            <select name="new_admin_id" id="new_admin_id" class="form-select" required>
+                                <option value="">-- Pilih Admin Baru --</option>
+                                <?php
+                                $query_users = mysqli_query($koneksi, "SELECT id, username, role FROM admin WHERE role IN ('admin', 'superadmin') ORDER BY username ASC");
 
-                            if (!$query_users) {
-                                // Tampilkan error jika query gagal (DEBUGGING)
-                                echo "<option value='' disabled>--- ERROR QUERY USERS: " . mysqli_error($koneksi) . " ---</option>";
-                            } else {
-                                // Looping data user
-                                while ($u = mysqli_fetch_assoc($query_users)): ?>
-                                    <option value="<?= e($u['id']) ?>"><?= e($u['username']) ?> (<?= e($u['role']) ?>)</option>
-                                <?php endwhile;
-                            }
-                            ?>
-                        </select>
+                                if ($query_users):
+                                    while ($u = mysqli_fetch_assoc($query_users)): ?>
+                                        <option value="<?= e($u['id']) ?>" data-username="<?= e($u['username']) ?>">
+                                            <?= e($u['username']) ?> (<?= e($u['role']) ?>)
+                                        </option>
+                                    <?php endwhile;
+                                endif; ?>
+                            </select>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>

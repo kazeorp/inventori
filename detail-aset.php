@@ -333,5 +333,37 @@ elseif (isset($_GET['hostname'])) {
     });
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Cek apakah ada trigger untuk membuka modal aktivitas
+    if (urlParams.get('trigger') === 'aktivitas') {
+        const modalEl = document.getElementById('aktivitasModal');
+        if (modalEl) {
+            const aktivitasModal = new bootstrap.Modal(modalEl);
+
+            // 1. Ambil ID Service dari URL
+            const idService = urlParams.get('id_service');
+
+            // 2. Isi ke Input Hidden (Penting agar tiket bisa ditutup di tambah-histori.php)
+            const inputHiddenService = document.getElementById('modal_id_service');
+            if (idService && inputHiddenService) {
+                inputHiddenService.value = idService;
+            }
+
+            // 3. Isi ke Input Tiket (Visual untuk user)
+            const inputTiket = document.getElementById('inputTiket');
+            if (idService && inputTiket) {
+                inputTiket.value = "SRV-" + idService;
+            }
+
+            // 4. Tampilkan Modal
+            aktivitasModal.show();
+        }
+    }
+});
+</script>
+
 </body>
 </html>

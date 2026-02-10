@@ -108,16 +108,17 @@ try {
 
     if ($result_update && mysqli_stmt_affected_rows($stmt_update_service) > 0) {
 
-        // 4. Commit transaksi jika semua berhasil
+        // Commit transaksi jika semua berhasil
         mysqli_commit($koneksi);
 
-        // Panggil helper di sini
-        pushWebSocketUpdate($id_service, 'service_claim');
+        // Picu WebSocket agar Dashboard terupdate secara Real-time
+        // Ini yang akan menyebabkan baris pindah dari "Antrean" ke "On Progress" di layar semua admin
+        pushWebSocketUpdate($id_service, 'update', 'service_list');
 
         echo json_encode([
             'success' => true,
-            'message' => "Servis berhasil dipick up oleh {$admin_namalengkap}. Status Inventori Tetap: {$current_inventori_status}",
-            'redirect_url' => "detail-aset.php?hostname=" . urlencode($hostname) . "&action=service_claim",
+            'message' => "Servis Hostname {$hostname} berhasil Anda pick up!",
+            // Hapus redirect_url agar main.js tidak berpindah halaman
         ]);
 
         exit();

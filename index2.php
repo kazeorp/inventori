@@ -96,20 +96,24 @@ $sql_service_masuk = "
 $result_service_masuk = mysqli_query($koneksi, $sql_service_masuk);
 
 // 2. QUERY ON PROGRESS (Sudah di Pick Up)
-// Syarat: Admin biasa hanya lihat miliknya, Superadmin lihat semua yang sedang diproses
 if ($is_superadmin) {
-    $progress_condition = "sl.current_admin_id IS NOT NULL AND sl.current_admin_id != 0";
+    // Superadmin melihat semua yang sudah diklaim tapi belum selesai
+    $progress_condition = "sl.current_admin_id IS NOT NULL AND sl.claim_status = 'On Service'";
 } else {
-    $progress_condition = "sl.current_admin_id = $admin_id_login";
+    // Admin biasa hanya melihat yang dia klaim sendiri
+    $progress_condition = "sl.current_admin_id = $admin_id_login AND sl.claim_status = 'On Service'";
 }
 
 $sql_service_progress = "
-    SELECT sl.*, u1.nama_lengkap AS current_admin_name, i.id AS id_inventori
+    SELECT
+        sl.*,
+        u1.nama_lengkap AS current_admin_name,
+        i.id AS id_inventori
     FROM service_list sl
     LEFT JOIN admin u1 ON sl.current_admin_id = u1.id
     LEFT JOIN inventori i ON sl.hostname = i.hostname
     WHERE $progress_condition
-    AND sl.finish_status IS NULL
+    AND (sl.finish_status IS NULL OR sl.finish_status = '')
     ORDER BY sl.tanggal_masuk ASC
 ";
 $result_service_progress = mysqli_query($koneksi, $sql_service_progress);
@@ -149,22 +153,28 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
     <main class="main-content">
     <h2 class="mb-4">Dashboard Administrator</h2>
 
-    <div class="row g-2">
-        <?php foreach ($data as $label => $info):
-            $link = ($info['status'] === "all") ? "tampil.php" : "tampil.php?status=" . urlencode($info['status']);
-            ?>
-            <div class="col-lg-3 col-md-6 mb-2">
-                <a href="<?= e($link) ?>" style="text-decoration: none;">
-                    <div class="card border-start border-4 border-primary shadow-sm h-100">
-                        <div class="card-body p-2 text-center">
-                            <h6 class="card-title fw-bold mb-1" style="color: var(--app-blue); font-size: 0.75rem;"><?= $label ?></h6>
-                            <p class="card-text fw-bold mb-0" style="font-size: 1.1rem;"><?= $info['jumlah'] ?> <span style="font-size: 0.7rem;">Unit</span></p>
-                        </div>
+<div class="row g-2">
+    <?php foreach ($data as $label => $info):
+        $link = ($info['status'] === "all") ? "tampil.php" : "tampil.php?status=" . urlencode($info['status']);
+        ?>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-1">
+        <a href="<?= e($link) ?>" style="text-decoration: none;">
+            <div class="card border-0 shadow-sm h-100 overflow-hidden" style="background: #f8f9fa;">
+                <div class="card-body p-2 d-flex align-items-center justify-content-between">
+                    <div class="text-start overflow-hidden">
+                        <h6 class="text-muted mb-0 text-truncate" style="font-size: 0.65rem; text-transform: uppercase;"><?= $label ?></h6>
+                        <p class="fw-bold mb-0 text-primary" style="font-size: 1rem;"><?= $info['jumlah'] ?> <small class="fw-normal text-secondary" style="font-size: 0.6rem;">Unit</small></p>
                     </div>
-                </a>
+                    <div class="ms-2">
+                        <i class="bi bi-box-seam text-light-emphasis" style="font-size: 1.2rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+                <div style="height: 3px; background-color: var(--bs-primary);"></div>
             </div>
-        <?php endforeach; ?>
+        </a>
     </div>
+    <?php endforeach; ?>
+</div>
 
     <hr class="my-3">
 
@@ -182,29 +192,41 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
                     <th width="150" class="text-center">Aksi</th>
                 </tr>
             </thead>
-            <tbody>
-                <?php
-                    $antrean = 1;
+            <tbody id="service-list-body">
+<?php
+$antrean = 1;
 if ($result_service_masuk && mysqli_num_rows($result_service_masuk) > 0):
     while ($row = mysqli_fetch_assoc($result_service_masuk)):
+        $is_registered = !empty($row['id_inventori']);
         ?>
-                    <tr>
-                        <td class="text-center fw-bold text-primary"><?= $antrean++ ?></td>
-                        <td><strong><?= e($row['hostname']) ?></strong></td>
-                        <td><?= e($row['nama_user'] ?? $row['nama_user_inv'] ?? 'N/A') ?></td>
-                        <td><?= e($row['divisi'] ?? $row['divisi_inv'] ?? 'N/A') ?></td>
-                        <td><small><?= date('d/m/Y H:i', strtotime($row['tanggal_masuk'])) ?></small></td>
-                        <td><?= e($row['catatan'] ?? '-') ?></td>
-                        <td class="text-center">
-                            <button type="button"
-                                    class="btn btn-sm btn-success btn-claim"
-                                    data-id="<?= $row['id_service'] ?>"
-                                    data-hostname="<?= e($row['hostname']) ?>">
-                                <i class="bi bi-hand-index-thumb"></i> Pick Up
-                            </button>
-                        </td>
-                    </tr>
-                <?php endwhile;
+    <tr>
+        <td class="text-center fw-bold text-primary"><?= $antrean++ ?></td>
+        <td><strong><?= e($row['hostname']) ?></strong></td>
+        <td><?= e($row['nama_user'] ?? $row['nama_user_inv'] ?? 'N/A') ?></td>
+        <td><?= e($row['divisi'] ?? $row['divisi_inv'] ?? 'N/A') ?></td>
+        <td><small><?= date('d/m/Y H:i', strtotime($row['tanggal_masuk'])) ?></small></td>
+        <td><?= e($row['catatan'] ?? '-') ?></td>
+        <td class="text-center">
+            <?php if ($is_registered): ?>
+                <button type="button"
+                        class="btn btn-sm btn-success btn-claim"
+                        data-id="<?= $row['id_service'] ?>"
+                        data-hostname="<?= e($row['hostname']) ?>">
+                    <i class="bi bi-hand-index-thumb"></i> Pick Up
+                </button>
+            <?php else: ?>
+                <button type="button" class="btn btn-sm btn-primary btn-register-service"
+                        data-bs-toggle="modal" data-bs-target="#addModal"
+                        data-service-id="<?= $row['id_service'] ?>"
+                        data-hostname="<?= e($row['hostname']) ?>"
+                        data-user="<?= e($row['nama_user'] ?? '') ?>"
+                        data-divisi="<?= e($row['divisi'] ?? '') ?>">
+                    <i class="bi bi-plus-circle"></i> Registrasi Aset
+                </button>
+            <?php endif; ?>
+        </td>
+    </tr>
+<?php endwhile;
 else: ?>
                     <tr><td colspan="7" class="text-center text-muted">Tidak ada antrean service saat ini.</td></tr>
                 <?php endif; ?>
@@ -212,52 +234,70 @@ else: ?>
         </table>
     </div>
 
-    <h4 class="mt-4 mb-3 text-primary"><i class="bi bi-gear-fill animate__animated animate__rotateIn animate__infinite"></i> Service On Progress</h4>
-    <div class="table-responsive shadow-sm">
-        <table class="table table-bordered table-hover">
-            <thead class="table-primary">
-                <tr>
-                    <th width="50" class="text-center">No.</th>
-                    <th>Hostname</th>
-                    <th>Teknisi (PIC)</th>
-                    <th>Waktu Masuk</th>
-                    <th width="180" class="text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-$no_p = 1;
+<h4 class="mt-4 mb-3 text-primary"><i class="bi bi-gear-fill animate__animated animate__rotateIn animate__infinite"></i> Service On Progress</h4>
+<div class="table-responsive shadow-sm">
+    <table class="table table-bordered table-hover">
+        <thead class="table-primary">
+            <tr>
+                <th width="50" class="text-center">No.</th>
+                <th>Hostname</th>
+                <th>Teknisi (PIC)</th>
+                <th>Waktu Masuk</th>
+                <th width="180" class="text-center">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php
+        $no_p = 1; // Inisialisasi nomor urut
 if ($result_service_progress && mysqli_num_rows($result_service_progress) > 0):
     while ($row = mysqli_fetch_assoc($result_service_progress)):
+        // Logika Kepemilikan & Role
+        $is_my_job = ($row['current_admin_id'] == $_SESSION['admin_id']);
+        $is_superadmin = ($_SESSION['role'] === 'superadmin');
         ?>
-                    <tr id="service-row-<?= e($row['id_service']) ?>">
-                        <td class="text-center"><?= $no_p++ ?></td>
-                        <td><strong><?= e($row['hostname']) ?></strong></td>
-                        <td><span class="badge bg-info text-dark"><?= e($row['current_admin_name'] ?? 'Saya') ?></span></td>
-                        <td><small><?= date('d/m/Y H:i', strtotime($row['tanggal_masuk'])) ?></small></td>
-                        <td class="text-center">
-                            <div class="btn-group">
-                                <a href="detail-aset.php?id=<?= $row['id_inventori'] ?>" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-search"></i> Detail
-                                </a>
-                                <button type="button" class="btn btn-sm btn-danger"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#modalSelesaiService"
-                                        data-id-service="<?= $row['id_service'] ?>"
-                                        data-hostname="<?= $row['hostname'] ?>"
-                                        data-id-inv="<?= $row['id_inventori'] ?>">
-                                    <i class="bi bi-check-circle"></i> Selesai
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endwhile;
-else: ?>
-                    <tr><td colspan="5" class="text-center text-muted">Belum ada service yang sedang diproses.</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+            <tr id="service-row-<?= e($row['id_service']) ?>">
+                <td class="text-center"><?= $no_p++ ?></td>
+                <td><strong><?= e($row['hostname']) ?></strong></td>
+                <td><span class="badge bg-info text-dark"><?= e($row['current_admin_name']) ?></span></td>
+                <td><small><?= date('d/m/Y H:i', strtotime($row['tanggal_masuk'])) ?></small></td>
+                <td class="text-center">
+                    <div class="btn-group">
+                        <a href="detail-aset.php?id=<?= $row['id_inventori'] ?>" class="btn btn-sm btn-outline-secondary" title="Lihat Detail Aset">
+                            <i class="bi bi-search"></i> Detail
+                        </a>
+
+                        <?php if ($is_my_job): ?>
+                            <a href="detail-aset.php?id=<?= $row['id_inventori'] ?>&id_service=<?= $row['id_service'] ?>&trigger=aktivitas"
+                               class="btn btn-sm btn-danger" title="Selesaikan Service">
+                                <i class="bi bi-check-circle"></i> Selesai
+                            </a>
+                        <?php endif; ?>
+
+                        <?php if ($is_superadmin): ?>
+                            <button type="button"
+                                    class="btn btn-sm btn-warning"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#reassignModal"
+                                    data-id="<?= $row['id_service'] ?>"
+                                    data-current-admin-name="<?= e($row['current_admin_name']) ?>"
+                                    title="Pindahkan ke Teknisi Lain">
+                                <i class="bi bi-person-gear"></i> Reassign
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </td>
+            </tr>
+        <?php
+    endwhile;
+else:
+    ?>
+            <tr>
+                <td colspan="5" class="text-center text-muted">Belum ada service yang sedang dikerjakan.</td>
+            </tr>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>
 </main>
 
     <?php
@@ -297,17 +337,27 @@ function prosesPickup(idService, hostname) {
 }
 
     // --- 2. FUNGSI UNTUK SELESAIKAN SERVICE (Sesuai ajax_selesaikan_service.php Anda) ---
+/**
+ * Mengarahkan admin ke halaman detail untuk mengisi form aktivitas
+ * @param {number} idService - ID dari tabel service_list
+ * @param {string} hostname - Hostname aset
+ * @param {number} idInventori - ID dari tabel inventori
+ */
 function prosesSelesai(idService, hostname, idInventori) {
-    // Konfirmasi agar tidak sengaja klik
-    if (!confirm('Selesaikan service untuk ' + hostname + '? \nSistem akan mengarahkan Anda ke halaman Detail Aset untuk mengisi form aktivitas perbaikan.')) {
+    if (!idInventori) {
+        alert("Gagal mengalihkan: ID Inventori tidak ditemukan.");
         return;
     }
 
-    // Redirect ke detail-aset.php
-    // Kita bawa ID Inventori (untuk buka asetnya)
-    // Kita bawa ID Service (untuk menutup tiketnya nanti)
-    // Kita bawa trigger=aktivitas (untuk buka modal otomatis)
-    window.location.href = `detail-aset.php?id=${idInventori}&id_service=${idService}&trigger=aktivitas`;
+    // Konfirmasi kepada admin
+    const tanya = confirm(`Selesaikan servis untuk ${hostname}?\n\nAnda akan diarahkan ke halaman detail untuk mengisi:\n1. Nomor Tiket/WO\n2. Catatan Perbaikan\n3. Unit Pengganti (Loan) jika ada.`);
+
+    if (tanya) {
+        // Redirect dengan parameter lengkap
+        // id_service akan digunakan untuk menutup tiket di tambah-histori.php
+        // trigger=aktivitas akan digunakan untuk otomatis buka modal
+        window.location.href = `detail-aset.php?id=${idInventori}&id_service=${idService}&trigger=aktivitas`;
+    }
 }
 
     // --- 3. LOGIKA TOAST & NOTIFIKASI BAWAAN ANDA ---
@@ -328,28 +378,6 @@ function prosesSelesai(idService, hostname, idInventori) {
             window.history.replaceState(null, null, window.location.pathname);
         }
     <?php endif; ?>
-
-
-    // Menangkap event saat Modal Selesai terbuka
-document.addEventListener('DOMContentLoaded', function() {
-    const modalSelesai = document.getElementById('modalSelesaiService'); // Pastikan ID modal sesuai
-    if (modalSelesai) {
-        modalSelesai.addEventListener('show.bs.modal', function (event) {
-            // Tombol yang memicu modal
-            const button = event.relatedTarget;
-
-            // Ambil data dari atribut data-*
-            const idService = button.getAttribute('data-id-service');
-            const hostname = button.getAttribute('data-hostname');
-            const idInv = button.getAttribute('data-id-inv');
-
-            // Isi input di dalam modal
-            modalSelesai.querySelector('#modal_id_service').value = idService;
-            modalSelesai.querySelector('#modal_id_inventori').value = idInv;
-            modalSelesai.querySelector('#modal_hostname_display').innerText = hostname;
-        });
-    }
-});
 </script>
 
 </body>

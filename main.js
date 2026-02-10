@@ -334,18 +334,21 @@ document.addEventListener("DOMContentLoaded", function () {
 				const hostname = claimButton.dataset.hostname;
 
 				if (!serviceId || !hostname) {
-					alert("Gagal: Data service ID atau Hostname hilang.");
+					showToastManual(
+						"Gagal: Data service ID atau Hostname hilang.",
+						"danger",
+					);
 					return;
 				}
 
-				if (
-					confirm(
-						`Yakin ingin meng-claim Service ID #${serviceId} (Hostname: ${hostname}) dan melanjutkan ke halaman input aktivitas?`,
-					)
-				) {
+				// Ganti confirm native dengan pesan yang lebih simpel jika perlu,
+				// atau tetap gunakan confirm jika ingin proteksi klik tidak sengaja.
+				if (confirm(`Yakin ingin meng-claim Service Hostname: ${hostname}?`)) {
+					// 1. Visual Feedback: Loading State
 					claimButton.disabled = true;
+					const originalContent = claimButton.innerHTML;
 					claimButton.innerHTML =
-						'<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Claiming...';
+						'<span class="spinner-border spinner-border-sm" role="status"></span>';
 
 					fetch("ajax_claim_service.php", {
 						method: "POST",
@@ -353,36 +356,33 @@ document.addEventListener("DOMContentLoaded", function () {
 						body: `id_service=${serviceId}&hostname=${hostname}`,
 					})
 						.then((response) => {
-							if (!response.ok) {
+							if (!response.ok)
 								throw new Error(`HTTP error! Status: ${response.status}`);
-							}
 							return response.json();
 						})
 						.then((data) => {
 							if (data.success) {
-								alert(data.message);
-								if (data.redirect_url) {
-									window.location.href = data.redirect_url;
-								} else {
-									alert(
-										"Service berhasil di-claim, tetapi gagal mengarahkan. Harap refresh.",
-									);
-									window.location.reload();
+								// 2. Gunakan fungsi dari toast.php Anda
+								showToastManual(data.message, "success");
+
+								// 3. JANGAN redirect.
+								// Jika WebSocket jalan, tabel akan update otomatis.
+								// Jika tidak pakai WebSocket, kita panggil fungsi refresh manual di sini:
+								if (typeof updateDashboard === "function") {
+									updateDashboard();
 								}
 							} else {
-								alert(
-									"Gagal meng-claim service: " +
-										(data.message || "Terjadi kesalahan."),
-								);
-								window.location.reload();
+								showToastManual("Gagal: " + data.message, "danger");
+								// Kembalikan tombol jika gagal agar bisa dicoba lagi
+								claimButton.disabled = false;
+								claimButton.innerHTML = originalContent;
 							}
 						})
 						.catch((error) => {
-							console.error("JS ERROR: Error Claim:", error);
-							alert("Terjadi kesalahan jaringan atau server saat meng-claim.");
+							console.error("JS ERROR:", error);
+							showToastManual("Terjadi kesalahan jaringan.", "danger");
 							claimButton.disabled = false;
-							claimButton.innerHTML =
-								'<i class="bi bi-person-fill-up"></i> Claim';
+							claimButton.innerHTML = originalContent;
 						});
 				}
 			}

@@ -218,41 +218,41 @@ try {
     }
 
     // ----------------------------------------------------
-    // C. PEMROSESAN SERVICE_LIST (Mencatat Klaim)
+    // C. PEMROSESAN SERVICE_LIST (Menyelesaikan Servis)
     // ----------------------------------------------------
-    $pesan_sukses = "Aktivitas untuk aset {$hostname} berhasil dicatat.";
-    $claim_performed = false;
-
-    // Aksi ini harus dijalankan HANYA JIKA ada ID Service yang dikirim
     if ($id_service > 0) {
-
-        $current_admin_name = mysqli_real_escape_string($koneksi, $_SESSION['username'] ?? 'Admin');
+        $current_admin_name = mysqli_real_escape_string($koneksi, $_SESSION['nama_lengkap'] ?? 'Admin');
         $current_admin_id = (int) ($_SESSION['admin_id'] ?? 0);
+        $tanggal_selesai = date('Y-m-d H:i:s');
 
+        // REVISI: Langsung set finish_status = 'Selesai' karena dipicu dari tombol Selesai Dashboard
         $query_update_service = "
         UPDATE service_list
-        SET claim_status = 'On Service',
+        SET
+            finish_status = 'Selesai',
+            finish_timestamp = '$tanggal_selesai',
+            admin_finish_id = '$current_admin_id',
+            admin_finish_name = '$current_admin_name',
+            claim_status = 'On Service', -- Pastikan status klaim juga terisi jika sebelumnya NULL
             current_admin_id = '$current_admin_id',
             current_admin_name = '$current_admin_name',
-            loan_hostname = " . ($is_loan_active ? "'$loan_hostname_val'" : "NULL") . ",
-            admin_claim_id = COALESCE(admin_claim_id, '$current_admin_id'),
-            admin_claim_name = COALESCE(admin_claim_name, '$current_admin_name')
-        WHERE id_service = '$id_service' AND finish_status IS NULL AND claim_status IS NULL
+            loan_hostname = " . ($is_loan_active ? "'$loan_hostname_val'" : "NULL") . "
+        WHERE id_service = '$id_service' AND finish_status IS NULL
     ";
 
         if (!mysqli_query($koneksi, $query_update_service)) {
-            throw new Exception("Gagal mengupdate status klaim servis: " . mysqli_error($koneksi));
+            throw new Exception("Gagal menutup tiket servis: " . mysqli_error($koneksi));
         }
 
-        // Cek apakah ada baris yang terpengaruh (servis berhasil diklaim)
         if (mysqli_affected_rows($koneksi) > 0) {
-            $claim_performed = true;
-            $loan_message = $is_loan_active ? " (Loan/Status Berat Tercatat)" : " (Servis Ringan)";
-            $pesan_sukses = "Servis #{$id_service} berhasil diklaim{$loan_message} & Aktivitas dicatat.";
-        } else {
-            // Servis mungkin sudah diklaim, tetap lanjut ke commit jika tidak ada error lain
-            $pesan_sukses = "Aktivitas dicatat, tetapi Servis #{$id_service} mungkin sudah diklaim sebelumnya.";
+            // Panggil helper WebSocket jika ada untuk update dashboard secara realtime
+            if (function_exists('pushWebSocketUpdate')) {
+                pushWebSocketUpdate($id_service, 'service_complete');
+            }
+            $pesan_sukses = "Servis #{$id_service} telah SELESAI & Aktivitas dicatat.";
         }
+    } else {
+        // Abaikan logika penutupan tiket, hanya catat histori biasa
     }
 
     // =======================================================
