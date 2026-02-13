@@ -46,6 +46,10 @@ if (isset($_GET['get_models_by_tipe'])) {
 
 // SIMPAN TIPE BARU
 if (isset($_POST['simpan_tipe'])) {
+    if ($_SESSION['role'] !== 'superadmin') {
+        header("Location: peripherals.php?res=danger&msg=Akses Ditolak!");
+        exit;
+    }
     $kode_barang = strtoupper(mysqli_real_escape_string($koneksi, $_POST['kode_barang']));
     $tipe_barang = strtoupper(mysqli_real_escape_string($koneksi, $_POST['tipe_barang']));
     $model = strtoupper(mysqli_real_escape_string($koneksi, $_POST['model'])); // Tambah ini
@@ -149,54 +153,70 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
     <main class="main-content">
         <?php include 'toast.php'; ?>
 
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-            <div class="d-flex align-items-center flex-grow-1 flex-wrap">
-                <nav class="me-3">
-                    <ul class="pagination pagination-sm mb-0 shadow-sm">
-                        <li class="page-item <?= $halaman_aktif == 1 ? 'active' : '' ?>"><a class="page-link px-3" href="peripherals.php?halaman=1">1. Monitoring Stok</a></li>
-                        <li class="page-item <?= $halaman_aktif == 2 ? 'active' : '' ?>"><a class="page-link px-3" href="peripherals.php?halaman=2">2. Master Tipe</a></li>
-                        <li class="page-item <?= $halaman_aktif == 3 ? 'active' : '' ?>"><a class="page-link px-3" href="peripherals.php?halaman=3">3. Riwayat Keluar</a></li>
-                    </ul>
-                </nav>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+    <div class="d-flex align-items-center flex-grow-1 flex-wrap">
+        <nav class="me-3">
+            <ul class="pagination pagination-sm mb-0 shadow-sm">
+                <li class="page-item <?= $halaman_aktif == 1 ? 'active' : '' ?>">
+                    <a class="page-link px-3" href="peripherals.php?halaman=1">1. Monitoring Stok</a>
+                </li>
+                <li class="page-item <?= $halaman_aktif == 2 ? 'active' : '' ?>">
+                    <a class="page-link px-3" href="peripherals.php?halaman=2">2. Riwayat Keluar</a>
+                </li>
 
-                <form action="" method="GET" class="d-flex align-items-center">
-                    <input type="hidden" name="halaman" value="<?= $halaman_aktif ?>">
-                    <div class="input-group input-group-sm shadow-sm me-2" style="width: 200px;">
-                        <input type="text" name="q" class="form-control" placeholder="Cari data..." value="<?= htmlspecialchars($keyword) ?>">
-                        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
-                    </div>
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'superadmin'): ?>
+                <li class="page-item <?= $halaman_aktif == 3 ? 'active' : '' ?>">
+                    <a class="page-link px-3" href="peripherals.php?halaman=3">3. Master Tipe</a>
+                </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
 
-                    <?php if ($halaman_aktif == 3): ?>
-                        <select name="bulan" class="form-select form-select-sm shadow-sm me-1" style="width: 130px;" onchange="this.form.submit()">
-                            <?php
-                            foreach ($nama_bulan as $num => $nama) {
-                                $sel = ($f_bulan == $num) ? 'selected' : '';
-                                echo "<option value='$num' $sel>$nama</option>";
-                            }
-                        ?>
-                        </select>
-
-                        <select name="tahun" class="form-select form-select-sm shadow-sm" style="width: 100px;" onchange="this.form.submit()">
-                            <?php
-                        $current_year = (int) date('Y');
-                        // Menampilkan 10 tahun ke belakang dari tahun sekarang
-                        // Contoh: 2026, 2025, 2024, ... 2016
-                        for ($y = $current_year; $y >= ($current_year - 10); $y--) {
-                            $sel = ($f_tahun == $y) ? 'selected' : '';
-                            echo "<option value='$y' $sel>$y</option>";
-                        }
-                        ?>
-                        </select>
-                    <?php endif; ?>
-                </form>
+        <form action="" method="GET" class="d-flex align-items-center">
+            <input type="hidden" name="halaman" value="<?= $halaman_aktif ?>">
+            <div class="input-group input-group-sm shadow-sm me-2" style="width: 200px;">
+                <input type="text" name="q" class="form-control" placeholder="Cari data..." value="<?= htmlspecialchars($keyword) ?>">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
             </div>
 
-            <div class="btn-group shadow-sm ms-2">
-                <button class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalTipe"><i class="bi bi-tag"></i> Buat Tipe</button>
-                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalMasuk"><i class="bi bi-plus-lg"></i> Masuk</button>
-                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalKeluar"><i class="bi bi-box-arrow-up"></i> Keluar</button>
-            </div>
-        </div>
+            <?php if ($halaman_aktif == 2): ?>
+                <select name="bulan" class="form-select form-select-sm shadow-sm me-1" style="width: 130px;" onchange="this.form.submit()">
+                    <?php
+                    foreach ($nama_bulan as $num => $nama) {
+                        $sel = ($f_bulan == $num) ? 'selected' : '';
+                        echo "<option value='$num' $sel>$nama</option>";
+                    }
+                ?>
+                </select>
+
+                <select name="tahun" class="form-select form-select-sm shadow-sm" style="width: 100px;" onchange="this.form.submit()">
+                    <?php
+                $current_year = (int) date('Y');
+                for ($y = $current_year; $y >= ($current_year - 5); $y--) {
+                    $sel = ($f_tahun == $y) ? 'selected' : '';
+                    echo "<option value='$y' $sel>$y</option>";
+                }
+                ?>
+                </select>
+            <?php endif; ?>
+        </form>
+    </div>
+
+<div class="d-flex gap-2 shadow-sm ms-2 peripheral-action-group">
+    <?php if ($_SESSION['role'] == 'superadmin'): ?>
+        <button class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalTipe">
+            <i class="bi bi-tag"></i> Buat Tipe
+        </button>
+    <?php endif; ?>
+
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalMasuk">
+        <i class="bi bi-plus-lg"></i> Masuk
+    </button>
+    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalKeluar">
+        <i class="bi bi-box-arrow-up"></i> Keluar
+    </button>
+</div>
+</div>
 
         <div class="card border-0 shadow-sm">
             <div class="card-body <?= $halaman_aktif == 3 ? 'p-4' : 'p-0' ?>">
@@ -204,7 +224,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
             <?php if ($halaman_aktif == 1): ?>
                 <div class="accordion accordion-flush" id="accordionStok">
                     <?php
-                    $filter = $keyword ? "AND (p.serial_number LIKE '%$keyword%' OR t.tipe_barang LIKE '%$keyword%' OR t.model LIKE '%$keyword%' OR p.no_po LIKE '%$keyword%')" : "";
+                $filter = $keyword ? "AND (p.serial_number LIKE '%$keyword%' OR t.tipe_barang LIKE '%$keyword%' OR t.model LIKE '%$keyword%' OR p.no_po LIKE '%$keyword%')" : "";
 
                 // Ambil daftar PO unik
                 $sql_po = "SELECT p.no_po, COUNT(*) as total_stok
@@ -288,7 +308,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     <?php endif; ?>
                 </div>
 
-<?php elseif ($halaman_aktif == 2): ?>
+<?php elseif ($halaman_aktif == 3): ?>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
@@ -334,7 +354,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     </table>
                 </div>
 
-<?php elseif ($halaman_aktif == 3): ?>
+<?php elseif ($halaman_aktif == 2): ?>
                 <div class="p-3">
                     <h5 class="fw-bold mb-5 text-muted"><i class="bi bi-clock-history me-2"></i>Timeline Riwayat Keluar</h5>
 
@@ -499,222 +519,31 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
 
     <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
 <script>
-    let groupCount = 0;
-
-function addGroup() {
-    groupCount++;
-    const groupHtml = `
-    <div class="card mb-3 border-primary group-item" id="group_${groupCount}">
-        <div class="card-header bg-white p-2 d-flex justify-content-between align-items-center">
-            <span class="badge bg-primary">Group #${groupCount}</span>
-            <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeGroup(${groupCount})"><i class="bi bi-trash"></i></button>
-        </div>
-        <div class="card-body p-3">
-            <div class="row g-2 mb-3">
-                <div class="col-md-3">
-                    <label class="small fw-bold">Tipe</label>
-                    <select class="form-select form-select-sm" required onchange="filterModelGroup(this, ${groupCount})">
-                        <option value="">- Tipe -</option>
-                        <?php
-                        $t_q = mysqli_query($koneksi, "SELECT DISTINCT tipe_barang FROM peripheral_types ORDER BY tipe_barang ASC");
+    // Ambil data tipe untuk dropdown di Group
+    const dataTipeBarang = [
+        <?php
+        $t_q = mysqli_query($koneksi, "SELECT DISTINCT tipe_barang FROM peripheral_types ORDER BY tipe_barang ASC");
 while ($t = mysqli_fetch_assoc($t_q)) {
-    echo "<option value='{$t['tipe_barang']}'>{$t['tipe_barang']}</option>";
+    echo "'" . e($t['tipe_barang']) . "',";
 }
 ?>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="small fw-bold">Model</label>
-                    <select name="group[${groupCount}][kode_barang]" class="form-select form-select-sm select-model" id="model_${groupCount}" required disabled>
-                        <option value="">- Pilih Tipe -</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="small fw-bold">Peruntukan</label>
-                    <select name="group[${groupCount}][peruntukan]" class="form-select form-select-sm" onchange="toggleUserGroup(this, ${groupCount})" required>
-                        <option value="SSC">SSC</option>
-                        <option value="APP">APP</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-none" id="user_div_${groupCount}">
-                    <label class="small fw-bold text-primary">Nama User</label>
-                    <input type="text" name="group[${groupCount}][nama_user]" class="form-control form-control-sm text-uppercase">
-                </div>
-            </div>
+    ];
 
-            <div class="bg-light p-2 rounded">
-                <label class="small fw-bold mb-1">Scan Serial Numbers:</label>
-                <div id="sn_list_${groupCount}" class="d-flex flex-wrap gap-1 mb-2"></div>
-                <input type="text" class="form-control form-control-sm sn-scanner"
-                       placeholder="Scan SN di sini..."
-                       onkeydown="handleScan(event, ${groupCount})">
-            </div>
-        </div>
-    </div>`;
-
-    document.getElementById('groupContainer').insertAdjacentHTML('beforeend', groupHtml);
-    // Otomatis fokus ke pilihan Tipe saat group baru dibuat
-    document.querySelector(`#group_${groupCount} select`).focus();
-}
-
-async function handleScan(e, gId) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        const input = e.target;
-        const val = input.value.trim().toUpperCase();
-
-        if (!val) return;
-
-        // 1. CEK DUPLIKASI DI UI (Semua Group)
-        // Kita ambil semua input hidden yang menyimpan SN dari semua group
-        const allScannedSN = Array.from(document.querySelectorAll('input[name*="[sn][]"]'));
-        const isDuplicateInUI = allScannedSN.some(hiddenInput => hiddenInput.value === val);
-
-        if (isDuplicateInUI) {
-            showToast(`S/N ${val} sudah ada di daftar input (mungkin di group lain)!`, "danger");
-            input.value = "";
-            return;
-        }
-
-        // 2. CEK DUPLIKASI DI DATABASE (Server-side via AJAX)
-        try {
-            const response = await fetch(`peripherals.php?cek_sn=${encodeURIComponent(val)}`);
-            const data = await response.json();
-
-            if (data.exists) {
-                showToast(`S/N ${val} sudah terdaftar di Database!`, "danger");
-                input.value = "";
-                return;
-            }
-
-            // 3. JIKA LOLOS VALIDASI, TAMBAHKAN KE LIST
-            const snList = document.getElementById(`sn_list_${gId}`);
-            const badge = `
-                <span class="badge bg-dark d-flex align-items-center p-2 shadow-sm" style="font-family: monospace;">
-                    ${val}
-                    <input type="hidden" name="group[${gId}][sn][]" value="${val}">
-                    <i class="bi bi-x-circle ms-2 text-danger btn-remove-sn"
-                       style="cursor:pointer; font-size: 1rem;"
-                       onclick="this.parentElement.remove()"></i>
-                </span>`;
-
-            snList.insertAdjacentHTML('beforeend', badge);
-            input.value = ""; // Bersihkan field untuk scan berikutnya
-
-        } catch (error) {
-            console.error("Error validasi SN:", error);
-            showToast("Gagal memvalidasi SN ke server", "danger");
-        }
-    }
-}
-
-function removeGroup(id) {
-    if(confirm('Hapus group ini?')) document.getElementById(`group_${id}`).remove();
-}
-
-function toggleUserGroup(sel, id) {
-    document.getElementById(`user_div_${id}`).classList.toggle('d-none', sel.value !== 'User');
-}
-
-function filterModelGroup(selectElement, gId) {
-    const tipe = selectElement.value;
-    const modelSelect = document.getElementById(`model_${gId}`);
-
-    if (!tipe) {
-        modelSelect.innerHTML = '<option value="">- Pilih Tipe Dulu -</option>';
-        modelSelect.disabled = true;
-        return;
-    }
-
-    // Ambil data model berdasarkan tipe via AJAX
-    fetch(`peripherals.php?get_models_by_tipe=${encodeURIComponent(tipe)}`)
-        .then(res => res.json())
-        .then(data => {
-            let options = '<option value="">- Pilih Model -</option>';
-            data.forEach(item => {
-                options += `<option value="${item.kode_barang}">${item.model} [${item.kode_barang}]</option>`;
-            });
-            modelSelect.innerHTML = options;
-            modelSelect.disabled = false;
-        })
-        .catch(err => {
-            console.error("Gagal memuat model:", err);
-            showToast("Gagal memuat daftar model", "danger");
-        });
-}
-
-// Inisialisasi satu group saat modal dibuka
-document.getElementById('modalMasuk').addEventListener('shown.bs.modal', function () {
-    if(document.querySelectorAll('.group-item').length === 0) addGroup();
-});
-</script>
-<script>
-        const toast = new bootstrap.Toast(document.getElementById('liveToast'));
-        function showToast(m, t='danger'){ document.getElementById('toast-body').innerText=m; document.getElementById('liveToast').className=`toast align-items-center text-white bg-${t} border-0`; toast.show(); }
-
-        <?php if (isset($_GET['msg'])): ?>
-            showToast("<?= $_GET['msg'] ?>", "<?= $_GET['res'] ?? 'primary' ?>");
-            window.history.replaceState({}, document.title, "peripherals.php?halaman=<?= $halaman_aktif ?>");
-        <?php endif; ?>
-
-        document.addEventListener('keydown', async function(e) {
-            if (e.target.classList.contains('sn-input')) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const val = e.target.value.trim().toUpperCase();
-                    if(!val) return;
-                    const all = Array.from(document.querySelectorAll('.sn-input'));
-                    if(all.filter(i => i !== e.target && i.value.toUpperCase() === val).length > 0) { showToast(`S/N ${val} duplikat di baris!`); e.target.value=""; return; }
-                    const res = await fetch(`peripherals.php?cek_sn=${val}`);
-                    const data = await res.json();
-                    if(data.exists) { showToast(`S/N ${val} sudah ada di database!`); e.target.value=""; return; }
-                    const i = document.createElement('input'); i.name='sn[]'; i.className='form-control form-control-sm mb-2 sn-input text-uppercase'; i.placeholder='S/N...'; i.autocomplete='off';
-                    document.getElementById('sa').appendChild(i); i.focus();
-                }
-                if (e.key === 'Delete' && document.querySelectorAll('.sn-input').length > 1) { e.preventDefault(); const p = e.target.previousElementSibling; e.target.remove(); if(p) p.focus(); }
-            }
-        });
-
-        function toggleU() { document.getElementById('ud').classList.toggle('d-none', document.getElementById('ps').value !== 'User'); }
-
-        // --- PERBAIKAN EDIT TIPE ---
-        // Kita gunakan event delegation agar tombol tetap berfungsi meski halaman difilter
-        document.addEventListener('click', function (e) {
-            if (e.target.closest('.btn-edit-tipe')) {
-                const btn = e.target.closest('.btn-edit-tipe');
-                document.getElementById('ed_id').value = btn.dataset.id;
-                document.getElementById('ed_kd').value = btn.dataset.kode;
-                document.getElementById('ed_tp').value = btn.dataset.tipe;
-                document.getElementById('ed_md').value = btn.dataset.model;
-                document.getElementById('ed_ds').value = btn.dataset.desc;
-                new bootstrap.Modal(document.getElementById('modalEditTipe')).show();
-            }
-        });
-
-        // Menyimpan data tipe dan model dari PHP ke JS
-        const dataRelasi = [
-            <?php
-            $all_types = mysqli_query($koneksi, "SELECT kode_barang, tipe_barang, model FROM peripheral_types");
+    // Ambil data relasi untuk filter model
+    const dataRelasi = [
+        <?php
+$all_types = mysqli_query($koneksi, "SELECT kode_barang, tipe_barang, model FROM peripheral_types");
 while ($row = mysqli_fetch_assoc($all_types)) {
     echo "{kode: '{$row['kode_barang']}', tipe: '{$row['tipe_barang']}', model: '{$row['model']}'},";
 }
 ?>
-        ];
+    ];
 
-        function filterModel() {
-            const tipeTerpilih = document.getElementById('select_tipe').value;
-            const modelSelect = document.getElementById('select_model');
-            modelSelect.innerHTML = '<option value="">- Pilih Model -</option>';
-            if (tipeTerpilih === "") { modelSelect.disabled = true; return; }
-            const models = dataRelasi.filter(item => item.tipe === tipeTerpilih);
-            models.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.kode;
-                opt.textContent = `${item.model} [${item.kode}]`;
-                modelSelect.appendChild(opt);
-            });
-            modelSelect.disabled = false;
-        }
-    </script>
+    // Inisialisasi pesan dari URL jika ada
+    const urlParams = new URLSearchParams(window.location.search);
+    const msg = urlParams.get('msg');
+    const res = urlParams.get('res');
+</script>
+<script src="peripherals.js"></script>
 </body>
 </html>
