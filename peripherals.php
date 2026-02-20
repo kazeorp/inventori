@@ -44,30 +44,51 @@ if (isset($_GET['get_models_by_tipe'])) {
 // 2. LOGIKA PHP: PROSES FORM
 // =======================================================
 
-// SIMPAN TIPE BARU
-if (isset($_POST['simpan_tipe'])) {
+// SIMPAN MODEL BARU (Dulu Simpan Tipe)
+if (isset($_POST['simpan_tipe'])) { // Sesuaikan name tombol di modal Anda
     if ($_SESSION['role'] !== 'superadmin') {
         header("Location: peripherals.php?res=danger&msg=Akses Ditolak!");
         exit;
     }
-    $kode_barang = strtoupper(mysqli_real_escape_string($koneksi, $_POST['kode_barang']));
+
     $tipe_barang = strtoupper(mysqli_real_escape_string($koneksi, $_POST['tipe_barang']));
-    $model = strtoupper(mysqli_real_escape_string($koneksi, $_POST['model'])); // Tambah ini
-    $deskripsi_tipe = strtoupper(mysqli_real_escape_string($koneksi, $_POST['deskripsi_tipe']));
-    mysqli_query($koneksi, "INSERT INTO peripheral_types (kode_barang, tipe_barang, model, deskripsi_tipe) VALUES ('$kode_barang', '$tipe_barang', '$model', '$deskripsi_tipe')");
-    header("Location: peripherals.php?halaman=2&res=success&msg=Tipe berhasil ditambah");
+    $model       = strtoupper(mysqli_real_escape_string($koneksi, $_POST['model']));
+    $deskripsi   = strtoupper(mysqli_real_escape_string($koneksi, $_POST['deskripsi_tipe']));
+
+    // --- LOGIKA KODE BARANG OTOMATIS 3 DIGIT ---
+    $query_max = mysqli_query($koneksi, "SELECT MAX(CAST(kode_barang AS UNSIGNED)) as max_kode FROM peripheral_types");
+    $row_max   = mysqli_fetch_assoc($query_max);
+    $next_number = (int) $row_max['max_kode'] + 1;
+    $kode_barang = str_pad($next_number, 3, "0", STR_PAD_LEFT);
+    // Hasilnya: 001, 002, dst.
+
+    $query = "INSERT INTO peripheral_types (kode_barang, tipe_barang, model, deskripsi_tipe)
+              VALUES ('$kode_barang', '$tipe_barang', '$model', '$deskripsi')";
+
+    if (mysqli_query($koneksi, $query)) {
+        header("Location: peripherals.php?halaman=2&res=success&msg=Model $model berhasil ditambahkan dengan kode $kode_barang");
+    } else {
+        header("Location: peripherals.php?halaman=2&res=danger&msg=Gagal menambah data");
+    }
     exit;
 }
 
-// UPDATE TIPE
+// UPDATE MODEL
 if (isset($_POST['update_tipe'])) {
-    $id_tipe = $_POST['id_tipe'];
-    $kode_barang = strtoupper(mysqli_real_escape_string($koneksi, $_POST['kode_barang']));
+    $id_tipe     = $_POST['id_tipe'];
     $tipe_barang = strtoupper(mysqli_real_escape_string($koneksi, $_POST['tipe_barang']));
-    $model = strtoupper(mysqli_real_escape_string($koneksi, $_POST['model'])); // Tambah ini
-    $deskripsi_tipe = strtoupper(mysqli_real_escape_string($koneksi, $_POST['deskripsi_tipe']));
-    mysqli_query($koneksi, "UPDATE peripheral_types SET kode_barang='$kode_barang', tipe_barang='$tipe_barang', model='$model', deskripsi_tipe='$deskripsi_tipe' WHERE id_tipe='$id_tipe'");
-    header("Location: peripherals.php?halaman=2&res=success&msg=Tipe berhasil diupdate");
+    $model       = strtoupper(mysqli_real_escape_string($koneksi, $_POST['model']));
+    $deskripsi   = strtoupper(mysqli_real_escape_string($koneksi, $_POST['deskripsi_tipe']));
+
+    // Kode barang tidak diupdate karena sudah permanen sebagai identitas barang
+    $query = "UPDATE peripheral_types SET
+              tipe_barang='$tipe_barang',
+              model='$model',
+              deskripsi_tipe='$deskripsi'
+              WHERE id_tipe='$id_tipe'";
+
+    mysqli_query($koneksi, $query);
+    header("Location: peripherals.php?halaman=2&res=success&msg=Data Model berhasil diupdate");
     exit;
 }
 
@@ -205,7 +226,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
 <div class="d-flex gap-2 shadow-sm ms-2 peripheral-action-group">
     <?php if ($_SESSION['role'] == 'superadmin'): ?>
         <button class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalTipe">
-            <i class="bi bi-tag"></i> Buat Tipe
+            <i class="bi bi-tag"></i> Tambah Model
         </button>
     <?php endif; ?>
 
@@ -323,13 +344,13 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                         <tbody>
                             <?php
                             $filter = $keyword ? "WHERE tipe_barang LIKE '%$keyword%' OR model LIKE '%$keyword%' OR kode_barang LIKE '%$keyword%'" : "";
-    $query = mysqli_query($koneksi, "SELECT * FROM peripheral_types $filter ORDER BY tipe_barang ASC");
+    $query = mysqli_query($koneksi, "SELECT * FROM peripheral_types $filter ORDER BY tipe_barang ASC, model ASC");
     while ($row = mysqli_fetch_assoc($query)): ?>
                             <tr>
-                                <td><code class="fw-bold"><?= $row['kode_barang'] ?></code></td>
-                                <td><?= $row['tipe_barang'] ?></td>
+                                <td><span class="badge bg-dark">#<?= $row['kode_barang'] ?></span></td>
+                                <td><span class="text-muted small fw-bold"><?= $row['tipe_barang'] ?></span></td>
                                 <td class="fw-bold"><?= $row['model'] ?></td>
-                                <td><?= $row['deskripsi_tipe'] ?></td>
+                                <td class="small text-truncate" style="max-width: 200px;"><?= $row['deskripsi_tipe'] ?></td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-outline-primary btn-edit-tipe"
                                             data-id="<?= $row['id_tipe'] ?>"
@@ -337,21 +358,20 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                                             data-tipe="<?= $row['tipe_barang'] ?>"
                                             data-model="<?= $row['model'] ?>"
                                             data-desc="<?= $row['deskripsi_tipe'] ?>">
-                                        <i class="bi bi-pencil-square"></i> Edit
+                                        <i class="bi bi-pencil-square"></i>
                                     </button>
 
                                     <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'superadmin'): ?>
-                                    <a href="proses_tipe.php?aksi=hapus&id=<?= $row['kode_barang'] ?>"
-                                       class="btn btn-sm btn-outline-danger"
-                                       onclick="return confirm('Apakah Anda yakin ingin menghapus tipe ini?')">
-                                        <i class="bi bi-trash"></i> Hapus
+                                    <a href="proses-peripherals.php?aksi=hapus_tipe&id=<?= $row['id_tipe'] ?>"
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Menghapus model ini mungkin berdampak pada data stok. Yakin?')">
+                                        <i class="bi bi-trash"></i>
                                     </a>
                                     <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endwhile; ?>
-                        </tbody>
-                    </table>
+                        </tbody>                    </table>
                 </div>
 
 <?php elseif ($halaman_aktif == 2): ?>
@@ -446,30 +466,102 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
     </div>
 
     <div class="modal fade" id="modalTipe" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered"><form class="modal-content border-0" method="POST">
-            <div class="modal-header bg-dark text-white p-2 px-3"><h6>Buat Tipe Baru</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <label class="small fw-bold">Kode Barang</label><input type="text" name="kode_barang" class="form-control form-control-sm text-uppercase mb-2" required>
-                <label class="small fw-bold">Nama Tipe</label><input type="text" name="tipe_barang" class="form-control form-control-sm text-uppercase mb-2" required placeholder="Contoh: BATTERY">
-                <label class="small fw-bold">Model</label><input type="text" name="model" class="form-control form-control-sm text-uppercase mb-2" required placeholder="Contoh: LENOVO L13">
-                <label class="small fw-bold">Deskripsi</label><input type="text" name="deskripsi_tipe" class="form-control form-control-sm text-uppercase">
-            </div>
-            <div class="modal-footer p-2"><button type="submit" name="simpan_tipe" class="btn btn-sm btn-dark w-100">Simpan Tipe</button></div>
-        </form></div>
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" method="POST" action="proses-peripherals.php">
+                <div class="modal-header bg-dark text-white p-2 px-3">
+                    <h6 class="modal-title">Tambah Model Baru</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                <div class="mb-3">
+                    <label class="small fw-bold">PILIH TIPE</label>
+                    <select name="tipe_barang" class="form-select form-select-sm" required>
+                        <option value="">-- Pilih Tipe --</option>
+                        <option value="ADAPTOR">ADAPTOR</option>
+                        <option value="BATTERY">BATTERY</option>
+                        <option value="CABLE HDMI">CABLE HDMI</option>
+                        <option value="CABLE UTP">CABLE UTP</option>
+                        <option value="CONNECTOR">CONNECTOR</option>
+                        <option value="HARDDISK">HARDDISK</option>
+                        <option value="KEYBOARD">KEYBOARD</option>
+                        <option value="MEMORY">MEMORY</option>
+                        <option value="MOUSE">MOUSE</option>
+                        <option value="PATCH CORD">PATCH CORD</option>
+                        <option value="PRINTER">PRINTER</option>
+                        <option value="ROLLER">ROLLER</option>
+                        <option value="SCANNER">SCANNER</option>
+                        <option value="SWITCH">SWITCH</option>
+                        <option value="WIRELESS">WIRELESS</option>
+                        <option value="PROJECTOR">PROJECTOR</option>
+                    </select>
+                </div>
+                    <div class="mb-3">
+                        <label class="small fw-bold">NAMA MODEL / BRAND</label>
+                        <input type="text" name="nama_model" class="form-control" placeholder="Contoh: Logitech G102 / Thinkpad L13" required>
+                    </div>
+                    <div class="alert alert-info py-2 mb-0">
+                        <small><i class="bi bi-info-circle"></i> Kode Barang akan digenerate otomatis (3 digit).</small>
+                    </div>
+                </div>
+                <div class="modal-footer p-2">
+                    <button type="submit" name="simpan_model" class="btn btn-primary w-100">SIMPAN MODEL</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="modal fade" id="modalEditTipe" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered"><form class="modal-content border-0" method="POST">
-            <div class="modal-header bg-primary text-white p-2 px-3"><h6>Edit Tipe</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <input type="hidden" name="id_tipe" id="ed_id">
-                <label class="small fw-bold">Kode Barang</label><input type="text" name="kode_barang" id="ed_kd" class="form-control form-control-sm text-uppercase mb-2" required>
-                <label class="small fw-bold">Nama Tipe</label><input type="text" name="tipe_barang" id="ed_tp" class="form-control form-control-sm text-uppercase mb-2" required>
-                <label class="small fw-bold">Model</label><input type="text" name="model" id="ed_md" class="form-control form-control-sm text-uppercase mb-2" required>
-                <label class="small fw-bold">Deskripsi</label><input type="text" name="deskripsi_tipe" id="ed_ds" class="form-control form-control-sm text-uppercase">
-            </div>
-            <div class="modal-footer p-2"><button type="submit" name="update_tipe" class="btn btn-sm btn-primary w-100">Simpan Perubahan</button></div>
-        </form></div>
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" method="POST" action="proses-peripherals.php">
+                <div class="modal-header bg-primary text-white p-2 px-3">
+                    <h6 class="modal-title">Edit Model Barang</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id_tipe" id="edit_id">
+
+                    <div class="mb-2">
+                        <label class="small fw-bold">KODE BARANG (Permanen)</label>
+                        <input type="text" id="edit_kode" class="form-control form-control-sm bg-light" readonly>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="small fw-bold">TIPE</label>
+                        <select name="tipe_barang" id="edit_tipe" class="form-select form-select-sm" required>
+                            <option value="ADAPTOR">ADAPTOR</option>
+                            <option value="BATTERY">BATTERY</option>
+                            <option value="CABLE HDMI">CABLE HDMI</option>
+                            <option value="CABLE UTP">CABLE UTP</option>
+                            <option value="CONNECTOR">CONNECTOR</option>
+                            <option value="HARDDISK">HARDDISK</option>
+                            <option value="KEYBOARD">KEYBOARD</option>
+                            <option value="MEMORY">MEMORY</option>
+                            <option value="MOUSE">MOUSE</option>
+                            <option value="PATCH CORD">PATCH CORD</option>
+                            <option value="PRINTER">PRINTER</option>
+                            <option value="ROLLER">ROLLER</option>
+                            <option value="SCANNER">SCANNER</option>
+                            <option value="SWITCH">SWITCH</option>
+                            <option value="WIRELESS">WIRELESS</option>
+                            <option value="PROJECTOR">PROJECTOR</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="small fw-bold">MODEL / BRAND</label>
+                        <input type="text" name="model" id="edit_model" class="form-control form-control-sm" required>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="small fw-bold">DESKRIPSI</label>
+                        <textarea name="deskripsi_tipe" id="edit_desc" class="form-control form-control-sm" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer p-2">
+                    <button type="submit" name="update_tipe" class="btn btn-primary btn-sm px-4">SIMPAN PERUBAHAN</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="modal fade" id="modalMasuk" tabindex="-1" aria-hidden="true">
@@ -518,6 +610,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
     </div>
 
     <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="peripherals.js"></script>
 <script>
     // Ambil data tipe untuk dropdown di Group
     const dataTipeBarang = [
@@ -544,6 +637,5 @@ while ($row = mysqli_fetch_assoc($all_types)) {
     const msg = urlParams.get('msg');
     const res = urlParams.get('res');
 </script>
-<script src="peripherals.js"></script>
 </body>
 </html>
