@@ -40,111 +40,6 @@ if (isset($_GET['get_models_by_tipe'])) {
     exit;
 }
 
-// =======================================================
-// 2. LOGIKA PHP: PROSES FORM
-// =======================================================
-
-// SIMPAN MODEL BARU (Dulu Simpan Tipe)
-if (isset($_POST['simpan_tipe'])) { // Sesuaikan name tombol di modal Anda
-    if ($_SESSION['role'] !== 'superadmin') {
-        header("Location: peripherals.php?res=danger&msg=Akses Ditolak!");
-        exit;
-    }
-
-    $tipe_barang = strtoupper(mysqli_real_escape_string($koneksi, $_POST['tipe_barang']));
-    $model       = strtoupper(mysqli_real_escape_string($koneksi, $_POST['model']));
-    $deskripsi   = strtoupper(mysqli_real_escape_string($koneksi, $_POST['deskripsi_tipe']));
-
-    // --- LOGIKA KODE BARANG OTOMATIS 3 DIGIT ---
-    $query_max = mysqli_query($koneksi, "SELECT MAX(CAST(kode_barang AS UNSIGNED)) as max_kode FROM peripheral_types");
-    $row_max   = mysqli_fetch_assoc($query_max);
-    $next_number = (int) $row_max['max_kode'] + 1;
-    $kode_barang = str_pad($next_number, 3, "0", STR_PAD_LEFT);
-    // Hasilnya: 001, 002, dst.
-
-    $query = "INSERT INTO peripheral_types (kode_barang, tipe_barang, model, deskripsi_tipe)
-              VALUES ('$kode_barang', '$tipe_barang', '$model', '$deskripsi')";
-
-    if (mysqli_query($koneksi, $query)) {
-        header("Location: peripherals.php?halaman=2&res=success&msg=Model $model berhasil ditambahkan dengan kode $kode_barang");
-    } else {
-        header("Location: peripherals.php?halaman=2&res=danger&msg=Gagal menambah data");
-    }
-    exit;
-}
-
-// UPDATE MODEL
-if (isset($_POST['update_tipe'])) {
-    $id_tipe     = $_POST['id_tipe'];
-    $tipe_barang = strtoupper(mysqli_real_escape_string($koneksi, $_POST['tipe_barang']));
-    $model       = strtoupper(mysqli_real_escape_string($koneksi, $_POST['model']));
-    $deskripsi   = strtoupper(mysqli_real_escape_string($koneksi, $_POST['deskripsi_tipe']));
-
-    // Kode barang tidak diupdate karena sudah permanen sebagai identitas barang
-    $query = "UPDATE peripheral_types SET
-              tipe_barang='$tipe_barang',
-              model='$model',
-              deskripsi_tipe='$deskripsi'
-              WHERE id_tipe='$id_tipe'";
-
-    mysqli_query($koneksi, $query);
-    header("Location: peripherals.php?halaman=2&res=success&msg=Data Model berhasil diupdate");
-    exit;
-}
-
-// BARANG MASUK (NEW MULTI-GROUP LOGIC)
-if (isset($_POST['simpan_masuk'])) {
-    $no_po = strtoupper(mysqli_real_escape_string($koneksi, $_POST['no_po']));
-    $groups = $_POST['group']; // Array dari data group
-
-    mysqli_begin_transaction($koneksi);
-
-    try {
-        foreach ($groups as $group) {
-            $kode_barang = mysqli_real_escape_string($koneksi, $group['kode_barang']);
-            $peruntukan  = mysqli_real_escape_string($koneksi, $group['peruntukan']);
-            $nama_user   = ($peruntukan == 'User') ? strtoupper(mysqli_real_escape_string($koneksi, $group['nama_user'])) : null;
-            $sns         = $group['sn'];
-
-            foreach ($sns as $sn) {
-                if (!empty(trim($sn))) {
-                    $sn_clean = strtoupper(mysqli_real_escape_string($koneksi, trim($sn)));
-
-                    $sql = "INSERT INTO peripheral_items
-                            (kode_barang, no_po, serial_number, peruntukan, nama_user, tanggal_masuk, admin_input, status)
-                            VALUES
-                            ('$kode_barang', '$no_po', '$sn_clean', '$peruntukan', '$nama_user', NOW(), '$admin_sekarang', 'Stock')";
-
-                    if (!mysqli_query($koneksi, $sql)) {
-                        throw new Exception("Gagal simpan SN: $sn_clean");
-                    }
-                }
-            }
-        }
-        mysqli_commit($koneksi);
-        header("Location: peripherals.php?halaman=1&res=success&msg=Barang masuk PO $no_po berhasil disimpan");
-        exit;
-    } catch (Exception $e) {
-        mysqli_rollback($koneksi);
-        header("Location: peripherals.php?halaman=1&res=danger&msg=Error: " . $e->getMessage());
-        exit;
-    }
-}
-
-// BARANG KELUAR
-if (isset($_POST['simpan_keluar'])) {
-    $sn = strtoupper(mysqli_real_escape_string($koneksi, $_POST['serial_number']));
-    $no_tkt = strtoupper(mysqli_real_escape_string($koneksi, $_POST['no_ticket']));
-    $no_pr = strtoupper(mysqli_real_escape_string($koneksi, $_POST['no_pr']));
-    $ket = strtoupper(mysqli_real_escape_string($koneksi, $_POST['keterangan']));
-
-    mysqli_query($koneksi, "UPDATE peripheral_items SET no_ticket='$no_tkt', no_pr='$no_pr', keterangan='$ket', tanggal_keluar=NOW(), admin_keluar='$admin_sekarang', status='Out' WHERE serial_number='$sn' AND status='Stock'");
-    $res = mysqli_affected_rows($koneksi) > 0 ? "success" : "danger";
-    $msg = $res == "success" ? "Barang keluar berhasil diproses" : "Gagal! S/N tidak ditemukan atau sudah OUT";
-    header("Location: peripherals.php?halaman=3&res=$res&msg=$msg");
-    exit;
-}
-
 $halaman_aktif = isset($_GET['halaman']) ? (int) $_GET['halaman'] : 1;
 $keyword = isset($_GET['q']) ? mysqli_real_escape_string($koneksi, $_GET['q']) : '';
 $f_bulan = isset($_GET['bulan']) ? $_GET['bulan'] : date('m');
@@ -344,10 +239,10 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                         <tbody>
                             <?php
                             $filter = $keyword ? "WHERE tipe_barang LIKE '%$keyword%' OR model LIKE '%$keyword%' OR kode_barang LIKE '%$keyword%'" : "";
-    $query = mysqli_query($koneksi, "SELECT * FROM peripheral_types $filter ORDER BY tipe_barang ASC, model ASC");
+    $query = mysqli_query($koneksi, "SELECT * FROM peripheral_types $filter ORDER BY kode_barang ASC, tipe_barang ASC");
     while ($row = mysqli_fetch_assoc($query)): ?>
                             <tr>
-                                <td><span class="badge bg-dark">#<?= $row['kode_barang'] ?></span></td>
+                                <td><span class="badge bg-dark"><?= $row['kode_barang'] ?></span></td>
                                 <td><span class="text-muted small fw-bold"><?= $row['tipe_barang'] ?></span></td>
                                 <td class="fw-bold"><?= $row['model'] ?></td>
                                 <td class="small text-truncate" style="max-width: 200px;"><?= $row['deskripsi_tipe'] ?></td>
@@ -465,14 +360,14 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
         <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert"><div class="d-flex"><div class="toast-body" id="toast-body"></div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>
     </div>
 
-    <div class="modal fade" id="modalTipe" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <form class="modal-content" method="POST" action="proses-peripherals.php">
-                <div class="modal-header bg-dark text-white p-2 px-3">
-                    <h6 class="modal-title">Tambah Model Baru</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
+<div class="modal fade" id="modalTipe" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="POST" action="proses-peripherals.php">
+            <div class="modal-header bg-dark text-white p-2 px-3">
+                <h6 class="modal-title">Tambah Model Baru</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
                 <div class="mb-3">
                     <label class="small fw-bold">PILIH TIPE</label>
                     <select name="tipe_barang" class="form-select form-select-sm" required>
@@ -495,20 +390,27 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                         <option value="PROJECTOR">PROJECTOR</option>
                     </select>
                 </div>
-                    <div class="mb-3">
-                        <label class="small fw-bold">NAMA MODEL / BRAND</label>
-                        <input type="text" name="nama_model" class="form-control" placeholder="Contoh: Logitech G102 / Thinkpad L13" required>
-                    </div>
-                    <div class="alert alert-info py-2 mb-0">
-                        <small><i class="bi bi-info-circle"></i> Kode Barang akan digenerate otomatis (3 digit).</small>
-                    </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold">NAMA MODEL / BRAND</label>
+                    <input type="text" name="model" class="form-control form-control-sm" placeholder="Contoh: Logitech G102" required>
                 </div>
-                <div class="modal-footer p-2">
-                    <button type="submit" name="simpan_model" class="btn btn-primary w-100">SIMPAN MODEL</button>
+
+                <div class="mb-3">
+                    <label class="small fw-bold">DESKRIPSI MODEL</label>
+                    <textarea name="deskripsi_tipe" class="form-control form-control-sm" rows="2" placeholder="Contoh: Wireless Mouse Black"></textarea>
                 </div>
-            </form>
-        </div>
+
+                <div class="alert alert-info py-2 mb-0">
+                    <small><i class="bi bi-info-circle"></i> Kode Barang akan digenerate otomatis (3 digit).</small>
+                </div>
+            </div>
+            <div class="modal-footer p-2">
+                <button type="submit" name="simpan_model" class="btn btn-primary w-100">SIMPAN MODEL</button>
+            </div>
+        </form>
     </div>
+</div>
 
     <div class="modal fade" id="modalEditTipe" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -558,7 +460,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     </div>
                 </div>
                 <div class="modal-footer p-2">
-                    <button type="submit" name="update_tipe" class="btn btn-primary btn-sm px-4">SIMPAN PERUBAHAN</button>
+                    <button type="submit" name="update_model" class="btn btn-primary btn-sm px-4">SIMPAN PERUBAHAN</button>
                 </div>
             </form>
         </div>
