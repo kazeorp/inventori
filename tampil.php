@@ -227,7 +227,7 @@ $result = mysqli_query($koneksi, $query);
 
             <?php if ($role === 'superadmin'): ?>
                 <button type="button" class="btn btn-warning text-white btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#tipeLaptopModal">
-                    <i class="bi bi-laptop"></i> Tipe Laptop
+                    <i class="bi bi-laptop"></i> Master Data
                 </button>
             <?php endif; ?>
         </div>

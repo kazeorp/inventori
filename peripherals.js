@@ -17,9 +17,9 @@ function addGroup() {
 
                 <div class="row g-3 mb-3">
 					<div class="col-md-4">
-							<label class="small fw-bold">TIPE BARANG</label>
+							<label class="small fw-bold">KATEGORI BARANG</label>
 							<select name="group[${groupCount}][tipe]" class="form-select form-select-sm" onchange="loadModels(this, ${groupCount})" required>
-								<option value="">-- Pilih Tipe --</option>
+								<option value="">-- Pilih Kategori --</option>
 								<option value="ADAPTOR">ADAPTOR</option>
 								<option value="BATTERY">BATTERY</option>
 								<option value="CABLE HDMI">CABLE HDMI</option>
@@ -39,9 +39,9 @@ function addGroup() {
 							</select>
 						</div>
 						<div class="col-md-4">
-							<label class="small fw-bold">MODEL (KODE)</label>
+							<label class="small fw-bold">MODEL</label>
 							<select name="group[${groupCount}][kode_barang]" id="model_${groupCount}" class="form-select form-select-sm" required>
-								<option value="">-- Pilih Tipe Dulu --</option>
+								<option value="">-- Pilih Kategori Dulu --</option>
 							</select>
 						</div>
                     <div class="col-md-4">

@@ -109,10 +109,19 @@ while ($row = mysqli_fetch_assoc($query_types)) {
                             <label class="form-label">Divisi / Departemen</label>
                             <input type="text" name="divisi" id="divisi_user" class="form-control uppercase-input" oninput="makeUppercase(this)" placeholder="DIVISI">
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Tanggal Form</label>
-                            <input type="date" name="tanggal" id="tgl_form" class="form-control" value="<?= date('Y-m-d') ?>">
-                        </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Tanggal Form</label>
+                                <div class="input-group">
+                                    <input type="date" name="tanggal" id="tgl_form" class="form-control">
+                                    <button class="btn btn-outline-primary" type="button" title="Set Hari Ini" onclick="setToday()">
+                                        <i class="bi bi-calendar-check"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" type="button" title="Kosongkan" onclick="clearDate()">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted" style="font-size: 0.75rem;">Kosong untuk format ..../..../.......</small>
+                            </div>
                     </div>
 
                     <div class="mt-4 pt-3 border-top d-flex justify-content-between">
@@ -131,6 +140,17 @@ while ($row = mysqli_fetch_assoc($query_types)) {
 
 <script>
     let rowCount = 0;
+
+        // Fungsi untuk set tanggal ke hari ini
+    function setToday() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('tgl_form').value = today;
+    }
+
+    // Fungsi untuk mengosongkan tanggal
+    function clearDate() {
+        document.getElementById('tgl_form').value = '';
+    }
 
     // Fungsi menampilkan Toast
     function showToast(message, type = 'success') {

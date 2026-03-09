@@ -2,18 +2,18 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-warning text-white">
-                <h5 class="modal-title" id="tipeLaptopModalLabel"><i class="bi bi-laptop-fill"></i> Kelola Tipe Inventori</h5>
+                <h5 class="modal-title" id="tipeLaptopModalLabel"><i class="bi bi-laptop-fill"></i> Kelola Asset Inventori</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                
-                <h6 class="mb-3">Daftar Tipe Laptop/Inventori yang Tersedia:</h6>
-                
+
+                <h6 class="mb-3">Daftar Tipe Asset yang Tersedia:</h6>
+
                 <div id="tipe-loading-indicator" class="text-center my-4">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p class="mt-2">Memuat data tipe...</p>
+                    <p class="mt-2">Memuat data ...</p>
                 </div>
 
                 <div id="tipe-data-container">

@@ -4,7 +4,7 @@
       <input type="hidden" name="service_id_to_update" id="service-id-to-update" value="">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Tambah Inventori</h5>
+          <h5 class="modal-title">Tambah Asset</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body row">

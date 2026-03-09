@@ -82,7 +82,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
 
                 <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'superadmin'): ?>
                 <li class="page-item <?= $halaman_aktif == 3 ? 'active' : '' ?>">
-                    <a class="page-link px-3" href="peripherals.php?halaman=3">3. Master Tipe</a>
+                    <a class="page-link px-3" href="peripherals.php?halaman=3">3. Master Data</a>
                 </li>
                 <?php endif; ?>
             </ul>
@@ -121,7 +121,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
 <div class="d-flex gap-2 shadow-sm ms-2 peripheral-action-group">
     <?php if ($_SESSION['role'] == 'superadmin'): ?>
         <button class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalTipe">
-            <i class="bi bi-tag"></i> Tambah Model
+            <i class="bi bi-tag"></i> Master Data
         </button>
     <?php endif; ?>
 
@@ -230,9 +230,9 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                         <thead class="table-light">
                             <tr>
                                 <th>Kode Barang</th>
-                                <th>Tipe</th>
+                                <th>Kategori</th>
                                 <th>Model</th>
-                                <th>Deskripsi Tipe</th>
+                                <th>Deskripsi</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -369,9 +369,9 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="small fw-bold">PILIH TIPE</label>
+                    <label class="small fw-bold">PILIH KATEGORI</label>
                     <select name="tipe_barang" class="form-select form-select-sm" required>
-                        <option value="">-- Pilih Tipe --</option>
+                        <option value="">-- Pilih Kategori --</option>
                         <option value="ADAPTOR">ADAPTOR</option>
                         <option value="BATTERY">BATTERY</option>
                         <option value="CABLE HDMI">CABLE HDMI</option>
@@ -383,16 +383,16 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                         <option value="MOUSE">MOUSE</option>
                         <option value="PATCH CORD">PATCH CORD</option>
                         <option value="PRINTER">PRINTER</option>
+                        <option value="PROJECTOR">PROJECTOR</option>
                         <option value="ROLLER">ROLLER</option>
                         <option value="SCANNER">SCANNER</option>
                         <option value="SWITCH">SWITCH</option>
                         <option value="WIRELESS">WIRELESS</option>
-                        <option value="PROJECTOR">PROJECTOR</option>
                     </select>
                 </div>
 
                 <div class="mb-3">
-                    <label class="small fw-bold">NAMA MODEL / BRAND</label>
+                    <label class="small fw-bold">NAMA MODEL/TIPE</label>
                     <input type="text" name="model" class="form-control form-control-sm" placeholder="Contoh: Logitech G102" required>
                 </div>
 
@@ -428,7 +428,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     </div>
 
                     <div class="mb-2">
-                        <label class="small fw-bold">TIPE</label>
+                        <label class="small fw-bold">KATEGORI</label>
                         <select name="tipe_barang" id="edit_tipe" class="form-select form-select-sm" required>
                             <option value="ADAPTOR">ADAPTOR</option>
                             <option value="BATTERY">BATTERY</option>
