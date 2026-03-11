@@ -71,7 +71,7 @@ if (isset($_GET['manual']) && $_GET['manual'] == 'true') {
     .section-title {
       font-size: 10pt;
       padding: 6px 10px;
-      background-color: #212121;
+      background-color: #121212;
       color: white;
       font-weight: normal;
       border: 0.5pt solid #888;

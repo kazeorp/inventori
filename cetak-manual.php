@@ -289,7 +289,13 @@ while ($row = mysqli_fetch_assoc($query_types)) {
 
     function setFormAction() {
         const form = document.getElementById('mainForm');
-        form.action = (document.getElementById('jenis_form').value === 'accepted') ? 'cetak-form.php' : 'cetak-return-form.php';
+        const jenisForm = document.getElementById('jenis_form').value;
+
+        if (jenisForm === 'accepted') {
+            form.action = 'cetak-form.php';
+        } else {
+            form.action = 'cetak-return-form.php';
+        }
     }
 
     window.onload = addAssetRow;

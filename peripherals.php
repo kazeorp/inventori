@@ -468,7 +468,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
 
     <div class="modal fade" id="modalMasuk" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
-            <form class="modal-content border-0" method="POST" id="formMasuk">
+            <form class="modal-content border-0" method="POST" action="proses-peripherals.php" id="formMasuk">
                 <div class="modal-header bg-primary text-white p-2 px-3">
                     <h6>Input Barang Masuk Per PO</h6>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>

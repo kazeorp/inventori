@@ -47,8 +47,8 @@ function addGroup() {
                     <div class="col-md-4">
                         <label class="small fw-bold">PERUNTUKAN</label>
                         <select name="group[${groupCount}][peruntukan]" class="form-select form-select-sm" onchange="toggleUserField(this, ${groupCount})">
-                            <option value="Spare">SPARE IT</option>
-                            <option value="User">USER (NAMA)</option>
+                            <option value="SSC">SSC</option>
+                            <option value="APP">APP</option>
                         </select>
                         <input type="text" name="group[${groupCount}][nama_user]" id="user_field_${groupCount}" class="form-control form-control-sm mt-2 d-none" placeholder="Nama User...">
                     </div>
