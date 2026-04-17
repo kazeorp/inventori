@@ -30,8 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $win            = strtoupper(mysqli_real_escape_string($koneksi, $_POST['win'] ?? ''));
     $keterangan     = strtoupper(mysqli_real_escape_string($koneksi, $_POST['keterangan'] ?? ''));
     $kelengkapan    = strtoupper(mysqli_real_escape_string($koneksi, $_POST['kelengkapan'] ?? ''));
-    $tanggal_masuk  = mysqli_real_escape_string($koneksi, $_POST['tanggal_masuk'] ?? '');
-    $tanggal_keluar = mysqli_real_escape_string($koneksi, $_POST['tanggal_keluar'] ?? '');
+    // Jika kosong, set variabel menjadi NULL (sebagai string untuk query)
+    $tanggal_masuk_val  = !empty($_POST['tanggal_masuk']) ? "'" . mysqli_real_escape_string($koneksi, $_POST['tanggal_masuk']) . "'" : "NULL";
+    $tanggal_keluar_val = !empty($_POST['tanggal_keluar']) ? "'" . mysqli_real_escape_string($koneksi, $_POST['tanggal_keluar']) . "'" : "NULL";
     $nik            = mysqli_real_escape_string($koneksi, $_POST['nik'] ?? '');
     $nama           = strtoupper(mysqli_real_escape_string($koneksi, $_POST['nama'] ?? ''));
     $divisi         = strtoupper(mysqli_real_escape_string($koneksi, $_POST['divisi'] ?? ''));
@@ -57,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sql = "INSERT INTO inventori (
         rak, status, hostname, type, serial_number, domain, device_category, ram, storage, win, keterangan, kelengkapan, tanggal_masuk, tanggal_keluar, nik, nama, divisi
     ) VALUES (
-        '$rak', '$status', '$hostname', '$type', '$serial_number', '$domain', '$device_category', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan','$tanggal_masuk', '$tanggal_keluar', '$nik', '$nama', '$divisi'
+        '$rak', '$status', '$hostname', '$type', '$serial_number', '$domain', '$device_category', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan', $tanggal_masuk_val, $tanggal_keluar_val, '$nik', '$nama', '$divisi'
     )";
 
     // Eksekusi dan feedback

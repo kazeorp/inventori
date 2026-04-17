@@ -92,7 +92,7 @@ if ($stmt = $koneksi->prepare($sql_aset)) {
 
         echo json_encode([
             'status' => 'error',
-            'message' => "Aset '{$hostname}' TIDAK DITEMUKAN dalam database.",
+            'message' => "Aset '{$hostname}' TIDAK DITEMUKAN dalam database. Silahkan klik tombol register untuk mendaftarkan Aset",
         ]);
     }
 } else {
