@@ -122,36 +122,29 @@ if ($koneksi) {
 <?php include 'sidebar.php'; ?>
 
 <main class="main-content container py-4">
-    <h2 class="mb-4 text-center">Scan Barcode</h2>
+    <h3 class="mb-4 text-center">Scan Barcode</h3>
 
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div id="manual-check-form-container" class="text-center mb-5">
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div id="manual-check-form-container" class="text-center mb-5">
+            <div id="scan-status" class="fw-bold mb-3 text-primary"></div>
 
-                <div id="scan-status" class="fw-bold mb-3 text-primary"></div>
-
-                <form method="POST" id="manual-check-form">
-                    <input type="text" name="hostname" id="manual-hostname-input" class="form-control form-control-lg mb-3" placeholder="Input Hostname di sini" required autofocus>
-
-                    <button type="button" id="manual-check-button" class="btn btn-success btn-lg">Input Aset</button>
-                </form>
-            </div>
-
-            <hr class="mb-1">
-
-            <div id="status-alert-container">
-                <?php if (isset($_SESSION['scan_error'])): ?>
-                    <div class="alert alert-danger mt-3"><?= htmlspecialchars($_SESSION['scan_error']) ?></div>
-                    <?php unset($_SESSION['scan_error']); ?>
-                <?php endif; ?>
-            </div>
+            <form method="POST" id="manual-check-form">
+                <input type="text" name="hostname" id="manual-hostname-input" class="form-control form-control-md mb-3" placeholder="Input Hostname di sini" required autofocus>
+                <button type="button" id="manual-check-button" class="btn btn-success btn-sm">Input Aset</button>
+            </form>
         </div>
-    </div>
+
+        <hr class="mb-1">
+
+        <div id="status-alert-container">
+            </div>
+</div>
 
     <div class="row justify-content-center mt-2">
 
 <div class="col-md-6">
-            <h5 class="mb-3 text-center">User Dalam Antrian</h5>
+            <h6 class="mb-3 text-center">Dalam Antrian</h6>
 
             <?php $scan_chunks = array_chunk($service_list_pending, 5); // Bagi data menjadi potongan 5?>
 
@@ -222,7 +215,7 @@ if ($koneksi) {
         </div>
 
 <div class="col-md-6">
-            <h5 class="mb-3 text-center"> Daftar Aset On Service</h5>
+            <h6 class="mb-3 text-center"> Dalam Perbaikan</h6>
 
             <?php $service_chunks = array_chunk($service_list_on_service, 5); // Bagi data menjadi potongan 5?>
 
@@ -430,37 +423,44 @@ function appendHistoryItem(data) {
             return response.json();
         })
         .then(data => {
-      alertContainer.innerHTML = '';
-      scanStatusElement.classList.remove('text-danger', 'text-primary');
-      scanStatusElement.classList.add('text-success');
+            alertContainer.innerHTML = '';
+            scanStatusElement.classList.remove('text-danger', 'text-primary');
+            scanStatusElement.classList.add('text-success');
 
-      if (data.status === 'success') {
-
-                // >>> BARU: PERBARUI TAMPILAN SECARA INSTAN DI BROWSER <<<
+            if (data.status === 'success') {
+                // 1. ASET DITEMUKAN
                 appendHistoryItem(data);
-                // >>> END BARU <<<
+                scanStatusElement.innerText = ` Aset ${data.hostname} ditemukan. Mencatat service...`;
+                addServiceEntry(data.id_aset, data.hostname);
 
-        // ASET DITEMUKAN: Lanjut ke addServiceEntry (Alur otomatis dikembalikan)
-        scanStatusElement.innerText = ` Aset ${data.hostname} ditemukan. Mencatat service...`;
-        addServiceEntry(data.id_aset, data.hostname); // KEMBALIKAN PANGGILAN INI
+            } else {
+                // 2. ASET TIDAK DITEMUKAN
+                const errorMessage = data.message || "Aset tidak ditemukan.";
 
-      } else{
-                // ASET TIDAK DITEMUKAN
-                const errorMessage = data.message || "Aset tidak ditemukan atau respon server tidak valid.";
-                scanStatusElement.innerText = " " + errorMessage;
+                // Menggunakan innerHTML agar link 'Register' dari PHP bisa diklik
+                scanStatusElement.innerHTML = " " + errorMessage;
                 scanStatusElement.classList.remove('text-success');
                 scanStatusElement.classList.add('text-danger');
-                alertContainer.innerHTML = `<div class="alert alert-danger mt-3">${errorMessage}</div>`;
+
+                // --- LOGIKA OTOMATISASI MODAL ---
+                // Cari input hostname di dalam modal register
+                // Pastikan selector sesuai dengan id modal dan atribut name input Anda
+                const inputHostnameModal = document.querySelector('#registerModal [name="hostname"]');
+
+                if (inputHostnameModal) {
+                    // Isi nilai input dengan hostname yang tadi di-scan (dalam huruf besar)
+                    inputHostnameModal.value = processedCode.toUpperCase();
+                }
             }
         })
         .catch(error => {
-            // ERROR KONEKSI/SERVER
+            // 3. ERROR KONEKSI/SERVER
             console.error('AJAX Scan Error:', error);
-            const displayError = error.message.includes('HTTP status') ? 'Gagal koneksi server.' : 'Gagal koneksi server. Coba lagi.';
+            const displayError = "Koneksi gagal atau server bermasalah.";
+
             scanStatusElement.innerText = " " + displayError;
             scanStatusElement.classList.remove('text-success');
             scanStatusElement.classList.add('text-danger');
-            alertContainer.innerHTML = `<div class="alert alert-danger mt-3">Koneksi gagal atau server bermasalah.</div>`;
         });
     }
 

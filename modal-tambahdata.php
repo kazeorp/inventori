@@ -14,11 +14,6 @@
             <input type="text" name="hostname" id="add-hostname" class="form-control" required>
           </div>
           <div class="col-md-6 mb-3">
-            <label class="fw-bold">Rak</label>
-            <input type="text" name="rak" id="add-rak" class="form-control" readonly>
-          </div>
-
-          <div class="col-md-6 mb-3">
             <label class="fw-bold">Status</label>
             <select name="status" id="add-status" class="form-control" required>
               <?php include 'status.php'; ?>

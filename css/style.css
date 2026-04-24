@@ -391,3 +391,76 @@ body {
 #btnNotifLonceng {
 	z-index: 1060;
 }
+
+/* Global Font Size Adjustment */
+body {
+	font-size: 0.875rem; /* Sekitar 14px */
+	background-color: #f8f9fa;
+}
+
+/* Table Specific Styling for Compactness */
+.table thead th {
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	white-space: nowrap; /* Header tidak turun baris */
+	vertical-align: middle;
+	padding: 0.6rem 0.5rem;
+}
+
+.table td {
+	font-size: 0.825rem; /* Font isi tabel lebih kecil */
+	vertical-align: middle;
+	padding: 0.4rem 0.5rem; /* Padding diperkecil agar baris lebih pendek */
+}
+
+/* Filter & Buttons */
+.filter-buttons .btn {
+	margin-right: 3px;
+	margin-bottom: 3px;
+	font-size: 0.75rem; /* Tombol filter lebih kecil */
+	padding: 0.25rem 0.5rem;
+}
+
+.filter-container {
+	padding: 1rem !important;
+}
+
+.main-content h2 {
+	font-size: 1.5rem; /* Judul tidak terlalu besar */
+}
+
+/* Utility */
+.gap-2 {
+	gap: 0.5rem !important;
+}
+
+.color-indicator {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	display: inline-block;
+	margin-right: 8px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	flex-shrink: 0; /* Agar lingkaran tidak gepeng jika teks panjang */
+}
+
+/* Mapping Warna */
+.bg-merah {
+	background-color: #d32f2f;
+}
+.bg-kuning {
+	background-color: #fbc02d;
+}
+.bg-hijau {
+	background-color: #1b5e20;
+} /* Hijau Tua */
+.bg-biru {
+	background-color: #0d47a1;
+} /* Biru Tua */
+.bg-hitam {
+	background-color: #212121;
+}
+.bg-putih {
+	background-color: #ffffff;
+}

@@ -16,8 +16,16 @@
                             <input type="text" name="hostname" id="edit-hostname" class="form-control" style="border-radius: var(--radius-md, 8px);">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="fw-bold">Rak</label>
-                            <input type="text" name="rak" id="edit-rak" class="form-control" style="border-radius: var(--radius-md, 8px);" readonly>
+                            <label class="form-label small fw-bold">Warna</label>
+                            <select name="warna" class="form-select form-select-sm">
+                                <option value="">- Pilih Warna -</option>
+                                <option value="merah">Merah</option>
+                                <option value="kuning">Kuning</option>
+                                <option value="hijau">Hijau</option>
+                                <option value="biru">Biru</option>
+                                <option value="hitam">Hitam</option>
+                                <option value="putih">Putih</option>
+                            </select>
                         </div>
 
                         <div class="col-md-6 mb-3">

@@ -90,9 +90,12 @@ if ($stmt = $koneksi->prepare($sql_aset)) {
         $_SESSION['scan_error'] = "Aset dengan Hostname '{$hostname}' TIDAK DITEMUKAN.";
         unset($_SESSION['last_scan']);
 
+        // Menambahkan link yang memicu modal register
+        $message = "Aset '{$hostname}' tidak ditemukan. Klik <a href='#' class='fw-bold' data-bs-toggle='modal' data-bs-target='#registerModal'>DI SINI</a> untuk mendaftarkan Aset.";
+
         echo json_encode([
             'status' => 'error',
-            'message' => "Aset '{$hostname}' TIDAK DITEMUKAN dalam database. Silahkan klik tombol register untuk mendaftarkan Aset",
+            'message' => $message,
         ]);
     }
 } else {

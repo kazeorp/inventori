@@ -28,25 +28,32 @@ $status_options = [
 
 // --- Logika Query Inventori ---
 
-// Tangkap parameter status, cari, rak, dan type dari URL
-$status_filter = isset($_GET['status']) ? $_GET['status'] : 'all'; // DEFAULT: 'all'
-$cari = isset($_GET['cari']) ? mysqli_real_escape_string($koneksi, $_GET['cari']) : '';
-$rak_filter = isset($_GET['rak']) ? mysqli_real_escape_string($koneksi, $_GET['rak']) : '';
-$type_filter = isset($_GET['type']) ? mysqli_real_escape_string($koneksi, $_GET['type']) : '';
+// --- Parameter Baru ---
+$status_filter = $_GET['status'] ?? 'all';
+$cari          = mysqli_real_escape_string($koneksi, $_GET['cari'] ?? '');
+$divisi_filter = mysqli_real_escape_string($koneksi, $_GET['divisi'] ?? ''); // Filter Divisi
+$type_filter   = mysqli_real_escape_string($koneksi, $_GET['type'] ?? '');   // Filter Tipe Laptop
+
+// --- Logika Sorting ---
+$sort_column = $_GET['sort'] ?? 'id';
+$sort_order  = $_GET['order'] ?? 'ASC';
+$next_order  = ($sort_order === 'ASC') ? 'DESC' : 'ASC'; // Untuk toggle link
+
+// Daftar kolom yang diizinkan untuk disortir (keamanan)
+$allowed_sort = ['domain', 'status', 'hostname', 'type', 'nama', 'divisi', 'tanggal_masuk', 'warna'];
+if (!in_array($sort_column, $allowed_sort)) {
+    $sort_column = 'id';
+}
 
 $where = [];
-
-// Filter Status
-if ($status_filter !== 'all' && array_key_exists($status_filter, $status_options)) {
-    $where[] = "status = '" . mysqli_real_escape_string($koneksi, $status_filter) . "'";
+if ($status_filter !== 'all') {
+    $where[] = "status = '$status_filter'";
 }
-// Tambahkan filter pencarian (hostname, nama, nik)
 if (!empty($cari)) {
     $where[] = "(hostname LIKE '%$cari%' OR nama LIKE '%$cari%' OR nik LIKE '%$cari%')";
 }
-// Tambahkan filter Rak dan Type (jika ada di URL)
-if (!empty($rak_filter)) {
-    $where[] = "rak = '$rak_filter'";
+if (!empty($divisi_filter)) {
+    $where[] = "divisi = '$divisi_filter'";
 }
 if (!empty($type_filter)) {
     $where[] = "type = '$type_filter'";
@@ -54,39 +61,17 @@ if (!empty($type_filter)) {
 
 $where_clause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
 
-// Query utama
-$query = "
-  SELECT
-    i.*,
-    t_loan.oleh AS pic_loan_name_display
-  FROM
-    inventori i
-  LEFT JOIN (
-    SELECT
-      t1.inventori_id,
-      t1.oleh,
-      t1.tanggal
-    FROM
-      histori_aset t1
-    INNER JOIN (
-      SELECT
-        inventori_id,
-        MAX(tanggal) AS max_tanggal
-      FROM
-        histori_aset
-      WHERE
-        aksi = 'Loan'
-      GROUP BY
-        inventori_id
-    ) t2 ON t1.inventori_id = t2.inventori_id AND t1.tanggal = t2.max_tanggal
-    WHERE
-      t1.aksi = 'Loan'
-  ) AS t_loan ON i.id = t_loan.inventori_id
-  $where_clause
-  ORDER BY i.id ASC
-";
-
+$query = "SELECT i.* FROM inventori i $where_clause ORDER BY $sort_column $sort_order";
 $result = mysqli_query($koneksi, $query);
+
+// Fungsi pembantu untuk membuat link sort
+function sort_link($column, $current_sort, $current_order, $next_order)
+{
+    $params = $_GET;
+    $params['sort'] = $column;
+    $params['order'] = ($current_sort === $column) ? $next_order : 'ASC';
+    return 'tampil.php?' . http_build_query($params);
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -99,48 +84,6 @@ $result = mysqli_query($koneksi, $query);
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-  <style>
-    /* Global Font Size Adjustment */
-    body {
-        font-size: 0.875rem; /* Sekitar 14px */
-        background-color: #f8f9fa;
-    }
-
-    /* Table Specific Styling for Compactness */
-    .table thead th {
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        white-space: nowrap; /* Header tidak turun baris */
-        vertical-align: middle;
-        padding: 0.6rem 0.5rem;
-    }
-
-    .table td {
-        font-size: 0.825rem; /* Font isi tabel lebih kecil */
-        vertical-align: middle;
-        padding: 0.4rem 0.5rem; /* Padding diperkecil agar baris lebih pendek */
-    }
-
-    /* Filter & Buttons */
-    .filter-buttons .btn {
-      margin-right: 3px;
-      margin-bottom: 3px;
-      font-size: 0.75rem; /* Tombol filter lebih kecil */
-      padding: 0.25rem 0.5rem;
-    }
-
-    .filter-container {
-      padding: 1rem !important;
-    }
-
-    .main-content h2 {
-        font-size: 1.5rem; /* Judul tidak terlalu besar */
-    }
-
-    /* Utility */
-    .gap-2 { gap: 0.5rem !important; }
-  </style>
 </head>
 <body class="bg-light">
 
@@ -183,22 +126,47 @@ $result = mysqli_query($koneksi, $query);
         </div>
 
         <div class="col-12">
-           <form method="GET" class="row g-2 align-items-end">
+            <form method="GET" class="row g-2 align-items-end">
                 <input type="hidden" name="status" value="<?= e($status_filter); ?>">
 
-                <div class="col-md-4 col-sm-6">
-                    <label for="cari_input" class="form-label fw-bold mb-0 small">Cari (Hostname/Nama/NIK)</label>
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                        <input type="text" name="cari" id="cari_input" class="form-control form-control-sm" placeholder="Ketik kata kunci..." value="<?= isset($_GET['cari']) ? htmlspecialchars($_GET['cari']) : ''; ?>">
-                    </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold mb-0 small">Cari</label>
+                    <input type="text" name="cari" class="form-control form-control-sm" placeholder="Hostname/Nama/NIK" value="<?= e($cari) ?>">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-bold mb-0 small">Divisi</label>
+                    <select name="divisi" class="form-select form-select-sm">
+                        <option value="">Semua Divisi</option>
+                        <?php
+                        $q_divisi = mysqli_query($koneksi, "SELECT DISTINCT divisi FROM inventori WHERE divisi != '' ORDER BY divisi");
+while ($d = mysqli_fetch_assoc($q_divisi)) {
+    $sel = ($divisi_filter == $d['divisi']) ? 'selected' : '';
+    echo "<option value='" . e($d['divisi']) . "' $sel>" . e($d['divisi']) . "</option>";
+}
+?>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-bold mb-0 small">Tipe Laptop</label>
+                    <select name="type" class="form-select form-select-sm">
+                        <option value="">Semua Tipe</option>
+                        <?php
+$q_type = mysqli_query($koneksi, "SELECT DISTINCT type FROM inventori WHERE type != '' ORDER BY type");
+while ($t = mysqli_fetch_assoc($q_type)) {
+    $sel = ($type_filter == $t['type']) ? 'selected' : '';
+    echo "<option value='" . e($t['type']) . "' $sel>" . e($t['type']) . "</option>";
+}
+?>
+                    </select>
                 </div>
 
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary btn-sm">Terapkan</button>
                     <a href="tampil.php" class="btn btn-secondary btn-sm">Reset</a>
                 </div>
-           </form>
+            </form>
         </div>
       </div>
     </div>
@@ -240,7 +208,6 @@ $result = mysqli_query($koneksi, $query);
               <thead class="table-dark">
                 <tr>
                   <th>Domain</th>
-                  <th>Rak</th>
                   <th>Status</th>
                   <th>Hostname & Tipe</th>
                   <th>Spesifikasi</th>
