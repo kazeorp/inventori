@@ -106,7 +106,7 @@ function sort_link($column, $current_sort, $current_order, $next_order)
           <small class="fw-bold text-muted d-block mb-1">Filter Status:</small>
           <?php foreach ($status_options as $status_key => $label):
               $is_active = $status_filter === $status_key;
-              $btn_class = $is_active ? 'btn-primary' : 'btn-outline-secondary'; // Ubah warna tidak aktif jadi abu-abu agar lebih soft
+              $btn_class = $is_active ? 'btn-dark' : 'btn-outline-secondary';
 
               $url = 'tampil.php?status=' . urlencode($status_key);
               if (!empty($cari)) {
@@ -163,7 +163,7 @@ while ($t = mysqli_fetch_assoc($q_type)) {
                 </div>
 
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary btn-sm">Terapkan</button>
+                    <button type="submit" class="btn btn-dark btn-sm">Terapkan</button>
                     <a href="tampil.php" class="btn btn-secondary btn-sm">Reset</a>
                 </div>
             </form>
@@ -174,13 +174,13 @@ while ($t = mysqli_fetch_assoc($q_type)) {
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
         <div class="d-flex flex-wrap gap-2">
             <?php if ($role !== 'normal'): ?>
-                <button type="button" class="btn btn-primary btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+                <button type="button" class="btn btn-dark btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
                     <i class="bi bi-plus-circle"></i> Tambah
                 </button>
-                <button type="button" class="btn btn-success btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#importModal">
+                <button type="button" class="btn btn-outline-dark btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#importModal">
                     <i class="bi bi-file-excel"></i> Import
                 </button>
-                <a href="#" id="export-link" class="btn btn-outline-success btn-sm shadow-sm">
+                <a href="#" id="export-link" class="btn btn-outline-dark btn-sm shadow-sm">
                     <i class="bi bi-download"></i> Export
                 </a>
             <?php endif; ?>
@@ -188,13 +188,13 @@ while ($t = mysqli_fetch_assoc($q_type)) {
 
         <div class="d-flex flex-wrap gap-2">
             <?php if ($role !== 'normal'): ?>
-                <a href="cetak-manual.php" class="btn btn-info text-white btn-sm shadow-sm">
+                <a href="cetak-manual.php" class="btn btn-outline-secondary btn-sm shadow-sm">
                     <i class="bi bi-gear"></i> Kelola Form
                 </a>
             <?php endif; ?>
 
             <?php if ($role === 'superadmin'): ?>
-                <button type="button" class="btn btn-warning text-white btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#tipeLaptopModal">
+                <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#tipeLaptopModal">
                     <i class="bi bi-laptop"></i> Master Data
                 </button>
             <?php endif; ?>
@@ -207,6 +207,7 @@ while ($t = mysqli_fetch_assoc($q_type)) {
             <table class="table table-bordered table-striped table-hover table-sm mb-0">
               <thead class="table-dark">
                 <tr>
+                  <th style="width: 30px;"></th>
                   <th>Domain</th>
                   <th>Status</th>
                   <th>Hostname & Tipe</th>

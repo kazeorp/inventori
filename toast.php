@@ -1,5 +1,5 @@
 <div class="toast-container position-fixed end-0 bottom-0 p-3" style="z-index: 9999; pointer-events: none;">
-    <div id="liveToast" class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="pointer-events: auto;">
+    <div id="liveToast" class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="pointer-events: auto; cursor: default;">
         <div class="d-flex">
             <div id="toast-body" class="toast-body fw-bold text-white">
                 </div>

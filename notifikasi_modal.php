@@ -67,31 +67,70 @@
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-// --- 1. VARIABEL GLOBAL ---
-let serviceReminderInterval = null;
-let graceReminderInterval = null;
-let notifInitialized = false;
-
-// Pastikan socket.io terload sebelum inisialisasi
-const socket = (typeof io !== 'undefined') ? io("http://172.16.3.60:3000") : null;
-const notifSound = document.getElementById('notifSound');
-const graceSound = document.getElementById('graceSound');
-
+let serviceRem = null, graceRem = null, notifInit = false;
+const socket = (typeof io !== 'undefined') ? io("http://172.16.3.60:3000") : null,
+      nSnd = document.getElementById('notifSound'), gSnd = document.getElementById('graceSound');
 let countGrace = <?= (int) count($notifikasi_grace) ?>;
 let currentServiceCount = <?= (int) count($notifikasi_service) ?>;
 
-// --- 2. FUNGSI PENGECEKAN BOOTSTRAP (PENTING) ---
-// Fungsi ini memastikan library bootstrap sudah terload sebelum digunakan
-function isBootstrapReady() {
-    return typeof bootstrap !== 'undefined';
+function fireToast(message, type = 'info') {
+    if (typeof bootstrap === 'undefined') return setTimeout(() => fireToast(message, type), 200);
+
+    let container = document.querySelector('.toast-container') || Object.assign(document.createElement('div'), {
+        className: 'toast-container position-fixed bottom-0 end-0 p-3',
+        style: 'z-index: 10005; pointer-events: none;'
+    });
+    if (!container.parentNode) document.body.appendChild(container);
+
+    const id = `toast-${Date.now()}`, bgColor = type === 'danger' ? 'bg-danger' : 'bg-primary';
+    container.insertAdjacentHTML('beforeend', `
+        <div id="${id}" class="toast align-items-center text-white ${bgColor} border-0 shadow-lg" role="alert" style="cursor: pointer; min-width: 250px; pointer-events: auto;">
+            <div class="d-flex"><div class="toast-body"><i class="bi bi-bell-fill me-2"></i> ${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>
+        </div>`);
+
+    const toastElem = document.getElementById(id), bsToast = new bootstrap.Toast(toastElem, { delay: 10000 });
+    bsToast.show();
+    toastElem.onclick = e => { if (!e.target.classList.contains('btn-close')) { showNotifModal(type === 'danger' ? '#grace-panel' : '#service-panel'); bsToast.hide(); } };
 }
 
-// --- 3. TOAST & MODAL DENGAN LOGIKA MENUNGGU (WAITING LOGIC) ---
-function fireToast(message, type = 'info') {
-    // Jika bootstrap belum siap, tunggu 200ms lalu coba lagi secara rekursif
-    if (!isBootstrapReady()) {
-        console.warn("Bootstrap belum siap, menunda fireToast...");
-        setTimeout(() => fireToast(message, type), 200);
+function showNotifModal(target = null) {
+    const modal = document.getElementById('notifikasiModal');
+    if (!modal || typeof bootstrap === 'undefined') return;
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+    if (target) {
+        const btn = document.querySelector(`button[data-bs-target="${target}"]`);
+        if (btn) bootstrap.Tab.getOrCreateInstance(btn).show();
+    }
+}
+
+function updateNotifData() {
+    fetch('api_get_notifikasi.php').then(res => res.json()).then(data => {
+        if (data.grace_count > countGrace) { gSnd?.play().catch(() => {}); fireToast(`⚠️ Aset baru overdue Grace Period!`, "danger"); }
+        countGrace = data.grace_count; currentServiceCount = data.service_count;
+        const b = document.getElementById('badge-notif'); if (b) { b.innerText = data.total; b.style.display = data.total > 0 ? 'block' : 'none'; }
+    }).catch(err => console.error(err));
+}
+
+function initNotificationSystem() {
+    if (notifInit) return; notifInit = true;
+    if (serviceRem) clearInterval(serviceRem);
+    serviceRem = setInterval(() => currentServiceCount > 0 && (nSnd?.play().catch(() => {}), fireToast(`🔔 Ada ${currentServiceCount} service menunggu!`, "primary")), 120000);
+    if (countGrace > 0) setTimeout(() => { gSnd?.play().catch(() => {}); fireToast(`⚠️ ${countGrace} aset overdue Grace Period!`, "danger"); }, 1500);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initNotificationSystem();
+    document.getElementById('btnNotifLonceng')?.addEventListener('click', e => { e.preventDefault(); showNotifModal(); });
+});
+document.addEventListener('mousemove', initNotificationSystem, { once: true });
+
+if (socket) {
+    socket.on('service_update', data => {
+        if (data.action === 'service_insert') { nSnd?.play().catch(() => {}); fireToast("🔔 Service Request baru masuk!", "primary"); }
+        updateNotifData();
+    });
+}
+</script>
         return;
     }
 
@@ -100,14 +139,15 @@ function fireToast(message, type = 'info') {
         container = document.createElement('div');
         container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
         container.style.zIndex = '10005';
+        container.style.pointerEvents = 'none'; // Ensure container doesn't block clicks
         document.body.appendChild(container);
     }
 
     const id = 'toast-' + Date.now();
     const bgColor = type === 'danger' ? 'bg-danger' : 'bg-primary';
     const html = `
-        <div id="${id}" class="toast align-items-center text-white ${bgColor} border-0 shadow-lg"
-             role="alert" style="cursor: pointer; min-width: 250px;">
+        <div id="${id}" class="toast align-items-center text-white ${bgColor} border-0 shadow-lg" 
+             role="alert" style="cursor: pointer; min-width: 250px; pointer-events: auto;">
             <div class="d-flex">
                 <div class="toast-body">
                     <i class="bi bi-bell-fill me-2"></i> ${message}

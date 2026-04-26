@@ -3,12 +3,12 @@
 /* ======================================================= */
 
 :root {
-	--app-red: #e51a22;
-	--app-dark: #212529;
-	--app-blue: #004899;
+	--app-red: #dc3545;
+	--app-dark: #1e293b; /* slate-800 */
+	--app-blue: #2563eb; /* blue-600 */
 	--bg-light: #f8f9fa;
-	--radius-md: 4px; /* Sudut lebih tegas untuk kesan profesional */
-	--header-height: 60px; /* Kita kecilkan dari 120px ke 60px */
+	--radius-md: 5px;
+	--header-height: 60px;
 }
 
 body {
@@ -16,6 +16,24 @@ body {
 	background-color: var(--bg-light);
 	font-size: 0.85rem; /* Ukuran font global diperkecil */
 	margin: 0;
+}
+
+/* Professional Button Standard */
+.btn {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    padding: 0.4rem 1rem;
+    transition: all 0.2s ease-in-out;
+    border-radius: var(--radius-md);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
 }
 
 /* --- Header Styling (Full Width) --- */
@@ -34,80 +52,62 @@ body {
 }
 
 .logo-img {
-	height: 40px; /* Ukuran logo lebih proporsional */
+	height: 35px;
 	width: auto;
 }
 
-/* --- Sidebar Styling (Tetap di bawah Header) --- */
 .sidebar {
 	position: fixed;
 	top: var(--header-height);
 	left: 0;
-	width: 220px;
+	width: 200px;
 	height: calc(100vh - var(--header-height));
 	background-color: var(--app-dark);
 	color: white;
-	padding: 15px 10px;
+	padding: 20px 10px;
 	overflow-y: auto;
 	z-index: 1000;
 }
 
 .sidebar a {
-	color: #ced4da;
+	color: #94a3b8;
 	text-decoration: none;
 	display: block;
 	padding: 8px 12px;
-	margin-bottom: 2px;
-	font-size: 0.8rem; /* Font sidebar diperkecil */
+	margin-bottom: 5px;
+	font-size: 0.8rem;
 	font-weight: 500;
 	border-radius: var(--radius-md);
 	transition: all 0.2s;
 }
 
-.sidebar a:hover {
-	background-color: rgba(255, 255, 255, 0.1);
-	color: #fff;
-}
+.sidebar a:hover { background-color: rgba(255, 255, 255, 0.05); color: #fff; }
+.sidebar a.active { background-color: var(--app-blue); color: #ffffff; }
 
-.sidebar a.active {
-	background-color: var(--app-red);
-	color: #ffffff;
-}
-
-/* --- Main Content Styling --- */
 .main-content {
-	margin-left: 220px; /* Pas dengan lebar sidebar */
-	margin-top: var(--header-height); /* Pas dengan tinggi header */
-	padding: 20px;
+	margin-left: 200px;
+	margin-top: var(--header-height);
+	padding: 30px;
 	min-height: calc(100vh - var(--header-height));
 }
 
-/* --- Tabel & Komponen Kompak (VERSI GLOBAL BARU) --- */
 .table {
 	font-size: 0.8rem;
-	width: 100% !important;
-	border-collapse: collapse;
+	border-radius: var(--radius-md);
+	overflow: hidden;
+    border: 1px solid #e2e8f0;
 }
 
-/* Header Tabel Global */
 .table thead th {
-	background-color: var(--app-dark);
-	color: #ffffff;
-	padding: 12px 15px; /* Padding kiri-kanan ditambah agar tidak mepet */
-	text-align: left; /* UBAH DARI CENTER KE LEFT AGAR SIMETRIS */
-	vertical-align: middle;
-	border-bottom: 2px solid var(--app-red);
+	background-color: #f1f5f9;
+	color: #475569;
+	padding: 10px 15px;
+	text-align: left;
+    border-bottom: 1px solid #e2e8f0;
 	font-weight: 600;
-	text-transform: uppercase;
 }
 
-/* Isi Tabel Global */
-.table td {
-	padding: 10px 15px; /* Padding disamakan dengan header */
-	vertical-align: middle;
-	text-align: left; /* Pastikan isi selalu rata kiri */
-	border-bottom: 1px solid #dee2e6;
-}
+.table td { padding: 10px 15px; text-align: left; border-bottom: 1px solid #f1f5f9; }
 
 /* Utilitas untuk kolom yang ingin tetap di tengah (misal: No, Aksi) */
 .text-center {

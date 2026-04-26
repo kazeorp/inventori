@@ -21,7 +21,7 @@ $display_name = $_SESSION['nama_lengkap'] ?? ($_SESSION['username'] ?? 'Guest');
 
         <?php if ($role !== 'normal'): ?>
             <a href="tampil.php"><i class="bi bi-box-seam me-2"></i> Inventory Data</a>
-            <a href="peripherals.php"><i class="bi bi-mouse2 me-2"></i> Stock Peripheral</a>
+            <!-- <a href="peripherals.php"><i class="bi bi-mouse2 me-2"></i> Stock Peripheral</a> -->
         <?php endif; ?>
 
         <?php if (in_array($role, ['admin', 'superadmin'])): ?>

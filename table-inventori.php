@@ -83,13 +83,13 @@ if (isset($result) && mysqli_num_rows($result) > 0) {
 
         // Tampilan Baris
         echo "<tr>";
+        echo "<td class='text-center'>{$dot}</td>"; // 0. Warna (Indikator)
         echo "<td>" . displayValue($row['domain']) . "</td>"; // 1. Domain
         echo "<td>" . getStatusBadge($row['status']) . "</td>"; // 2. Status
 
         // 3. Hostname (Warna Disisipkan di sini)
         echo "<td>
                 <div class='d-flex align-items-center'>
-                    {$dot}
                     <a href='#' class='edit-btn text-decoration-none fw-bold' data-bs-toggle='modal' data-bs-target='#editModal' data-id='{$row['id']}' data-hostname='{$row['hostname']}' data-warna='{$row['warna']}'>
                         {$row['hostname']}
                     </a>
