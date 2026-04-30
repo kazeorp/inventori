@@ -171,7 +171,7 @@ elseif (isset($_GET['hostname'])) {
         data-bs-toggle="modal" data-bs-target="#editModal"
         data-id="<?= e($aset['id'] ?? '') ?>"
         data-hostname="<?= e($aset['hostname'] ?? '') ?>"
-        data-rak="<?= e($aset['rak'] ?? '') ?>"
+        data-warna="<?= e($aset['warna'] ?? '') ?>"
         data-status="<?= e($aset['status'] ?? '') ?>"
         data-type="<?= e($aset['type'] ?? '') ?>"
         data-ram="<?= e($aset['ram'] ?? '') ?>"
@@ -206,7 +206,7 @@ elseif (isset($_GET['hostname'])) {
             <tr><th>ID Aset</th><td><?= e($aset['id'] ?? '') ?></td></tr>
             <tr><th>Hostname</th><td><?= e($aset['hostname'] ?? '') ?></td></tr>
             <tr><th>Status</th><td><span class="badge bg-primary"><?= e($aset['status'] ?? '') ?></span></td></tr>
-            <tr><th>Rak</th><td><?= e($aset['rak'] ?? '') ?></td></tr>
+            <tr><th>Warna</th><td><?= e($aset['warna'] ?? '') ?></td></tr>
             <tr><th>Type</th><td><?= e($aset['type'] ?? '') ?></td></tr>
             <tr><th>Device Category</th><td><?= e($aset['device_category'] ?? '') ?></td></tr>
             <tr><th>Domain</th><td><?= e($aset['domain'] ?? '') ?></td></tr>
@@ -312,8 +312,8 @@ elseif (isset($_GET['hostname'])) {
 
                 setModalValue('#edit-id', 'data-id');
                 setModalValue('#edit-hostname', 'data-hostname');
-                setModalValue('#edit-rak', 'data-rak');
-                setModalValue('#edit-status', 'data-status');
+                setModalValue('[name="warna"]', 'data-warna');
+                setModalValue('#edit-status', 'data-status'); // This is a select, value will be set
                 setModalValue('#edit-type', 'data-type');
                 setModalValue('#edit-serial_number', 'data-serial_number');
                 setModalValue('#edit-ram', 'data-ram');
@@ -328,6 +328,19 @@ elseif (isset($_GET['hostname'])) {
                 setModalValue('#edit-divisi', 'data-divisi');
                 setModalValue('#edit-domain', 'data-domain');
                 setModalValue('#edit-device_category', 'data-device-category');
+
+                // Handle Storage field separately
+                const storageValue = button.getAttribute('data-storage') || '';
+                const storageTypeSelect = modal.querySelector('#edit-storage-type');
+                const storageSizeInput = modal.querySelector('#edit-storage-size');
+                const hiddenStorageInput = modal.querySelector('[name="storage"]');
+
+                const storageParts = storageValue.match(/^(HDD|SSD)\s*(\d+)\s*GB$/i);
+                if (storageParts) {
+                    storageTypeSelect.value = storageParts[1].toUpperCase();
+                    storageSizeInput.value = storageParts[2];
+                } else { storageTypeSelect.value = ''; storageSizeInput.value = ''; }
+                updateStorageField('editModal', 'edit-storage-type', 'edit-storage-size', 'storage'); // Re-initialize listener and combine
             });
         }
     });

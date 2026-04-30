@@ -24,7 +24,7 @@ if (!function_exists('logActivity')) {
             session_start();
         }
 
-        $admin_id   = $_SESSION['id_admin'] ?? 0; // Sesuaikan dengan key session Anda
+        $admin_id   = $_SESSION['admin_id'] ?? 0;
         $admin_nama = $_SESSION['nama_lengkap'] ?? 'System';
         $waktu_db   = date('Y-m-d H:i:s');
 
@@ -40,7 +40,7 @@ if (!function_exists('logActivity')) {
 
         // 3. KIRIM KE WEBSOCKET (Node.js) - Real-time Notification
         // Pastikan konstanta NODE_FULL_BROADCAST_URL sudah di-define
-        if (defined('NODE_FULL_BROADCAST_URL')) {
+        if (defined('NODE_FULL_BROADCAST_URL') && function_exists('curl_init')) {
             $payload = json_encode([
                 'event'    => 'admin_activity',
                 'admin'    => $admin_nama,
@@ -51,6 +51,10 @@ if (!function_exists('logActivity')) {
             ]);
 
             $ch = curl_init(NODE_FULL_BROADCAST_URL);
+            if (!$ch) {
+                return $db_insert;
+            }
+
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
             curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);

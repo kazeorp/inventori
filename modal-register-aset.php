@@ -1,10 +1,10 @@
 <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="registerForm" method="POST" action="register_service.php">
+            <form id="registerForm" method="POST" action="register_service.php" autocomplete="off">
                 <div class="modal-header bg-light text-dark">
                     <h5 class="modal-title" id="registerModalLabel"><i class="fas fa-plus-circle"></i> Registrasi Aset Baru</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closeRegisterModal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">

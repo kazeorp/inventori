@@ -31,10 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Ambil dan sanitasi semua data input (HURUF KAPITAL)
     $id_update       = mysqli_real_escape_string($koneksi, $_POST['id']);
-    $rak             = strtoupper(mysqli_real_escape_string($koneksi, $_POST['rak'] ?? ''));
+    $warna           = mysqli_real_escape_string($koneksi, $_POST['warna'] ?? '');
     $status          = mysqli_real_escape_string($koneksi, $_POST['status'] ?? '');
     $domain          = strtoupper(mysqli_real_escape_string($koneksi, $_POST['domain'] ?? ''));
-    $device_category = mysqli_real_escape_string($koneksi, $_POST['device_category'] ?? '');
+    $device_category = strtoupper(mysqli_real_escape_string($koneksi, $_POST['device_category'] ?? ''));
     $hostname        = strtoupper(mysqli_real_escape_string($koneksi, $_POST['hostname'] ?? ''));
     $type            = strtoupper(mysqli_real_escape_string($koneksi, $_POST['type'] ?? ''));
     $serial_number   = strtoupper(mysqli_real_escape_string($koneksi, $_POST['serial_number'] ?? ''));
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Gabungkan data baru untuk dibandingkan
     $data_baru = [
-        'rak' => $rak, 'status' => $status, 'hostname' => $hostname, 'type' => $type,
+        'warna' => $warna, 'status' => $status, 'hostname' => $hostname, 'type' => $type,
         'domain' => $domain, 'device_category' => $device_category, 'serial_number' => $serial_number,
         'ram' => $ram, 'storage' => $storage, 'win' => $win, 'keterangan' => $keterangan,
         'kelengkapan' => $kelengkapan, 'tanggal_masuk' => $tanggal_masuk, 'tanggal_keluar' => $tanggal_keluar,
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // SQL UPDATE
     $sql = "UPDATE inventori SET
-      rak='$rak', status='$status', hostname='$hostname', type='$type',
+      warna='$warna', status='$status', hostname='$hostname', type='$type',
       domain='$domain', device_category='$device_category', serial_number='$serial_number',
       ram='$ram', storage='$storage', win='$win', keterangan='$keterangan',
       kelengkapan='$kelengkapan', tanggal_keluar='$tanggal_keluar',

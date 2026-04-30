@@ -15,19 +15,7 @@ if (($_SESSION['role'] ?? 'normal') === 'normal') {
     exit;
 }
 
-// ===================================
-// DEFINISI MAPPING STATUS KE RAK (Konsisten dengan main.js)
-// ===================================
-$statusToRak = [
-    "Spare" => "GD-R11",
-    "Pending Service" => "GD-R12",
-    "Grace Period" => "GD-R13",
-    "Scrap" => "GD-R4",
-    "MT" => "GD-R8",
-    "Ready to Assign" => "GD-R9",
-    "Assign" => "Assign",
-    "Loan" => "Loan",
-];
+// Column mapping note: Column G is now Warna
 
 // --- Fungsi Helper untuk Redirect (Sesuai dengan sistem Toast di index2) ---
 function redirect_success($msg)
@@ -83,7 +71,7 @@ if (isset($_POST['import_submit'])) {
         $type_raw            = $sheet->getCell('D' . $row)->getCalculatedValue();
         $sn_raw              = $sheet->getCell('E' . $row)->getCalculatedValue(); // KOLOM BARU (Serial Number)
         $device_category_raw = $sheet->getCell('F' . $row)->getCalculatedValue();
-        $rak_excel_raw       = $sheet->getCell('G' . $row)->getCalculatedValue();
+        $warna_excel_raw     = $sheet->getCell('G' . $row)->getCalculatedValue();
         $ram_raw             = $sheet->getCell('H' . $row)->getCalculatedValue();
         $storage_raw         = $sheet->getCell('I' . $row)->getCalculatedValue();
         $win_raw             = $sheet->getCell('J' . $row)->getCalculatedValue();
@@ -108,7 +96,7 @@ if (isset($_POST['import_submit'])) {
         $type        = mysqli_real_escape_string($koneksi, strtoupper(trim($type_raw ?? '')));
         $serial_number = mysqli_real_escape_string($koneksi, strtoupper(trim($sn_raw ?? '')));
         $device_category = mysqli_real_escape_string($koneksi, strtoupper(trim($device_category_raw ?? '')));
-        $rak_excel   = mysqli_real_escape_string($koneksi, trim($rak_excel_raw ?? ''));
+        $warna_excel = mysqli_real_escape_string($koneksi, trim($warna_excel_raw ?? ''));
         $ram         = mysqli_real_escape_string($koneksi, trim($ram_raw ?? ''));
         $storage     = mysqli_real_escape_string($koneksi, strtoupper(trim($storage_raw ?? '')));
         $win         = mysqli_real_escape_string($koneksi, trim($win_raw ?? ''));
@@ -128,11 +116,7 @@ if (isset($_POST['import_submit'])) {
             $tanggal_keluar = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tgl_keluar_excel)->format('Y-m-d');
         }
 
-        // OTOMATISASI RAK
-        $rak = $rak_excel;
-        if (!empty($status) && array_key_exists($status, $statusToRak)) {
-            $rak = $statusToRak[$status];
-        }
+        $warna = $warna_excel;
 
         // ===================================
         // 3. Simpan Data (UPSERT)
@@ -143,18 +127,18 @@ if (isset($_POST['import_submit'])) {
         if (mysqli_num_rows($check_result) > 0) {
             $query_upsert = "UPDATE inventori SET
                 status = '$status', domain = '$domain', type = '$type', serial_number='$serial_number', device_category = '$device_category',
-                rak = '$rak', ram = '$ram', storage = '$storage', win = '$win',
-                keterangan = '$keterangan', kelengkapan = '$kelengkapan',
+                warna = '$warna', ram = '$ram', storage = '$storage', win = '$win',
+                keterangan = '$keterangan', kelengkapan = '$kelengkapan', last_admin='" . ($_SESSION['nama_lengkap'] ?? 'SYSTEM') . "',
                 tanggal_masuk = " . ($tanggal_masuk ? "'$tanggal_masuk'" : "NULL") . ",
                 tanggal_keluar = " . ($tanggal_keluar ? "'$tanggal_keluar'" : "NULL") . ",
                 nik = '$nik', nama = '$nama', divisi = '$divisi'
                 WHERE hostname = '$hostname'";
         } else {
             $query_upsert = "INSERT INTO inventori (
-                hostname, status, domain, type, serial_number, device_category, rak, ram, storage, win, keterangan, kelengkapan,
+                hostname, status, domain, type, serial_number, device_category, warna, ram, storage, win, keterangan, kelengkapan,
                 tanggal_masuk, tanggal_keluar, nik, nama, divisi, tanggal_register
             ) VALUES (
-                '$hostname', '$status', '$domain', '$type', '$serial_number', '$device_category', '$rak', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan',
+                '$hostname', '$status', '$domain', '$type', '$serial_number', '$device_category', '$warna', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan',
                 " . ($tanggal_masuk ? "'$tanggal_masuk'" : "NULL") . ",
                 " . ($tanggal_keluar ? "'$tanggal_keluar'" : "NULL") . ",
                 '$nik', '$nama', '$divisi', NOW()

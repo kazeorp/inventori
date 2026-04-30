@@ -21,11 +21,11 @@ if ($user_role_login !== 'admin' && $user_role_login !== 'superadmin') {
 // Proses jika form dikirim
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Ambil dan sanitasi data
-    $rak            = mysqli_real_escape_string($koneksi, $_POST['rak'] ?? '');
+    $warna          = mysqli_real_escape_string($koneksi, $_POST['warna'] ?? '');
     $status         = mysqli_real_escape_string($koneksi, $_POST['status'] ?? '');
     $type           = mysqli_real_escape_string($koneksi, $_POST['type'] ?? '');
     $serial_number  = strtoupper(mysqli_real_escape_string($koneksi, $_POST['serial_number'] ?? ''));
-    $ram            = strtoupper(mysqli_real_escape_string($koneksi, $_POST['ram'] ?? ''));
+    $ram            = mysqli_real_escape_string($koneksi, $_POST['ram'] ?? '');
     $storage        = strtoupper(mysqli_real_escape_string($koneksi, $_POST['storage'] ?? ''));
     $win            = strtoupper(mysqli_real_escape_string($koneksi, $_POST['win'] ?? ''));
     $keterangan     = strtoupper(mysqli_real_escape_string($koneksi, $_POST['keterangan'] ?? ''));
@@ -56,9 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Query simpan ke tabel inventori
     $sql = "INSERT INTO inventori (
-        rak, status, hostname, type, serial_number, domain, device_category, ram, storage, win, keterangan, kelengkapan, tanggal_masuk, tanggal_keluar, nik, nama, divisi
+        warna, status, hostname, type, serial_number, domain, device_category, ram, storage, win, keterangan, kelengkapan, tanggal_masuk, tanggal_keluar, nik, nama, divisi
     ) VALUES (
-        '$rak', '$status', '$hostname', '$type', '$serial_number', '$domain', '$device_category', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan', $tanggal_masuk_val, $tanggal_keluar_val, '$nik', '$nama', '$divisi'
+        '$warna', '$status', '$hostname', '$type', '$serial_number', '$domain', '$device_category', '$ram', '$storage', '$win', '$keterangan', '$kelengkapan', $tanggal_masuk_val, $tanggal_keluar_val, '$nik', '$nama', '$divisi'
     )";
 
     // Eksekusi dan feedback

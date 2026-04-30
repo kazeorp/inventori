@@ -13,10 +13,22 @@
             <label class="fw-bold">Hostname</label>
             <input type="text" name="hostname" id="add-hostname" class="form-control" required>
           </div>
-          <div class="col-md-6 mb-3">
+          <div class="col-md-3 mb-3">
             <label class="fw-bold">Status</label>
             <select name="status" id="add-status" class="form-control" required>
               <?php include 'status.php'; ?>
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="fw-bold">Warna</label>
+            <select name="warna" id="add-warna" class="form-control">
+              <option value="">- Pilih Warna -</option>
+              <option value="merah">Merah</option>
+              <option value="kuning">Kuning</option>
+              <option value="hijau">Hijau</option>
+              <option value="biru">Biru</option>
+              <option value="hitam">Hitam</option>
+              <option value="putih">Putih</option>
             </select>
           </div>
           <div class="col-md-6 mb-3">
@@ -57,7 +69,17 @@
           </div>
           <div class="col-md-4 mb-3">
             <label class="fw-bold">Storage</label>
-            <input type="text" name="storage" id="add-storage" class="form-control">
+            <div class="input-group">
+                <select class="form-select" id="add-storage-type">
+                    <option value="">-- Tipe --</option>
+                    <option value="HDD">HDD</option>
+                    <option value="SSD">SSD</option>
+                </select>
+                <input type="number" id="add-storage-size" class="form-control" placeholder="Ukuran (GB)">
+                <span class="input-group-text">GB</span>
+            </div>
+            <!-- Hidden input to store the combined value -->
+            <input type="hidden" name="storage" id="add-storage-combined">
           </div>
           <div class="col-md-4 mb-3">
             <label class="fw-bold">Windows</label>
@@ -113,3 +135,25 @@
     </form>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to combine storage type and size
+    function updateStorageField(modalId, typeSelectId, sizeInputId, hiddenInputId) {
+        const modal = document.getElementById(modalId);
+        const typeSelect = modal.querySelector(`#${typeSelectId}`);
+        const sizeInput = modal.querySelector(`#${sizeInputId}`);
+        const hiddenInput = modal.querySelector(`#${hiddenInputId}`);
+
+        function combineStorage() {
+            const type = typeSelect.value;
+            const size = sizeInput.value.trim();
+            hiddenInput.value = (type && size) ? `${type} ${size} GB` : '';
+        }
+
+        typeSelect.addEventListener('change', combineStorage);
+        sizeInput.addEventListener('input', combineStorage);
+    }
+    updateStorageField('addModal', 'add-storage-type', 'add-storage-size', 'add-storage-combined');
+});
+</script>

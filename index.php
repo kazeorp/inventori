@@ -6,7 +6,9 @@ include "koneksi.php";
 if (isset($_GET['error'])) {
     $errors = ['empty' => "Username/Password kosong!", 'user' => "User tidak ditemukan.", 'pass' => "Password salah."];
     $msg = $errors[$_GET['error']] ?? "";
-    if ($msg) echo "<div class='alert alert-danger alert-dismissible fade show'>$msg<button class='btn-close' data-bs-dismiss='alert'></button></div>";
+    if ($msg) {
+        echo "<div class='alert alert-danger alert-dismissible fade show'>$msg<button class='btn-close' data-bs-dismiss='alert'></button></div>";
+    }
 }
 
 $is_admin_logged_in = isset($_SESSION['admin_id']) && !empty($_SESSION['admin_id']);
@@ -17,14 +19,19 @@ if ($is_admin_logged_in && ($user_role === 'admin' || $user_role === 'superadmin
     exit();
 }
 
-function getServices($koneksi, $condition) {
+function getServices($koneksi, $condition)
+{
     $data = [];
-    $sql = "SELECT sl.*, i.nama AS nama_user, i.divisi FROM service_list sl 
-            LEFT JOIN inventori i ON sl.id_inventori = i.id 
-            WHERE $condition AND sl.finish_status IS NULL 
+    $sql = "SELECT sl.*, i.nama AS nama_user, i.divisi FROM service_list sl
+            LEFT JOIN inventori i ON sl.id_inventori = i.id
+            WHERE $condition AND sl.finish_status IS NULL
             ORDER BY sl.tanggal_masuk DESC LIMIT 20";
     $res = mysqli_query($koneksi, $sql);
-    while ($row = $res ? mysqli_fetch_assoc($res) : null) if($row) $data[] = $row;
+    while ($row = $res ? mysqli_fetch_assoc($res) : null) {
+        if ($row) {
+            $data[] = $row;
+        }
+    }
     return $data;
 }
 
@@ -33,14 +40,14 @@ $sections = [
         'title' => 'Dalam Antrian', 'table' => 'table-dark', 'id' => 'assetScanCarousel',
         'data' => getServices($koneksi, "sl.claim_status IS NULL"),
         'cols' => ['No.', 'Hostname', 'Nama User', 'Divisi', 'Waktu Scan'],
-        'keys' => ['hostname', 'nama_user', 'divisi', 'tanggal_masuk']
+        'keys' => ['hostname', 'nama_user', 'divisi', 'tanggal_masuk'],
     ],
     'progress' => [
         'title' => 'Dalam Perbaikan', 'table' => 'table-warning', 'id' => 'serviceOnCarousel',
         'data' => getServices($koneksi, "sl.claim_status = 'On Service'"),
         'cols' => ['No.', 'Hostname', 'Nama User', 'Technician'],
-        'keys' => ['hostname', 'nama_user', 'admin_claim_name']
-    ]
+        'keys' => ['hostname', 'nama_user', 'admin_claim_name'],
+    ],
 ];
 ?>
 
@@ -52,7 +59,9 @@ $sections = [
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <style> #manual-check-form-container { max-width: 400px; margin: 0 auto; } </style>
+    <style>
+        #manual-check-form-container { max-width: 400px; margin: 0 auto; }
+    </style>
 </head>
 <body class="bg-light">
 <?php include 'header_user.php'; ?>
@@ -62,7 +71,7 @@ $sections = [
     <div class="row justify-content-center">
         <div class="col-md-8 text-center mb-5" id="manual-check-form-container">
             <div id="scan-status" class="fw-bold mb-3 text-primary"></div>
-            <input type="text" id="manual-hostname-input" class="form-control mb-3" placeholder="Input Hostname di sini" autofocus>
+            <input type="text" id="manual-hostname-input" class="form-control mb-3 text-center text-uppercase" placeholder="Input Hostname di sini" autofocus autocomplete="off">
             <button id="manual-check-button" class="btn btn-primary btn-sm px-4">Input Aset</button>
         </div>
     </div>
@@ -75,12 +84,19 @@ $sections = [
                 <div class="carousel-inner">
                 <?php if (empty($s['data'])): ?>
                     <div class="carousel-item active"><table class="table table-sm table-bordered"><tbody><tr><td class="text-center">Kosong</td></tr></tbody></table></div>
-                <?php else: $chunks = array_chunk($s['data'], 5); foreach ($chunks as $idx => $chunk): ?>
+                <?php else: $chunks = array_chunk($s['data'], 5);
+                    foreach ($chunks as $idx => $chunk): ?>
                     <div class="carousel-item <?= $idx === 0 ? 'active' : '' ?>">
                         <table class="table table-sm table-bordered table-striped">
-                            <thead class="<?= $s['table'] ?>"><tr><?php foreach ($s['cols'] as $c) echo "<th>$c</th>"; ?></tr></thead>
+                            <thead class="<?= $s['table'] ?>"><tr><?php foreach ($s['cols'] as $c) {
+                                echo "<th>$c</th>";
+                            } ?></tr></thead>
                             <tbody>
-                                <?php $no = ($idx * 5) + 1; foreach ($chunk as $d): echo "<tr><td>".$no++."</td>"; foreach ($s['keys'] as $k) echo "<td>".htmlspecialchars($d[$k] ?? '-')."</td>"; echo "</tr>"; endforeach; ?>
+                                <?php $no = ($idx * 5) + 1;
+                        foreach ($chunk as $d): echo "<tr><td>" . $no++ . "</td>";
+                            foreach ($s['keys'] as $k) {
+                                echo "<td>" . htmlspecialchars($d[$k] ?? '-') . "</td>";
+                            } echo "</tr>"; endforeach; ?>
                             </tbody>
                         </table>
                     </div>
@@ -104,7 +120,7 @@ if (typeof io !== 'undefined') {
 const $ = id => document.getElementById(id);
 const statusEl = $("scan-status"), alertBox = $('status-alert-container'), input = $('manual-hostname-input');
 
-async function handleAssetCheck(code) {
+window.handleAssetCheck = async function(code) {
     const host = code.trim();
     if (!host) return;
     statusEl.innerText = "Mencari data...";
@@ -123,14 +139,17 @@ async function handleAssetCheck(code) {
             statusEl.innerHTML = `<span class="text-danger">${data.message}</span>`;
             const reg = document.querySelector('#registerModal [name="hostname"]');
             if (reg) reg.value = host.toUpperCase();
+            // Show register modal if asset not found
+            const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
+            registerModal.show();
         }
     } catch (e) { statusEl.innerText = "Koneksi server gagal."; }
-}
-
+};
 $('manual-check-button').onclick = () => handleAssetCheck(input.value);
 input.onkeydown = (e) => { if (e.keyCode === 13) handleAssetCheck(input.value); };
 </script>
 <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
 <?php include 'modal-register-aset.php'; ?>
+<?php include 'virtual-keyboard.php'; ?>
 </body>
 </html>

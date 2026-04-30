@@ -6,22 +6,29 @@
 if (!function_exists('e')) {
     function e($text)
     {
-        return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
+        return htmlspecialchars((string) ($text ?? ''), ENT_QUOTES, 'UTF-8');
     }
 }
 
 ## FUNGSI BARU UNTUK WEBSOCKETS
 if (!function_exists('pushWebSocketUpdate')) {
-    function pushWebSocketUpdate($id, $action)
+    function pushWebSocketUpdate($id, $action): void
     {
-        if (!defined('NODE_FULL_BROADCAST_URL')) {
+        if (!defined('NODE_FULL_BROADCAST_URL') || !function_exists('curl_init')) {
             return;
         }
 
         $url = NODE_FULL_BROADCAST_URL;
         $broadcast_data = json_encode(['id' => $id, 'action' => $action]);
+        if ($broadcast_data === false) {
+            return;
+        }
 
         $ch = curl_init($url);
+        if (!$ch) {
+            return;
+        }
+
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => "POST",

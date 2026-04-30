@@ -7,18 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
 	// 1. DEFINISI MAPPING & FUNGSI PEMBANTU
 	// =======================================================
 
-	// Definisi Mapping Status ke Rak
-	const statusToRak = {
-		Spare: "GD-R11",
-		"Pending Service": "GD-R12",
-		"Grace Period": "GD-R13",
-		Scrap: "GD-R4",
-		MT: "GD-R8",
-		"Ready to Assign": "GD-R9",
-		Assign: "Assign",
-		Loan: "Loan",
-	};
-
 	// Peta Standar Kelengkapan
 	const standardMap = {
 		"ADAPTOR,TAS": "TAS DAN ADAPTOR",
@@ -100,46 +88,34 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	// =======================================================
-	// 2. LOGIKA OTOMATISASI RAK (Modal Tambah & Edit)
+	// 2. INITIALIZATION
 	// =======================================================
 	const addModal = document.getElementById("addModal");
-	const statusSelectAdd = document.getElementById("add-status");
-	const rakInputAdd = document.getElementById("add-rak");
-	if (statusSelectAdd && rakInputAdd) {
-		statusSelectAdd.addEventListener("change", function () {
-			rakInputAdd.value = statusToRak[this.value] || "";
-		});
-		console.log("JS DEBUG: Rak Automation Listener Registered for Add Modal.");
-	}
-
-	// Mendapatkan elemen di awal untuk digunakan di Bagian 3
-	const statusSelectEdit = document.getElementById("edit-status");
-	const rakInputEdit = document.getElementById("edit-rak");
-
-	if (statusSelectEdit && rakInputEdit) {
-		statusSelectEdit.addEventListener("change", function () {
-			rakInputEdit.value = statusToRak[this.value] || "";
-		});
-		console.log("JS DEBUG: Rak Automation Listener Registered for Edit Modal.");
-	}
-
-	// =======================================================
-	// 3. LOGIKA PENGISIAN MODAL EDIT INVENTORI (BARU & LENGKAP)
-	// =======================================================
+	// Logic for Edit Inventory Modal follows in the click listener below
 
 	document.addEventListener("click", function (e) {
 		const btn = e.target.closest(".edit-btn");
-		if (!btn) return;
+		if (!btn) {
+			return;
+		}
+
+		// Guard: Only process if the button is intended for the main inventory edit modal
+		if (btn.getAttribute("data-bs-target") !== "#editModal") {
+			return;
+		}
+
+		console.log("JS DEBUG: An '.edit-btn' for #editModal was clicked.");
 
 		e.preventDefault(); // Mencegah loncatan scroll
 		const modal = document.getElementById("editModal");
-		if (!modal) return;
+		if (!modal) {
+			console.error("JS ERROR: Edit modal with ID 'editModal' not found.");
+			return;
+		}
 
 		// --- PENGAMBILAN DATA DARI DATASET ---
-		// Gunakan dataset agar lebih ringkas dan konsisten
 		const ds = btn.dataset;
 
-		// Normalisasi Data (Gunakan fungsi pembantu yang sudah Anda buat)
 		const dataKelengkapan = normalizeKelengkapan(ds.kelengkapan);
 		const dataDeviceCategory = ds.device_category
 			? capitalize(ds.device_category)
@@ -147,33 +123,44 @@ document.addEventListener("DOMContentLoaded", function () {
 		const dataTglMasuk = normalizeDateTimeToDate(ds.tanggal_masuk);
 		const dataTglKeluar = normalizeDateTimeToDate(ds.tanggal_keluar);
 
+		console.log("JS DEBUG: Dataset from clicked button:", ds);
+
+		// Helper function to safely set values without crashing if an element is missing
+		const fill = (selector, value) => {
+			const el = modal.querySelector(selector);
+			if (el) el.value = value !== undefined && value !== null ? value : "";
+		};
+
 		// --- PENGISIAN DATA KE MODAL ---
-		modal.querySelector("#edit-id").value = ds.id;
-		modal.querySelector("#edit-hostname").value = ds.hostname;
-		modal.querySelector("#edit-rak").value = ds.rak;
-		modal.querySelector("#edit-ram").value = ds.ram;
-		modal.querySelector("#edit-storage").value = ds.storage;
-		modal.querySelector("#edit-win").value = ds.win;
-		modal.querySelector("#edit-serial_number").value = ds.serial_number || "";
-		modal.querySelector("#edit-keterangan").value = ds.keterangan;
-		modal.querySelector("#edit-nik").value = ds.nik;
-		modal.querySelector("#edit-nama").value = ds.nama;
-		modal.querySelector("#edit-divisi").value = ds.divisi;
+		fill("#edit-id", ds.id);
+		fill("#edit-hostname", ds.hostname);
+		fill("#edit-warna", ds.warna);
+		fill("#edit-ram", ds.ram);
+		fill("#edit-storage", ds.storage);
+		fill("#edit-win", ds.win);
+		fill("#edit-serial_number", ds.serial_number);
+		fill("#edit-keterangan", ds.keterangan);
+		fill("#edit-nik", ds.nik);
+		fill("#edit-nama", ds.nama);
+		fill("#edit-divisi", ds.divisi);
 
 		// Select fields
-		modal.querySelector("#edit-status").value = ds.status;
-		modal.querySelector("#edit-type").value = ds.type;
-		modal.querySelector("#edit-domain").value = ds.domain;
-		modal.querySelector("#edit-kelengkapan").value = dataKelengkapan;
-		modal.querySelector("#edit-device_category").value = dataDeviceCategory;
+		fill("#edit-status", ds.status);
+		fill("#edit-type", ds.type);
+		fill("#edit-domain", ds.domain);
+		fill("#edit-kelengkapan", dataKelengkapan);
+		fill("#edit-device_category", dataDeviceCategory);
 
 		// Tanggal
-		modal.querySelector("#edit-tanggal_masuk").value = dataTglMasuk;
-		modal.querySelector("#edit-tanggal_keluar").value = dataTglKeluar;
+		fill("#edit-tanggal_masuk", dataTglMasuk);
+		fill("#edit-tanggal_keluar", dataTglKeluar);
 
 		// Link Tombol
-		modal.querySelector("#detailBtn").href = "detail-aset.php?id=" + ds.id;
-		modal.querySelector("#deleteBtn").href = "hapus.php?id=" + ds.id;
+		const detailBtn = modal.querySelector("#detailBtn");
+		if (detailBtn) detailBtn.href = "detail-aset.php?id=" + ds.id;
+
+		const deleteBtn = modal.querySelector("#deleteBtn");
+		if (deleteBtn) deleteBtn.href = "hapus.php?id=" + ds.id;
 
 		// Hak Akses (Gunakan userRole global)
 		if (typeof userRole !== "undefined" && userRole === "normal") {
@@ -186,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
 				modal.querySelector("#deleteBtn").style.display = "none";
 		} else {
 			modal.querySelectorAll("input, select, textarea").forEach((el) => {
-				if (el.id !== "edit-rak") {
+				if (el.id !== "edit-warna") {
 					el.removeAttribute("disabled");
 					el.removeAttribute("readonly");
 				}
