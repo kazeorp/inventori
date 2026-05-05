@@ -16,8 +16,8 @@
                             <input type="text" name="hostname" id="edit-hostname" class="form-control" style="border-radius: var(--radius-md, 8px);">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-bold">Warna</label>
-                            <select name="warna" class="form-select form-select-sm">
+                            <label class="fw-bold">Warna</label>
+                            <select name="warna" id="edit-warna" class="form-select form-select" style="border-radius: var(--radius-md, 8px);">
                                 <option value="">- Pilih Warna -</option>
                                 <option value="merah">Merah</option>
                                 <option value="kuning">Kuning</option>
@@ -97,7 +97,7 @@
                                 <span class="input-group-text" style="border-radius: 0 var(--radius-md, 8px) var(--radius-md, 8px) 0;">GB</span>
                             </div>
                             <!-- Hidden input to store the combined value -->
-                            <input type="hidden" name="storage" id="edit-storage-combined">
+                            <input type="hidden" name="storage" id="edit-storage">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="fw-bold">Windows</label>
@@ -155,28 +155,3 @@
                     </div>
                 </div>
             </div> </form>
-    </div> </div> <script>
-function confirmDelete() {
-    return confirm("Apakah Anda yakin ingin menghapus data inventori ini?");
-}
-
-// Function to combine storage type and size for edit modal
-function updateStorageField(modalId, typeSelectId, sizeInputId, hiddenInputName) {
-    const modal = document.getElementById(modalId);
-    const typeSelect = modal.querySelector(`#${typeSelectId}`);
-    const sizeInput = modal.querySelector(`#${sizeInputId}`);
-    const hiddenInput = modal.querySelector(`[name="${hiddenInputName}"]`);
-
-    function combineStorage() {
-        const type = typeSelect.value;
-        const size = sizeInput.value.trim();
-        if (type && size) {
-            hiddenInput.value = `${type} ${size} GB`;
-        } else {
-            hiddenInput.value = '';
-        }
-    }
-    typeSelect.addEventListener('change', combineStorage);
-    sizeInput.addEventListener('input', combineStorage);
-}
-</script>

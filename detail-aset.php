@@ -174,6 +174,7 @@ elseif (isset($_GET['hostname'])) {
         data-warna="<?= e($aset['warna'] ?? '') ?>"
         data-status="<?= e($aset['status'] ?? '') ?>"
         data-type="<?= e($aset['type'] ?? '') ?>"
+        data-serial_number="<?= e($aset['serial_number'] ?? '') ?>"
         data-ram="<?= e($aset['ram'] ?? '') ?>"
         data-storage="<?= e($aset['storage'] ?? '') ?>"
         data-win="<?= e($aset['win'] ?? '') ?>"
@@ -184,7 +185,8 @@ elseif (isset($_GET['hostname'])) {
         data-nik="<?= e($aset['nik'] ?? '') ?>"
         data-nama="<?= e($aset['nama'] ?? '') ?>"
         data-divisi="<?= e($aset['divisi'] ?? '') ?>"
-        data-domain="<?= e($aset['domain'] ?? '') ?>"      data-device-category="<?= e($aset['device_category'] ?? '') ?>" >
+        data-domain="<?= e($aset['domain'] ?? '') ?>"
+        data-device-category="<?= e($aset['device_category'] ?? '') ?>" >
       <?= e($aset['hostname'] ?? '') ?>
       </a>
     </h3>
@@ -265,85 +267,6 @@ elseif (isset($_GET['hostname'])) {
 <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
 <script>
     window.isServiceClaimRedirect = <?= $is_service_claim_redirect ? 'true' : 'false' ?>;
-</script>
-
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    window.isServiceClaimRedirect = (urlParams.get('action') === 'service_claim');
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // --- LOGIKA MODAL SERVICE CLAIM ---
-        if (window.isServiceClaimRedirect) {
-            const modalElement = document.getElementById('aktivitasModal');
-            if (modalElement) {
-                const aktivitasModal = new bootstrap.Modal(modalElement);
-                const loanToggle = document.getElementById('toggleLoan');
-
-                if (loanToggle && typeof window.controlLoanFields === 'function') {
-                    loanToggle.checked = false;
-                    window.controlLoanFields(false);
-                }
-
-                aktivitasModal.show();
-
-                if (window.history.replaceState) {
-                    const cleanUrl = window.location.href.replace(/[?&]action=service_claim/, '');
-                    history.replaceState(null, null, cleanUrl);
-                }
-            }
-        }
-
-        // --- LOGIKA TOMBOL EDIT (PERBAIKAN ERROR) ---
-        const editBtn = document.querySelector('.edit-btn'); // Cari tombolnya
-        const modal = document.getElementById('editModal');  // Cari modalnya
-
-        // HANYA jalankan listener jika tombolnya ditemukan di halaman
-        if (editBtn && modal) {
-            editBtn.addEventListener('click', function() {
-                const button = this;
-
-                // Fungsi internal untuk mengisi value secara aman
-                const setModalValue = (selector, dataAttr) => {
-                    const input = modal.querySelector(selector);
-                    if (input) {
-                        input.value = button.getAttribute(dataAttr) || '';
-                    }
-                };
-
-                setModalValue('#edit-id', 'data-id');
-                setModalValue('#edit-hostname', 'data-hostname');
-                setModalValue('[name="warna"]', 'data-warna');
-                setModalValue('#edit-status', 'data-status'); // This is a select, value will be set
-                setModalValue('#edit-type', 'data-type');
-                setModalValue('#edit-serial_number', 'data-serial_number');
-                setModalValue('#edit-ram', 'data-ram');
-                setModalValue('#edit-storage', 'data-storage');
-                setModalValue('#edit-win', 'data-win');
-                setModalValue('#edit-keterangan', 'data-keterangan');
-                setModalValue('#edit-kelengkapan', 'data-kelengkapan');
-                setModalValue('#edit-tanggal_masuk', 'data-tanggal_masuk');
-                setModalValue('#edit-tanggal_keluar', 'data-tanggal_keluar');
-                setModalValue('#edit-nik', 'data-nik');
-                setModalValue('#edit-nama', 'data-nama');
-                setModalValue('#edit-divisi', 'data-divisi');
-                setModalValue('#edit-domain', 'data-domain');
-                setModalValue('#edit-device_category', 'data-device-category');
-
-                // Handle Storage field separately
-                const storageValue = button.getAttribute('data-storage') || '';
-                const storageTypeSelect = modal.querySelector('#edit-storage-type');
-                const storageSizeInput = modal.querySelector('#edit-storage-size');
-                const hiddenStorageInput = modal.querySelector('[name="storage"]');
-
-                const storageParts = storageValue.match(/^(HDD|SSD)\s*(\d+)\s*GB$/i);
-                if (storageParts) {
-                    storageTypeSelect.value = storageParts[1].toUpperCase();
-                    storageSizeInput.value = storageParts[2];
-                } else { storageTypeSelect.value = ''; storageSizeInput.value = ''; }
-                updateStorageField('editModal', 'edit-storage-type', 'edit-storage-size', 'storage'); // Re-initialize listener and combine
-            });
-        }
-    });
 </script>
 
 <script>

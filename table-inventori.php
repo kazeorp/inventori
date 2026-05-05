@@ -90,7 +90,26 @@ if (isset($result) && mysqli_num_rows($result) > 0) {
         // 3. Hostname (Warna Disisipkan di sini)
         echo "<td>
                 <div class='d-flex align-items-center'>
-                    <a href='#' class='edit-btn text-decoration-none fw-bold' data-bs-toggle='modal' data-bs-target='#editModal' data-id='{$row['id']}' data-hostname='{$row['hostname']}' data-warna='{$row['warna']}'>
+                    <a href='#' class='edit-btn text-decoration-none fw-bold'
+                        data-bs-toggle='modal' data-bs-target='#editModal'
+                        data-id='{$row['id']}'
+                        data-hostname='{$row['hostname']}'
+                        data-warna='{$row['warna']}'
+                        data-status='{$row['status']}'
+                        data-type='{$row['type']}'
+                        data-serial_number='{$row['serial_number']}'
+                        data-ram='{$row['ram']}'
+                        data-storage='{$row['storage']}'
+                        data-win='{$row['win']}'
+                        data-keterangan='{$row['keterangan']}'
+                        data-kelengkapan='{$row['kelengkapan']}'
+                        data-tanggal_masuk='{$row['tanggal_masuk']}'
+                        data-tanggal_keluar='{$row['tanggal_keluar']}'
+                        data-nik='{$row['nik']}'
+                        data-nama='{$row['nama']}'
+                        data-divisi='{$row['divisi']}'
+                        data-domain='{$row['domain']}'
+                        data-device_category='{$row['device_category']}'>
                         {$row['hostname']}
                     </a>
                 </div>

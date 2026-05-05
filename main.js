@@ -1,5 +1,30 @@
 // main.js - VERSI FINAL TERINTEGRASI PENUH (TERMASUK LOGIKA EDIT MODAL BARU)
 
+// Fungsi global untuk Menggabungkan Tipe dan Ukuran Storage
+window.updateStorageField = function (
+	modalId,
+	typeSelectId,
+	sizeInputId,
+	hiddenInputId,
+) {
+	const modal = document.getElementById(modalId);
+	if (!modal) return;
+	const typeSelect = modal.querySelector(`#${typeSelectId}`);
+	const sizeInput = modal.querySelector(`#${sizeInputId}`);
+	const hiddenInput = modal.querySelector(`#${hiddenInputId}`);
+
+	if (!typeSelect || !sizeInput || !hiddenInput) return;
+
+	function combineStorage() {
+		const type = typeSelect.value;
+		const size = sizeInput.value.trim();
+		hiddenInput.value = type && size ? `${type} ${size} GB` : "";
+	}
+
+	typeSelect.addEventListener("change", combineStorage);
+	sizeInput.addEventListener("input", combineStorage);
+};
+
 document.addEventListener("DOMContentLoaded", function () {
 	console.log("JS DEBUG: main.js loaded. All system listeners registered.");
 
@@ -90,7 +115,22 @@ document.addEventListener("DOMContentLoaded", function () {
 	// =======================================================
 	// 2. INITIALIZATION
 	// =======================================================
-	const addModal = document.getElementById("addModal");
+	if (document.getElementById("addModal")) {
+		window.updateStorageField(
+			"addModal",
+			"add-storage-type",
+			"add-storage-size",
+			"add-storage-combined",
+		);
+	}
+	if (document.getElementById("editModal")) {
+		window.updateStorageField(
+			"editModal",
+			"edit-storage-type",
+			"edit-storage-size",
+			"edit-storage",
+		);
+	}
 	// Logic for Edit Inventory Modal follows in the click listener below
 
 	document.addEventListener("click", function (e) {
@@ -116,44 +156,95 @@ document.addEventListener("DOMContentLoaded", function () {
 		// --- PENGAMBILAN DATA DARI DATASET ---
 		const ds = btn.dataset;
 
-		const dataKelengkapan = normalizeKelengkapan(ds.kelengkapan);
-		const dataDeviceCategory = ds.device_category
-			? capitalize(ds.device_category)
+		// Handle variations in naming (data-device-category becomes deviceCategory)
+		const rawKelengkapan = ds.kelengkapan || "";
+		const rawDeviceCategory = ds.deviceCategory || ds.device_category || "";
+
+		const dataKelengkapan = normalizeKelengkapan(rawKelengkapan);
+		const dataDeviceCategory = rawDeviceCategory
+			? capitalize(rawDeviceCategory)
 			: "";
-		const dataTglMasuk = normalizeDateTimeToDate(ds.tanggal_masuk);
-		const dataTglKeluar = normalizeDateTimeToDate(ds.tanggal_keluar);
+		const dataTglMasuk = normalizeDateTimeToDate(
+			ds.tanggal_masuk || ds.tanggalMasuk,
+		);
+		const dataTglKeluar = normalizeDateTimeToDate(
+			ds.tanggal_keluar || ds.tanggalKeluar,
+		);
 
 		console.log("JS DEBUG: Dataset from clicked button:", ds);
 
 		// Helper function to safely set values without crashing if an element is missing
-		const fill = (selector, value) => {
-			const el = modal.querySelector(selector);
-			if (el) el.value = value !== undefined && value !== null ? value : "";
+		const fill = (idName, value, logMissing = true) => {
+			// Ensure the ID name doesn't start with '#' to avoid double hashes in selector
+			const cleanId = idName.startsWith("#") ? idName.slice(1) : idName;
+
+			// Select element by ID, trying both hyphen and underscore versions
+			const el =
+				modal.querySelector(`#${cleanId}`) ||
+				modal.querySelector(`#${cleanId.replace(/-/g, "_")}`);
+
+			if (el) {
+				const safeValue =
+					value === undefined ||
+					value === null ||
+					String(value).toLowerCase() === "null"
+						? ""
+						: value;
+				el.value = safeValue;
+			} else if (logMissing) {
+				console.warn(
+					`JS DEBUG: Input element with ID '#${idName}' (or underscore version) not found in #editModal.`,
+				);
+			}
 		};
 
 		// --- PENGISIAN DATA KE MODAL ---
-		fill("#edit-id", ds.id);
-		fill("#edit-hostname", ds.hostname);
-		fill("#edit-warna", ds.warna);
-		fill("#edit-ram", ds.ram);
-		fill("#edit-storage", ds.storage);
-		fill("#edit-win", ds.win);
-		fill("#edit-serial_number", ds.serial_number);
-		fill("#edit-keterangan", ds.keterangan);
-		fill("#edit-nik", ds.nik);
-		fill("#edit-nama", ds.nama);
-		fill("#edit-divisi", ds.divisi);
+		fill("edit-id", ds.id);
+		fill("edit-hostname", ds.hostname);
+		fill("edit-warna", ds.warna);
+		fill("edit-ram", ds.ram);
+
+		// Handle Storage Field splitting (e.g., "SSD 256 GB" -> Type: SSD, Size: 256)
+		// Updated to parse "SIZE TYPE" format (e.g., "256 SSD")
+		const storageValue = ds.storage || "";
+		fill("edit-storage", storageValue); // Hidden field
+
+		// Regex to match "SIZE TYPE" (e.g., "256 SSD")
+		const storageParts = storageValue.match(/^(\d+)\s*(HDD|SSD)$/i);
+		console.log(
+			"JS DEBUG: Storage Value:",
+			storageValue,
+			"Parsed Parts:",
+			storageParts,
+		);
+
+		if (storageParts) {
+			// storageParts[1] is the size (e.g., "256")
+			// storageParts[2] is the type (e.g., "SSD")
+			fill("edit-storage-type", storageParts[2].toUpperCase(), false); // Fill type select
+			fill("edit-storage-size", storageParts[1], false); // Fill size input
+		} else {
+			fill("edit-storage-type", "", false); // Clear type
+			fill("edit-storage-size", "", false); // Clear size
+		}
+
+		fill("edit-win", ds.win);
+		fill("edit-serial_number", ds.serial_number);
+		fill("edit-keterangan", ds.keterangan);
+		fill("edit-nik", ds.nik);
+		fill("edit-nama", ds.nama);
+		fill("edit-divisi", ds.divisi);
 
 		// Select fields
-		fill("#edit-status", ds.status);
-		fill("#edit-type", ds.type);
-		fill("#edit-domain", ds.domain);
-		fill("#edit-kelengkapan", dataKelengkapan);
-		fill("#edit-device_category", dataDeviceCategory);
+		fill("edit-status", ds.status);
+		fill("edit-type", ds.type);
+		fill("edit-domain", ds.domain);
+		fill("edit-kelengkapan", dataKelengkapan);
+		fill("edit-device_category", dataDeviceCategory);
 
 		// Tanggal
-		fill("#edit-tanggal_masuk", dataTglMasuk);
-		fill("#edit-tanggal_keluar", dataTglKeluar);
+		fill("edit-tanggal_masuk", dataTglMasuk);
+		fill("edit-tanggal_keluar", dataTglKeluar);
 
 		// Link Tombol
 		const detailBtn = modal.querySelector("#detailBtn");
@@ -173,10 +264,8 @@ document.addEventListener("DOMContentLoaded", function () {
 				modal.querySelector("#deleteBtn").style.display = "none";
 		} else {
 			modal.querySelectorAll("input, select, textarea").forEach((el) => {
-				if (el.id !== "edit-warna") {
-					el.removeAttribute("disabled");
-					el.removeAttribute("readonly");
-				}
+				el.removeAttribute("disabled");
+				el.removeAttribute("readonly");
 			});
 			if (modal.querySelector('button[type="submit"]'))
 				modal.querySelector('button[type="submit"]').style.display =

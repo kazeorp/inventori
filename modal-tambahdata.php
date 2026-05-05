@@ -135,25 +135,3 @@
     </form>
   </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Function to combine storage type and size
-    function updateStorageField(modalId, typeSelectId, sizeInputId, hiddenInputId) {
-        const modal = document.getElementById(modalId);
-        const typeSelect = modal.querySelector(`#${typeSelectId}`);
-        const sizeInput = modal.querySelector(`#${sizeInputId}`);
-        const hiddenInput = modal.querySelector(`#${hiddenInputId}`);
-
-        function combineStorage() {
-            const type = typeSelect.value;
-            const size = sizeInput.value.trim();
-            hiddenInput.value = (type && size) ? `${type} ${size} GB` : '';
-        }
-
-        typeSelect.addEventListener('change', combineStorage);
-        sizeInput.addEventListener('input', combineStorage);
-    }
-    updateStorageField('addModal', 'add-storage-type', 'add-storage-size', 'add-storage-combined');
-});
-</script>
