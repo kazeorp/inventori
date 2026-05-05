@@ -18,7 +18,7 @@ window.updateStorageField = function (
 	function combineStorage() {
 		const type = typeSelect.value;
 		const size = sizeInput.value.trim();
-		hiddenInput.value = type && size ? `${type} ${size} GB` : "";
+		hiddenInput.value = type && size ? `${size} ${type}` : "";
 	}
 
 	typeSelect.addEventListener("change", combineStorage);

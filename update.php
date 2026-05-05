@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       warna='$warna', status='$status', hostname='$hostname', type='$type',
       domain='$domain', device_category='$device_category', serial_number='$serial_number',
       ram='$ram', storage='$storage', win='$win', keterangan='$keterangan',
-      kelengkapan='$kelengkapan', tanggal_keluar='$tanggal_keluar',
+      kelengkapan='$kelengkapan', tanggal_masuk='$tanggal_masuk', tanggal_keluar='$tanggal_keluar',
       nik='$nik', nama='$nama', divisi='$divisi',
       last_admin='" . ($_SESSION['nama_lengkap'] ?? 'SYSTEM') . "'
       WHERE id='$id_update'";

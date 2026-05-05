@@ -85,7 +85,7 @@ function hitung_perubahan($data_lama, $data_baru)
             $nilai_lama = $data_lama[$kolom];
 
             // Gunakan trim untuk menghindari deteksi perubahan karena spasi kosong
-            if (trim($nilai_lama) != trim($nilai_baru)) {
+            if (trim((string) $nilai_lama) != trim((string) $nilai_baru)) {
                 $label = ucwords(str_replace('_', ' ', $kolom)); // Merapikan nama kolom (misal: serial_number -> Serial Number)
                 $lama  = ($nilai_lama == "") ? "Kosong" : $nilai_lama;
                 $baru  = ($nilai_baru == "") ? "Kosong" : $nilai_baru;
