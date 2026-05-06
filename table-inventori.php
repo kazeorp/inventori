@@ -35,14 +35,14 @@ function displayValue($value)
 // Fungsi untuk memetakan teks warna ke class CSS
 function getColorClass($warna)
 {
-    $warna = strtolower(trim($warna));
+    $warna = trim($warna);
     switch ($warna) {
-        case 'merah':  return 'bg-merah';
-        case 'kuning': return 'bg-kuning';
-        case 'hijau':  return 'bg-hijau'; // Menghasilkan hijau tua secara visual
-        case 'biru':   return 'bg-biru';  // Menghasilkan biru tua secara visual
-        case 'hitam':  return 'bg-hitam';
-        case 'putih':  return 'bg-putih';
+        case 'Merah':  return 'bg-merah';
+        case 'Kuning': return 'bg-kuning';
+        case 'Hijau':  return 'bg-hijau'; // Menghasilkan hijau tua secara visual
+        case 'Biru':   return 'bg-biru';  // Menghasilkan biru tua secara visual
+        case 'Hitam':  return 'bg-hitam';
+        case 'Putih':  return 'bg-putih';
         default:       return '';
     }
 }

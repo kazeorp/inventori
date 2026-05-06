@@ -1,4 +1,4 @@
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel">
   <div class="modal-dialog">
     <form method="POST" action="proses-login.php">
       <div class="modal-content" style="border-radius: var(--radius-md); box-shadow: var(--shadow-md);">

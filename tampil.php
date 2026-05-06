@@ -254,8 +254,8 @@ while ($t = mysqli_fetch_assoc($q_type)) {
         if (exportLink) {
             let exportUrl = 'export_inventori.php?status=' + encodeURIComponent('<?= e($status_filter); ?>');
             <?php if (!empty($cari)): ?> exportUrl += '&cari=' + encodeURIComponent('<?= e($cari); ?>'); <?php endif; ?>
-            <?php if (!empty($rak_filter)): ?> exportUrl += '&rak=' + encodeURIComponent('<?= e($rak_filter); ?>'); <?php endif; ?>
             <?php if (!empty($type_filter)): ?> exportUrl += '&type=' + encodeURIComponent('<?= e($type_filter); ?>'); <?php endif; ?>
+            <?php if (!empty($divisi_filter)): ?> exportUrl += '&divisi=' + encodeURIComponent('<?= e($divisi_filter); ?>'); <?php endif; ?>
             exportLink.href = exportUrl;
         }
     });

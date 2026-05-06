@@ -1,9 +1,9 @@
 <div class="toast-container position-fixed end-0 bottom-0 p-3" style="z-index: 9999; pointer-events: none;">
     <div id="liveToast" class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="pointer-events: auto; cursor: default;">
         <div class="d-flex">
-            <div id="toast-body" class="toast-body fw-bold text-white">
+            <div id="toast-body" class="toast-body fw-bold">
                 </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close" id="toast-close-btn"></button>
         </div>
     </div>
 </div>
@@ -24,14 +24,21 @@ function checkAndShowToast() {
 
         const toastElement = document.getElementById('liveToast');
         const toastBody = document.getElementById('toast-body');
+        const closeBtn = document.getElementById('toast-close-btn');
 
-        if (!toastElement || !toastBody) return;
+        if (!toastElement || !toastBody || !closeBtn) return;
 
-        let bgClass = 'bg-primary';
-        if (res === 'success') bgClass = 'bg-success';
-        if (res === 'danger') bgClass = 'bg-danger';
-        if (res === 'warning') bgClass = 'bg-warning text-dark';
-        if (res === 'info') bgClass = 'bg-info text-dark';
+        // Reset warna sebelumnya agar tidak tumpang tindih
+        toastElement.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-primary', 'text-dark', 'text-white');
+        closeBtn.classList.remove('btn-close-white');
+
+        let bgClass = 'bg-primary text-white';
+        closeBtn.classList.add('btn-close-white');
+
+        if (res === 'success') { bgClass = 'bg-success text-white'; }
+        else if (res === 'danger') { bgClass = 'bg-danger text-white'; }
+        else if (res === 'warning') { bgClass = 'bg-warning text-dark'; closeBtn.classList.remove('btn-close-white'); }
+        else if (res === 'info') { bgClass = 'bg-info text-dark'; closeBtn.classList.remove('btn-close-white'); }
 
         toastElement.classList.add(...bgClass.split(' '));
         toastBody.textContent = decodeURIComponent(msg.replace(/\+/g, ' '));
@@ -58,17 +65,20 @@ document.addEventListener("DOMContentLoaded", checkAndShowToast);
 function showToastManual(message, type = 'success') {
     const toastElement = document.getElementById('liveToast');
     const toastBody = document.getElementById('toast-body');
-    if (!toastElement || !toastBody) return;
+    const closeBtn = document.getElementById('toast-close-btn');
+    if (!toastElement || !toastBody || !closeBtn) return;
 
-    // Reset warna sebelumnya
-    toastElement.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-primary', 'text-dark');
+    // Reset warna sebelumnya agar tidak tumpang tindih
+    toastElement.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-primary', 'text-dark', 'text-white');
+    closeBtn.classList.remove('btn-close-white');
 
-    // Tentukan warna baru
-    let bgClass = 'bg-primary';
-    if (type === 'success') bgClass = 'bg-success';
-    if (type === 'danger') bgClass = 'bg-danger';
-    if (type === 'warning') bgClass = 'bg-warning text-dark';
-    if (type === 'info') bgClass = 'bg-info text-dark';
+    let bgClass = 'bg-primary text-white';
+    closeBtn.classList.add('btn-close-white');
+
+    if (type === 'success') { bgClass = 'bg-success text-white'; }
+    else if (type === 'danger') { bgClass = 'bg-danger text-white'; }
+    else if (type === 'warning') { bgClass = 'bg-warning text-dark'; closeBtn.classList.remove('btn-close-white'); }
+    else if (type === 'info') { bgClass = 'bg-info text-dark'; closeBtn.classList.remove('btn-close-white'); }
 
     toastElement.classList.add(...bgClass.split(' '));
     toastBody.textContent = message;

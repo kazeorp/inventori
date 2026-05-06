@@ -1,4 +1,4 @@
-<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="registerForm" method="POST" action="register_service.php" autocomplete="off">

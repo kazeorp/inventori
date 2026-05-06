@@ -25,12 +25,37 @@ $sheet = $spreadsheet->getActiveSheet();
 // 1. Ambil Data dari Database
 // ===================================
 
-// URUTAN SQL DISESUAIKAN DENGAN STRUKTUR IMPORT (A-Q)
-$query = "SELECT
-    hostname, status, domain, type, serial_number, device_category, rak, ram, storage, win, keterangan, kelengkapan,
+// Capture filters from URL
+$status_filter = $_GET['status'] ?? 'all';
+$cari          = mysqli_real_escape_string($koneksi, $_GET['cari'] ?? '');
+$divisi_filter = mysqli_real_escape_string($koneksi, $_GET['divisi'] ?? '');
+$type_filter   = mysqli_real_escape_string($koneksi, $_GET['type'] ?? '');
+
+$where = [];
+if ($status_filter !== 'all') {
+    $where[] = "status = '$status_filter'";
+}
+if (!empty($cari)) {
+    $where[] = "(hostname LIKE '%$cari%' OR nama LIKE '%$cari%' OR nik LIKE '%$cari%')";
+}
+if (!empty($divisi_filter)) {
+    $where[] = "divisi = '$divisi_filter'";
+}
+if (!empty($type_filter)) {
+    $where[] = "type = '$type_filter'";
+}
+
+$where_clause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
+
+// URUTAN SQL DISESUAIKAN DENGAN STRUKTUR IMPORT (A-Q) - Rak replaced by Warna
+$sql = "SELECT
+    hostname, status, domain, type, serial_number, device_category, warna, ram, storage, win, keterangan, kelengkapan,
     tanggal_masuk, tanggal_keluar, nik, nama, divisi
-    FROM inventori ORDER BY hostname ASC";
-$result = mysqli_query($koneksi, $query);
+    FROM inventori
+    $where_clause
+    ORDER BY hostname ASC";
+
+$result = mysqli_query($koneksi, $sql);
 
 // ===================================
 // 2. Tulis Header Kolom (Urutan A-Q)
@@ -43,7 +68,7 @@ $header = [
     'Type',            // D
     'Serial Number',   // E ◀️ TAMBAHAN BARU
     'Device Category', // F
-    'Rak',             // G
+    'Warna',           // G
     'RAM',             // H
     'Storage',         // I
     'OS (Win)',        // J
@@ -104,7 +129,7 @@ while ($data = mysqli_fetch_assoc($result)) {
         $data['type'],            // D
         $data['serial_number'],   // E
         $data['device_category'], // F
-        $data['rak'],             // G
+        $data['warna'],           // G
         $data['ram'],             // H
         $data['storage'],         // I
         $data['win'],             // J

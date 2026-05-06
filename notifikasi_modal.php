@@ -1,7 +1,52 @@
+<?php
+// Ensure notification data is available even if notifikasi.php was not included
+if (!isset($notifikasi_service) || !isset($notifikasi_grace)) {
+    require_once "koneksi.php";
+
+    // --- 1. Fetch Overdue Grace Period Assets ---
+    $notifikasi_grace = [];
+    $cek_grace = mysqli_query($koneksi, "SELECT * FROM inventori WHERE status='Grace Period' ORDER BY tanggal_masuk ASC");
+    $hari_ini = new DateTime();
+
+    if ($cek_grace) {
+        while ($row = mysqli_fetch_assoc($cek_grace)) {
+            if (!empty($row['tanggal_masuk']) && $row['tanggal_masuk'] !== '0000-00-00 00:00:00') {
+                $tgl_masuk = new DateTime($row['tanggal_masuk']);
+                if ($tgl_masuk->format('Y') < 2000) {
+                    continue;
+                }
+
+                $batas_grace = (clone $tgl_masuk)->add(new DateInterval('P3M'));
+
+                if ($hari_ini > $batas_grace) {
+                    $interval = $batas_grace->diff($hari_ini);
+                    $row['keterlambatan'] = $interval->days;
+                    $notifikasi_grace[] = $row;
+                }
+            }
+        }
+    }
+
+    // --- 2. Fetch Pending Service Requests ---
+    $notifikasi_service = [];
+    $query_service = "
+        SELECT s.id_service, s.hostname, s.tanggal_masuk, s.catatan, i.nama AS nama_user
+        FROM service_list s
+        LEFT JOIN inventori i ON s.hostname = i.hostname
+        WHERE s.claim_status IS NULL OR s.claim_status = ''
+        ORDER BY s.tanggal_masuk ASC";
+    $cek_service = mysqli_query($koneksi, $query_service);
+    if ($cek_service) {
+        while ($row = mysqli_fetch_assoc($cek_service)) {
+            $notifikasi_service[] = $row;
+        }
+    }
+}
+?>
 <audio id="notifSound" src="asset/notification.mp3" preload="auto"></audio>
 <audio id="graceSound" src="asset/graceperiod.mp3" preload="auto"></audio>
 
-<div class="modal fade" id="notifikasiModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="notifikasiModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-dark text-white p-2 px-3">

@@ -98,14 +98,18 @@ elseif (isset($_GET['hostname'])) {
     <style>
         /* Gaya tetap seperti sebelumnya */
         .main-content { margin-left: 240px; margin-top: 120px; padding: 30px; }
-        .center-search { height: 70vh; display: flex; justify-content: center; align-items: center; }
-        .search-large input { font-size: 1.5rem; padding: 20px; }
         .timeline { list-style: none; padding-left: 20px; border-left: 3px solid #0d6efd; margin-left: 10px; }
         .timeline li { position: relative; margin-bottom: 30px; padding-left: 20px; }
         .timeline li::before { content: ""; position: absolute; left: -11px; top: 0; width: 16px; height: 16px; background-color: #0d6efd; border-radius: 50%; }
         .timestamp { font-weight: bold; color: #333; }
         .status { font-size: 1rem; margin-top: 5px; }
         .ticket, .note { font-size: 0.9rem; color: #555; }
+
+        /* Modern Improvements */
+        .hover-lift { transition: all 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1) !important; }
+        .search-container { max-width: 650px; margin: 0 auto; }
+        .recent-item { border-radius: 10px; transition: background 0.2s; }
     </style>
 
 </head>
@@ -115,25 +119,64 @@ elseif (isset($_GET['hostname'])) {
 
 <main class="main-content">
 <?php if ($mode_awal): ?>
-        <div class="center-search w-100">
-            <form method="GET" class="search-large w-50">
-                <input type="text" name="keyword" class="form-control mb-3" placeholder="Masukkan Hostname atau Nomor Ticket" required autofocus>
-                <button type="submit" name="cari" class="btn btn-primary w-100">Cari Aset</button>
-            </form>
+        <div class="container py-4">
+            <div class="search-container text-center py-5">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm p-4" style="width: 100px; height: 100px;">
+                        <i class="bi bi-search text-primary fs-1"></i>
+                    </div>
+                </div>
+
+                <h2 class="fw-bold text-dark mb-2">Asset Lookup Center</h2>
+                <p class="text-muted mb-5 px-md-5">Quickly access detailed hardware specifications, assignment history, and activity logs by searching below.</p>
+
+                <form method="GET" class="mb-5">
+                    <div class="input-group input-group-lg shadow-sm">
+                        <span class="input-group-text bg-white border-end-0 border-primary pe-0"><i class="bi bi-search text-muted small"></i></span>
+                        <input type="text" name="keyword" class="form-control border-start-0 border-primary ps-2" placeholder="Hostname..." required autofocus autocomplete="off">
+                        <button type="submit" name="cari" class="btn btn-primary px-4 fw-bold">Search</button>
+                    </div>
+                </form>
+
+                <?php if (isset($_SESSION['scan_history']) && !empty($_SESSION['scan_history'])): ?>
+                    <div class="text-start mt-5 pt-3">
+                        <h6 class="text-muted fw-bold mb-3 small" style="letter-spacing: 0.5px;">RECENTLY VIEWED</h6>
+                        <div class="row g-3">
+                            <?php
+                            $recent = array_slice($_SESSION['scan_history'], 0, 3);
+                    foreach ($recent as $item): ?>
+                                <div class="col-md-4">
+                                    <a href="detail-aset.php?hostname=<?= e($item['hostname']) ?>" class="card h-100 text-decoration-none bg-white border-0 shadow-sm hover-lift recent-item">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <div class="rounded-circle bg-light p-2 me-2">
+                                                    <i class="bi bi-laptop text-primary" style="font-size: 0.8rem;"></i>
+                                                </div>
+                                                <span class="fw-bold text-dark text-truncate small"><?= e($item['hostname']) ?></span>
+                                            </div>
+                                            <div class="text-muted text-truncate" style="font-size: 0.75rem;"><?= e($item['nama']) ?></div>
+                                        </div>
+                                    </a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
     <?php elseif (!$aset): ?>
         <div class="alert alert-warning border-start border-4 border-warning">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            Aset dengan keyword <strong>"<?= e($_GET['keyword'] ?? '') ?>"</strong> tidak ditemukan. Silakan coba Hostname atau Ticket lain.
+            Aset dengan keyword <strong>"<?= e($_GET['keyword'] ?? '') ?>"</strong> tidak ditemukan. Silakan coba Hostname lain.
         </div>
 
         <form method="GET" class="mb-4">
             <div class="row g-2">
                 <div class="col-md-5">
-                    <input type="text" name="keyword" class="form-control" placeholder="Cari hostname atau ticket..." required>
+                    <input type="text" name="keyword" class="form-control" placeholder="Cari hostname..." required>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" name="cari" class="btn btn-primary w-100"> Cari</button>
+                    <button type="submit" name="cari" class="btn btn-primary w-100">Search</button>
                 </div>
             </div>
         </form>

@@ -144,8 +144,6 @@ document.addEventListener("DOMContentLoaded", function () {
 			return;
 		}
 
-		console.log("JS DEBUG: An '.edit-btn' for #editModal was clicked.");
-
 		e.preventDefault(); // Mencegah loncatan scroll
 		const modal = document.getElementById("editModal");
 		if (!modal) {
@@ -170,8 +168,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		const dataTglKeluar = normalizeDateTimeToDate(
 			ds.tanggal_keluar || ds.tanggalKeluar,
 		);
-
-		console.log("JS DEBUG: Dataset from clicked button:", ds);
 
 		// Helper function to safely set values without crashing if an element is missing
 		const fill = (idName, value, logMissing = true) => {
@@ -211,12 +207,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		// Regex to match "SIZE TYPE" (e.g., "256 SSD")
 		const storageParts = storageValue.match(/^(\d+)\s*(HDD|SSD)$/i);
-		console.log(
-			"JS DEBUG: Storage Value:",
-			storageValue,
-			"Parsed Parts:",
-			storageParts,
-		);
 
 		if (storageParts) {
 			// storageParts[1] is the size (e.g., "256")
@@ -308,9 +298,6 @@ document.addEventListener("DOMContentLoaded", function () {
 					submitButton.textContent = "Reassign";
 				}
 			}
-			console.log(
-				`JS DEBUG: Reassign Modal Opened for Service ID: ${serviceId}`,
-			);
 		});
 	}
 
@@ -363,7 +350,6 @@ document.addEventListener("DOMContentLoaded", function () {
 						if (reassignModalElement && typeof bootstrap !== "undefined") {
 							bootstrap.Modal.getInstance(reassignModalElement).hide();
 						}
-						console.log("JS DEBUG: Reassign Response:", data);
 
 						if (data.success) {
 							alert(" Reassign berhasil: " + data.message);

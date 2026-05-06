@@ -1,13 +1,13 @@
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel">
   <div class="modal-dialog modal-lg">
     <form method="POST" action="tambah.php">
-      <input type="hidden" name="service_id_to_update" id="service-id-to-update" value="">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Tambah Asset</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body row">
+          <input type="hidden" name="service_id_to_update" id="service-id-to-update" value="">
 
           <div class="col-md-6 mb-3">
             <label class="fw-bold">Hostname</label>
@@ -22,13 +22,13 @@
           <div class="col-md-3 mb-3">
             <label class="fw-bold">Warna</label>
             <select name="warna" id="add-warna" class="form-control">
-              <option value="">- Pilih Warna -</option>
-              <option value="merah">Merah</option>
-              <option value="kuning">Kuning</option>
-              <option value="hijau">Hijau</option>
-              <option value="biru">Biru</option>
-              <option value="hitam">Hitam</option>
-              <option value="putih">Putih</option>
+                 <option value="">- Pilih Warna -</option>
+                 <option value="Merah">Merah</option>
+                 <option value="Kuning">Kuning</option>
+                 <option value="Hijau">Hijau</option>
+                 <option value="Biru">Biru</option>
+                 <option value="Hitam">Hitam</option>
+                 <option value="Putih">Putih</option>
             </select>
           </div>
           <div class="col-md-6 mb-3">

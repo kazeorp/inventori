@@ -11,7 +11,7 @@ if (!function_exists('e')) {
 }
 ?>
 
-<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="peripherals.php">
@@ -43,7 +43,7 @@ if (!function_exists('e')) {
     </div>
 </div>
 
-<div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel" aria-hidden="true">
+<div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="peripherals.php">
@@ -77,7 +77,7 @@ if (!function_exists('e')) {
     </div>
 </div>
 
-<div class="modal fade" id="takeStockModal" tabindex="-1" aria-labelledby="takeStockModalLabel" aria-hidden="true">
+<div class="modal fade" id="takeStockModal" tabindex="-1" aria-labelledby="takeStockModalLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="peripherals.php">
