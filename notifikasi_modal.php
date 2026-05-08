@@ -48,39 +48,37 @@ if (!isset($notifikasi_service) || !isset($notifikasi_grace)) {
 
 <div class="modal fade" id="notifikasiModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-dark text-white p-2 px-3">
-                <h6 class="modal-title"><i class="bi bi-megaphone me-2"></i> Notifikasi Sistem</h6>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <div class="modal-header bg-dark text-white px-4 py-3">
+                <h6 class="modal-title fw-bold"><i class="bi bi-megaphone me-2"></i> System Notifications</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-0" style="min-height: 400px;">
-                <ul class="nav nav-tabs nav-fill bg-light sticky-top shadow-sm" id="notifTab">
-                    <li class="nav-item">
-                        <button class="nav-link active fw-bold small py-3" data-bs-toggle="tab" data-bs-target="#service-panel">
-                            SERVICE (<span id="count-service-tab"><?= count($notifikasi_service) ?></span>)
+            <div class="modal-body p-0">
+                <nav class="bg-light sticky-top shadow-sm px-4 pt-3">
+                    <div class="nav nav-tabs nav-fill border-bottom-0" id="notifTab">
+                        <button class="nav-link active fw-bold small pb-3 border-0 border-bottom border-3 border-transparent" data-bs-toggle="tab" data-bs-target="#service-panel">
+                            <i class="bi bi-tools me-1"></i> SERVICE (<?= count($notifikasi_service) ?>)
                         </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link fw-bold small py-3 text-danger" data-bs-toggle="tab" data-bs-target="#grace-panel">
-                            GRACE PERIOD (<span id="count-grace-tab"><?= count($notifikasi_grace) ?></span>)
+                        <button class="nav-link fw-bold small pb-3 text-danger border-0 border-bottom border-3 border-transparent" data-bs-toggle="tab" data-bs-target="#grace-panel">
+                            <i class="bi bi-clock-history me-1"></i> OVERDUE (<?= count($notifikasi_grace) ?>)
                         </button>
-                    </li>
-                </ul>
-                <div class="tab-content" id="notifTabContent" style="max-height: 400px; overflow-y: auto;">
+                    </div>
+                </nav>
+                <div class="tab-content px-4 py-3" id="notifTabContent" style="max-height: 500px; overflow-y: auto;">
                     <div class="tab-pane fade show active" id="service-panel">
-                        <div id="list-service" class="list-group list-group-flush">
+                        <div id="list-service" class="list-group list-group-flush gap-2">
                             <?php foreach ($notifikasi_service as $s): ?>
-                                <div class="list-group-item p-3">
+                                <div class="list-group-item rounded border p-3 shadow-sm hover-lift">
                                     <div class="row align-items-center">
                                         <div class="col">
-                                            <div class="fw-bold small"><?= $s['hostname'] ?></div>
-                                            <small class="text-muted d-block">User: <?= $s['nama_user'] ?? 'N/A' ?></small>
-                                            <small class="text-primary" style="font-size: 0.7rem;">Masuk: <?= date('d/m/Y H:i', strtotime($s['tanggal_masuk'])) ?></small>
+                                            <div class="fw-bold text-dark mb-1"><?= $s['hostname'] ?></div>
+                                            <div class="text-muted small"><i class="bi bi-person me-1"></i> <?= $s['nama_user'] ?? 'N/A' ?></div>
+                                            <div class="text-primary mt-1" style="font-size: 0.75rem;"><i class="bi bi-calendar-event me-1"></i> <?= date('d M Y, H:i', strtotime($s['tanggal_masuk'])) ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <form action="proses-service.php" method="POST">
                                                 <input type="hidden" name="id_service" value="<?= $s['id_service'] ?>">
-                                                <button type="submit" name="pickup_service" class="btn btn-sm btn-outline-primary rounded-pill">Pick Up</button>
+                                                <button type="submit" name="pickup_service" class="btn btn-sm btn-primary rounded-pill px-3">Assign to Me</button>
                                             </form>
                                         </div>
                                     </div>
@@ -89,22 +87,25 @@ if (!isset($notifikasi_service) || !isset($notifikasi_grace)) {
                         </div>
                     </div>
                     <div class="tab-pane fade" id="grace-panel">
-                        <div id="list-grace" class="list-group list-group-flush">
+                        <div id="list-grace" class="list-group list-group-flush gap-2">
                             <?php foreach ($notifikasi_grace as $g): ?>
-                                <div class="list-group-item border-start border-danger border-4">
+                                <div class="list-group-item rounded border-start border-danger border-4 p-3 shadow-sm hover-lift">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <div class="fw-bold text-danger small"><?= $g['hostname'] ?></div>
-                                            <small class="text-muted d-block">User: <?= $g['nama'] ?? 'N/A' ?></small>
-                                            <small class="text-danger fw-bold" style="font-size: 0.7rem;">Overdue <?= $g['keterlambatan'] ?> hari</small>
+                                            <div class="fw-bold text-danger mb-1"><?= $g['hostname'] ?></div>
+                                            <div class="text-muted small"><i class="bi bi-person me-1"></i> <?= $g['nama'] ?? 'N/A' ?></div>
+                                            <div class="text-danger fw-bold mt-1" style="font-size: 0.75rem;"><i class="bi bi-exclamation-circle me-1"></i> Late for <?= $g['keterlambatan'] ?> days</div>
                                         </div>
-                                        <a href="tampil.php?cari=<?= urlencode($g['hostname']) ?>" class="btn btn-sm btn-danger rounded-pill">Tarik</a>
+                                        <a href="tampil.php?cari=<?= urlencode($g['hostname']) ?>" class="btn btn-sm btn-danger px-3 rounded-pill shadow-sm">Recall Asset</a>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-4">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

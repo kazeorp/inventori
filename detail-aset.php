@@ -23,6 +23,28 @@ function e($text)
     return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+function getStatusBadge($status)
+{
+    switch ($status) {
+        case 'Assign':
+            return '<span class="badge bg-primary rounded-pill">' . $status . '</span>';
+        case 'Loan':
+            return '<span class="badge bg-dark rounded-pill">' . $status . '</span>';
+        case 'Spare':
+        case 'Ready to Assign':
+            return '<span class="badge bg-success rounded-pill">' . $status . '</span>';
+        case 'Grace Period':
+            return '<span class="badge bg-warning text-dark rounded-pill">' . $status . '</span>';
+        case 'Pending Service':
+        case 'MT':
+            return '<span class="badge bg-info text-dark rounded-pill">' . $status . '</span>';
+        case 'Scrap':
+            return '<span class="badge bg-danger rounded-pill">' . $status . '</span>';
+        default:
+            return '<span class="badge bg-secondary rounded-pill">' . $status . '</span>';
+    }
+}
+
 $aset = null;
 $id = 0;
 $mode_awal = true;
@@ -243,33 +265,82 @@ elseif (isset($_GET['hostname'])) {
       </li>
     </ul>
 
-        <div class="tab-content border border-top-0 p-3 bg-white">
+        <div class="tab-content bg-white p-4 rounded-bottom shadow-sm border border-top-0">
+            <div class="tab-pane fade show active" id="detail" role="tabpanel">
+                <div class="row g-4">
+                    <!-- Block 1: Hardware Specs -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-primary mb-3 border-bottom pb-2 text-uppercase small">Hardware Specifications</h6>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">Hostname</div>
+                            <div class="col-8 fw-bold text-dark"><?= e($aset['hostname']) ?></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">Serial Number</div>
+                            <div class="col-8"><?= e($aset['serial_number']) ?></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">Type / Model</div>
+                            <div class="col-8"><?= e($aset['type']) ?> (<?= e($aset['device_category']) ?>)</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">Memory</div>
+                            <div class="col-8"><?= e($aset['ram']) ?> GB</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">Storage</div>
+                            <div class="col-8"><?= e($aset['storage']) ?></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">Operating System</div>
+                            <div class="col-8">Windows <?= e($aset['win']) ?></div>
+                        </div>
+                    </div>
 
-            <div class="tab-pane fade show active" id="detail" role="tabpanel" aria-labelledby="detail-tab">
-        <table class="table table-bordered w-100 mb-0">
-          <tbody>
-            <tr><th>ID Aset</th><td><?= e($aset['id'] ?? '') ?></td></tr>
-            <tr><th>Hostname</th><td><?= e($aset['hostname'] ?? '') ?></td></tr>
-            <tr><th>Status</th><td><span class="badge bg-primary"><?= e($aset['status'] ?? '') ?></span></td></tr>
-            <tr><th>Warna</th><td><?= e($aset['warna'] ?? '') ?></td></tr>
-            <tr><th>Type</th><td><?= e($aset['type'] ?? '') ?></td></tr>
-            <tr><th>Device Category</th><td><?= e($aset['device_category'] ?? '') ?></td></tr>
-            <tr><th>Domain</th><td><?= e($aset['domain'] ?? '') ?></td></tr>
-            <tr><th>Serial Number</th><td><?= e($aset['serial_number'] ?? '') ?></td></tr>
-            <tr><th>RAM</th><td><?= e($aset['ram'] ?? '') ?></td></tr>
-            <tr><th>Storage</th><td><?= e($aset['storage'] ?? '') ?></td></tr>
-            <tr><th>Windows</th><td><?= e($aset['win'] ?? '') ?></td></td></tr>
-            <tr><th>Kelengkapan</th><td><?= e($aset['kelengkapan'] ?? '') ?></td></tr>
-            <tr><th>Tanggal Register</th><td><?= e($aset['tanggal_register'] ?? '') ?></td></tr>
-            <tr><th>Tanggal Masuk</th><td><?= e($aset['tanggal_masuk'] ?? '') ?></td></tr>
-            <tr><th>Tanggal Keluar</th><td><?= e($aset['tanggal_keluar'] ?? '') ?></td></tr>
-            <tr><th>NIK</th><td><?= e($aset['nik'] ?? '') ?></td></tr>
-            <tr><th>Nama</th><td><?= e($aset['nama'] ?? '') ?></td></tr>
-            <tr><th>Divisi</th><td><?= e($aset['divisi'] ?? '') ?></td></tr>
-            <tr><th>Keterangan</th><td><?= e($aset['keterangan'] ?? '') ?></td></tr>
-          </tbody>
-        </table>
-      </div>
+                    <!-- Block 2: Assignment & Info -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-primary mb-3 border-bottom pb-2 text-uppercase small">Current Assignment</h6>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">Current Status</div>
+                            <div class="col-8"><?= getStatusBadge($aset['status']) ?></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">User Name</div>
+                            <div class="col-8 fw-bold"><?= e($aset['nama']) ?></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">User NIK</div>
+                            <div class="col-8"><?= e($aset['nik']) ?></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">Department</div>
+                            <div class="col-8"><?= e($aset['divisi']) ?></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted small fw-bold">Location Domain</div>
+                            <div class="col-8"><?= e($aset['domain']) ?></div>
+                        </div>
+                    </div>
+
+                    <!-- Block 3: Metadata -->
+                    <div class="col-12 mt-4 pt-3 border-top">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-muted small fw-bold">Registered Date</div>
+                                <div class="text-dark"><?= e($aset['tanggal_register']) ?></div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small fw-bold">Last Check In</div>
+                                <div class="text-dark"><?= e($aset['tanggal_masuk']) ?></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted small fw-bold">Internal Remarks</div>
+                                <div class="text-muted italic"><?= e($aset['keterangan'] ?: 'No internal remarks available.') ?></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
         <h5 class="mb-3">Histori Aktivitas</h5>

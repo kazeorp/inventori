@@ -217,7 +217,6 @@ document.addEventListener("DOMContentLoaded", function () {
 			aksiHelpText.textContent = "Pilih Status Aset Utama (WAJIB)";
 
 			// Aktifkan input & tombol Loan
-			selectLoanStatus.disabled = false;
 			btnCariAsetLoan.disabled = false;
 			displayLoanAset.disabled = false;
 			displayLoanAset.required = true;
@@ -240,12 +239,10 @@ document.addEventListener("DOMContentLoaded", function () {
 			if (loanIdInput) loanIdInput.value = "";
 			loanCatatan.value = "";
 
-			selectLoanStatus.disabled = true;
 			btnCariAsetLoan.disabled = true;
 			displayLoanAset.disabled = true;
 			displayLoanAset.required = false;
 			loanCatatan.disabled = true;
-			selectLoanStatus.value = "";
 		}
 	}
 
@@ -253,8 +250,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	safeListener(toggleLoan, "change", handleLoanToggle);
 
 	safeListener(selectLoanStatus, "change", function () {
-		if (displayLoanAset) displayLoanAset.value = "";
-		if (loanIdInput) loanIdInput.value = "";
+		renderAssetTable(); // Re-render table with new filter
 	});
 
 	// Buka Search Modal (Sudah aman karena sudah pakai IF)

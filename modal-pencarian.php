@@ -16,7 +16,19 @@
                         </select>
                         <span>data</span>
                     </div>
-                    <div style="min-width: 250px;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="small fw-bold">Status:</span>
+                        <select id="selectLoanStatus" class="form-select form-select-sm" style="width: 140px;">
+                            <option value="">-- Semua --</option>
+                            <?php
+                            $loanable_statuses = ['Spare', 'Grace Period', 'MT', 'Pending Service'];
+                            foreach ($loanable_statuses as $status) {
+                                echo "<option value=\"$status\">$status</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="flex-grow-1" style="min-width: 200px; max-width: 300px;">
                         <div class="input-group input-group-sm">
                             <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
                             <input type="text" id="searchTableInput" class="form-control border-start-0" placeholder="Cari hostname atau spek...">
