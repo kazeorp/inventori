@@ -1,6 +1,7 @@
 <?php
 require 'session.php';
 require 'koneksi.php';
+require 'helpers.php';
 
 // Tambahkan ini jika belum ada
 $nama_bulan = [
@@ -10,7 +11,7 @@ $nama_bulan = [
 ];
 
 // Pastikan variabel filter bulan & tahun juga memiliki nilai default agar tidak error
-$f_bulan = isset($_GET['bulan']) ? (int) $_GET['bulan'] : (int) date('m');
+$f_bulan = isset($_GET['bulan']) ? (int) $_GET['bulan'] : (int) date('n');
 $f_tahun = isset($_GET['tahun']) ? (int) $_GET['tahun'] : (int) date('Y');
 $keyword = isset($_GET['q']) ? $_GET['q'] : '';
 $halaman_aktif = isset($_GET['halaman']) ? (int) $_GET['halaman'] : 1;
@@ -54,14 +55,8 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <style>
-        .timeline { border-left: 3px solid #dee2e6; padding: 0 0 20px 20px; margin-left: 20px; position: relative; }
-        .timeline-item { position: relative; margin-bottom: 20px; }
-        .timeline-item::before { content: ""; position: absolute; left: -29px; top: 5px; width: 15px; height: 15px; background: #dc3545; border-radius: 50%; border: 3px solid #fff; }
-        .timeline-date { font-weight: bold; color: #6c757d; font-size: 0.8rem; margin-bottom: 5px; }
-    </style>
 </head>
-<body>
+<body class="bg-light">
 
     <?php include 'header.php'; ?>
     <?php include 'sidebar.php'; ?>
@@ -69,165 +64,122 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
     <main class="main-content">
         <?php include 'toast.php'; ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-    <div class="d-flex align-items-center flex-grow-1 flex-wrap">
-        <nav class="me-3">
-            <ul class="pagination pagination-sm mb-0 shadow-sm">
-                <li class="page-item <?= $halaman_aktif == 1 ? 'active' : '' ?>">
-                    <a class="page-link px-3" href="peripherals.php?halaman=1">1. Monitoring Stok</a>
-                </li>
-                <li class="page-item <?= $halaman_aktif == 2 ? 'active' : '' ?>">
-                    <a class="page-link px-3" href="peripherals.php?halaman=2">2. Riwayat Keluar</a>
-                </li>
-
-                <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'superadmin'): ?>
-                <li class="page-item <?= $halaman_aktif == 3 ? 'active' : '' ?>">
-                    <a class="page-link px-3" href="peripherals.php?halaman=3">3. Master Data</a>
-                </li>
-                <?php endif; ?>
-            </ul>
-        </nav>
-
-        <form action="" method="GET" class="d-flex align-items-center">
-            <input type="hidden" name="halaman" value="<?= $halaman_aktif ?>">
-            <div class="input-group input-group-sm shadow-sm me-2" style="width: 200px;">
-                <input type="text" name="q" class="form-control" placeholder="Cari data..." value="<?= htmlspecialchars($keyword) ?>">
-                <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h2 class="text-dark fw-bold m-0"><i class="bi bi-mouse2 me-2"></i>Stock Peripheral</h2>
+            
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalMasuk">
+                    <i class="bi bi-plus-lg me-1"></i> Barang Masuk
+                </button>
+                <button class="btn btn-danger btn-sm px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalKeluar">
+                    <i class="bi bi-box-arrow-up me-1"></i> Barang Keluar
+                </button>
             </div>
+        </div>
 
-            <?php if ($halaman_aktif == 2): ?>
-                <select name="bulan" class="form-select form-select-sm shadow-sm me-1" style="width: 130px;" onchange="this.form.submit()">
-                    <?php
-                    foreach ($nama_bulan as $num => $nama) {
-                        $sel = ($f_bulan == $num) ? 'selected' : '';
-                        echo "<option value='$num' $sel>$nama</option>";
-                    }
-                ?>
-                </select>
-
-                <select name="tahun" class="form-select form-select-sm shadow-sm" style="width: 100px;" onchange="this.form.submit()">
-                    <?php
-                $current_year = (int) date('Y');
-                for ($y = $current_year; $y >= ($current_year - 5); $y--) {
-                    $sel = ($f_tahun == $y) ? 'selected' : '';
-                    echo "<option value='$y' $sel>$y</option>";
-                }
-                ?>
-                </select>
-            <?php endif; ?>
-        </form>
-    </div>
-
-<div class="d-flex gap-2 shadow-sm ms-2 peripheral-action-group">
-    <?php if ($_SESSION['role'] == 'superadmin'): ?>
-        <button class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalTipe">
-            <i class="bi bi-tag"></i> Master Data
-        </button>
-    <?php endif; ?>
-
-    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalMasuk">
-        <i class="bi bi-plus-lg"></i> Masuk
-    </button>
-    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalKeluar">
-        <i class="bi bi-box-arrow-up"></i> Keluar
-    </button>
-</div>
-</div>
-
-        <div class="card border-0 shadow-sm">
-            <div class="card-body <?= $halaman_aktif == 3 ? 'p-4' : 'p-0' ?>">
-
-            <?php if ($halaman_aktif == 1): ?>
-                <div class="accordion accordion-flush" id="accordionStok">
-                    <?php
-                $filter = $keyword ? "AND (p.serial_number LIKE '%$keyword%' OR t.tipe_barang LIKE '%$keyword%' OR t.model LIKE '%$keyword%' OR p.no_po LIKE '%$keyword%')" : "";
-
-                // Ambil daftar PO unik
-                $sql_po = "SELECT p.no_po, COUNT(*) as total_stok
-                            FROM peripheral_items p
-                            JOIN peripheral_types t ON p.kode_barang = t.kode_barang
-                            WHERE p.status='Stock' $filter
-                            GROUP BY p.no_po
-                            ORDER BY MAX(p.id_barang) DESC";
-
-                $res_po = mysqli_query($koneksi, $sql_po);
-
-                $i = 0;
-                while ($po = mysqli_fetch_assoc($res_po)):
-                    $current_po = $po['no_po'];
-                    $total_per_po = $po['total_stok']; // Ambil hasil hitung langsung dari sini
-                    $i++;
-                    ?>
-                    <div class="accordion-item border-bottom">
-                        <h2 class="accordion-header" id="heading<?= $i ?>">
-                            <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $i ?>" aria-expanded="false" aria-controls="collapse<?= $i ?>">
-                                <div class="d-flex align-items-center w-100">
-
-                                    <div style="flex: 0 0 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                        <span class="badge bg-dark me-2" style="font-family: monospace; font-size: 0.85rem;">PO: <?= $current_po ?></span>
-                                    </div>
-
-                                    <div class="flex-grow-1 border-start ps-3">
-                                        <span class="small text-muted">Klik untuk detail unit</span>
-                                    </div>
-
-                    <div class="text-end me-3">
-                        <span class="badge rounded-pill bg-primary" style="width: 70px;"><?= $total_per_po ?> Unit</span>
-                    </div>
-
-                                </div>
-                            </button>
-                        </h2>
-                        <div id="collapse<?= $i ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $i ?>" data-bs-parent="#accordionStok">
-                            <div class="accordion-body p-0 bg-light">
-                                <table class="table table-hover mb-0 bg-white" style="font-size: 0.9rem;">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th class="ps-4" style="width: 25%;">Barang</th>
-                                            <th style="width: 25%;">S/N</th>
-                                            <th style="width: 15%;">Status</th>
-                                            <th style="width: 20%;">User/Ticket</th>
-                                            <th style="width: 15%;">Tgl Masuk</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                        $query_item = mysqli_query($koneksi, "SELECT p.*, t.tipe_barang, t.model
-                                                                              FROM peripheral_items p
-                                                                              JOIN peripheral_types t ON p.kode_barang = t.kode_barang
-                                                                              WHERE p.status='Stock' AND p.no_po = '$current_po' $filter
-                                                                              ORDER BY p.id_barang DESC");
-                    while ($row = mysqli_fetch_assoc($query_item)): ?>
-                                        <tr>
-                                            <td class="ps-4">
-                                                <small class="text-muted fw-bold d-block" style="font-size: 0.65rem;"><?= $row['tipe_barang'] ?></small>
-                                                <span class="fw-bold"><?= $row['model'] ?></span>
-                                            </td>
-                                            <td class="fw-bold text-primary align-middle"><?= $row['serial_number'] ?></td>
-                                            <td class="align-middle"><span class="badge bg-success" style="font-size: 0.7rem;">STOK</span></td>
-                                            <td class="align-middle"><small><?= !empty($row['nama_user']) ? $row['nama_user'] : 'SPARE IT' ?></small></td>
-                                            <td class="align-middle"><small><?= date('d/m/y', strtotime($row['tanggal_masuk'])) ?></small></td>
-                                        </tr>
-                                        <?php endwhile; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endwhile; ?>
-
-                    <?php if (mysqli_num_rows($res_po) == 0): ?>
-                        <div class="text-center py-5">
-                            <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
-                            <p class="text-muted mt-2">Data tidak ditemukan.</p>
-                        </div>
-                    <?php endif; ?>
+        <div class="mb-4 p-3 bg-white rounded shadow-sm border-0">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-auto">
+                    <ul class="nav nav-pills nav-pills-custom shadow-sm p-1 bg-light rounded">
+                        <li class="nav-item">
+                            <a class="nav-link <?= $halaman_aktif == 1 ? 'active bg-dark text-white' : 'text-secondary' ?> fw-bold py-1 px-4" href="peripherals.php?halaman=1">Monitoring</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $halaman_aktif == 2 ? 'active bg-dark text-white' : 'text-secondary' ?> fw-bold py-1 px-4" href="peripherals.php?halaman=2">Riwayat</a>
+                        </li>
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'superadmin'): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $halaman_aktif == 3 ? 'active bg-dark text-white' : 'text-secondary' ?> fw-bold py-1 px-4" href="peripherals.php?halaman=3">Master Data</a>
+                        </li>
+                        <?php endif; ?>
+                    </ul>
                 </div>
 
-<?php elseif ($halaman_aktif == 3): ?>
-                <div class="table-responsive">
+                <div class="col-md">
+                    <form action="" method="GET" class="row g-2 justify-content-md-end">
+                        <input type="hidden" name="halaman" value="<?= $halaman_aktif ?>">
+                        
+                        <?php if ($halaman_aktif == 2 || $halaman_aktif == 3): ?>
+                        <div class="col-auto">
+                            <select name="bulan" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <?php foreach ($nama_bulan as $num => $nama): ?>
+                                    <option value="<?= $num ?>" <?= ($f_bulan == $num) ? 'selected' : '' ?>><?= $nama ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <select name="tahun" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <?php
+                                $current_year = (int) date('Y');
+                                for ($y = $current_year; $y >= ($current_year - 5); $y--): ?>
+                                    <option value="<?= $y ?>" <?= ($f_tahun == $y) ? 'selected' : '' ?>><?= $y ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <div class="col-md-4 <?= $halaman_aktif == 1 ? 'd-none' : '' ?>">
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="q" class="form-control" placeholder="Cari S/N, PO, atau Model..." value="<?= htmlspecialchars($keyword) ?>">
+                                <button class="btn btn-dark" type="submit"><i class="bi bi-search"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <?php if ($halaman_aktif == 1): ?>
+            <div class="row g-3" id="category-grid">
+                <!-- ALL CATEGORY CARD -->
+                <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+                    <div class="card h-100 category-card border-0 shadow-sm bg-category-all" onclick="openCategoryDetail('ALL')">
+                        <div class="card-body text-center py-3">
+                            <i class="bi bi-boxes category-icon"></i>
+                            <h5 class="fw-bold mb-1">ALL CATEGORIES</h5>
+                            <?php
+                                $total_all = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM peripheral_items WHERE status='Stock'"))['total'];
+                            ?>
+                            <span class="badge bg-white text-dark rounded-pill shadow-sm px-3"><?= number_format($total_all) ?> Items</span>
+                        </div>
+                    </div>
+                </div>
+
+                <?php
+                // Get current stock counts for mapping
+                $q_stock = mysqli_query($koneksi, "SELECT t.tipe_barang, COUNT(p.id_barang) as total 
+                                                   FROM peripheral_types t
+                                                   LEFT JOIN peripheral_items p ON t.kode_barang = p.kode_barang AND p.status = 'Stock'
+                                                   GROUP BY t.tipe_barang");
+                $stock_map = [];
+                while($r = mysqli_fetch_assoc($q_stock)) { $stock_map[$r['tipe_barang']] = $r['total']; }
+
+                foreach (getPeripheralCategories() as $tipe_val): 
+                    $total = $stock_map[$tipe_val] ?? 0; ?>
+                <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+                    <div class="card h-100 category-card border-0 shadow-sm bg-white" onclick="openCategoryDetail('<?= $tipe_val ?>')">
+                        <div class="card-body text-center py-2">
+                            <i class="bi bi-folder-fill category-icon text-warning"></i>
+                            <h5 class="fw-bold mb-1 text-uppercase text-dark"><?= $tipe_val ?></h5>
+                            <span class="badge bg-primary rounded-pill shadow-sm px-3" style="font-size: 0.7rem;"><?= number_format($total) ?> Units</span>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+
+        <?php elseif ($halaman_aktif == 3): ?>
+            <div class="card border-0 shadow-sm overflow-hidden">
+                <div class="card-body p-0">
+                <div class="table-responsive p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0 text-muted">Master Data Models</h6>
+                        <button class="btn btn-dark btn-sm px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTipe">
+                            <i class="bi bi-plus-lg me-1"></i> New Model
+                        </button>
+                    </div>
                     <table class="table table-hover align-middle">
-                        <thead class="table-light">
+                        <thead class="table-dark">
                             <tr>
                                 <th>Kode Barang</th>
                                 <th>Kategori</th>
@@ -268,8 +220,11 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                             <?php endwhile; ?>
                         </tbody>                    </table>
                 </div>
-
-<?php elseif ($halaman_aktif == 2): ?>
+                </div>
+            </div>
+        <?php elseif ($halaman_aktif == 2): ?>
+            <div class="card border-0 shadow-sm overflow-hidden">
+                <div class="card-body p-0">
                 <div class="p-3">
                     <h5 class="fw-bold mb-5 text-muted"><i class="bi bi-clock-history me-2"></i>Timeline Riwayat Keluar</h5>
 
@@ -297,15 +252,15 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
 
                                 <div class="card border-0 shadow-sm" style="background-color: #ffffff; border-radius: 12px;">
                                     <div class="card-body p-3">
-                                        <div class="row align-items-center text-center">
+                                        <div class="row g-3 align-items-center text-center">
 
-                                            <div class="col-3 text-start border-end">
+                                            <div class="col-12 col-md-4 col-lg-3 text-start border-md-end">
                                                 <small class="text-muted fw-bold d-block" style="font-size: 0.65rem;"><?= $row['tipe_barang'] ?></small>
                                                 <span class="fw-bold d-block text-truncate text-dark" title="<?= $row['model'] ?>"><?= $row['model'] ?></span>
                                                 <span class="badge bg-light text-primary border border-primary mt-1" style="font-size: 0.7rem;"><?= $row['serial_number'] ?></span>
                                             </div>
 
-                                            <div class="col-2 border-end">
+                                            <div class="col-6 col-md-4 col-lg-2 border-md-end">
                                                 <div class="mb-2">
                                                     <small class="text-muted d-block" style="font-size: 0.65rem;">No. PO</small>
                                                     <span class="badge bg-dark px-2" style="font-size: 0.75rem;">
@@ -320,19 +275,19 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                                                 </div>
                                             </div>
 
-                                            <div class="col-2 border-end">
+                                            <div class="col-6 col-md-4 col-lg-2 border-md-end">
                                                 <small class="text-muted d-block" style="font-size: 0.65rem;">No. Ticket</small>
                                                 <b class="text-danger" style="font-size: 0.85rem;"><?= $row['no_ticket'] ?></b>
                                             </div>
 
-                                            <div class="col-3 text-start border-end">
+                                            <div class="col-12 col-md-8 col-lg-3 text-start border-lg-end">
                                                 <small class="text-muted d-block" style="font-size: 0.65rem;">Keterangan</small>
                                                 <div class="small text-secondary" style="font-size: 0.75rem; line-height: 1.2;">
                                                     <?= !empty($row['keterangan']) ? $row['keterangan'] : '-' ?>
                                                 </div>
                                             </div>
 
-                                            <div class="col-2">
+                                            <div class="col-12 col-md-4 col-lg-2">
                                                 <small class="text-muted d-block" style="font-size: 0.65rem;">PIC</small>
                                                 <span class="fw-bold text-dark text-truncate d-block" style="font-size: 0.8rem;"><?= $row['admin_keluar'] ?></span>
                                             </div>
@@ -351,20 +306,47 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                         <?php endif; ?>
                     </div>
                 </div>
-                <?php endif; ?>
+                </div>
             </div>
-        </div>
+        <?php else: ?>
+            <div class="alert alert-warning mt-4">Halaman tidak ditemukan.</div>
+        <?php endif; ?>
     </main>
 
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 3000">
         <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert"><div class="d-flex"><div class="toast-body" id="toast-body"></div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>
     </div>
 
+    <!-- Modal Detail Category -->
+    <div class="modal fade" id="modalDetailCategory" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white py-3">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-view-list me-2"></i> Category Details: <span id="modal-category-title"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="p-3 bg-light border-bottom sticky-top" style="z-index: 10;">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" id="searchCategoryDetail" class="form-control border-start-0" placeholder="Cari S/N, Model, atau Nomor PO...">
+                        </div>
+                    </div>
+                    <div id="modal-category-content" class="modal-body-scroll">
+                        <!-- Loaded via AJAX -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 <div class="modal fade" id="modalTipe" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content" method="POST" action="proses-peripherals.php">
-            <div class="modal-header bg-dark text-white p-2 px-3">
-                <h6 class="modal-title">Tambah Model Baru</h6>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form class="modal-content border-0 shadow-lg" method="POST" action="proses-peripherals.php">
+            <div class="modal-header bg-dark text-white py-3">
+                <h6 class="modal-title fw-bold"><i class="bi bi-tag-fill me-2"></i>Tambah Model Baru</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -372,22 +354,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     <label class="small fw-bold">PILIH KATEGORI</label>
                     <select name="tipe_barang" class="form-select form-select-sm" required>
                         <option value="">-- Pilih Kategori --</option>
-                        <option value="ADAPTOR">ADAPTOR</option>
-                        <option value="BATTERY">BATTERY</option>
-                        <option value="CABLE HDMI">CABLE HDMI</option>
-                        <option value="CABLE UTP">CABLE UTP</option>
-                        <option value="CONNECTOR">CONNECTOR</option>
-                        <option value="HARDDISK">HARDDISK</option>
-                        <option value="KEYBOARD">KEYBOARD</option>
-                        <option value="MEMORY">MEMORY</option>
-                        <option value="MOUSE">MOUSE</option>
-                        <option value="PATCH CORD">PATCH CORD</option>
-                        <option value="PRINTER">PRINTER</option>
-                        <option value="PROJECTOR">PROJECTOR</option>
-                        <option value="ROLLER">ROLLER</option>
-                        <option value="SCANNER">SCANNER</option>
-                        <option value="SWITCH">SWITCH</option>
-                        <option value="WIRELESS">WIRELESS</option>
+                        <?php include 'peripheral_category.php'; ?>
                     </select>
                 </div>
 
@@ -413,10 +380,10 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
 </div>
 
     <div class="modal fade" id="modalEditTipe" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <form class="modal-content" method="POST" action="proses-peripherals.php">
-                <div class="modal-header bg-primary text-white p-2 px-3">
-                    <h6 class="modal-title">Edit Model Barang</h6>
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <form class="modal-content border-0 shadow-lg" method="POST" action="proses-peripherals.php">
+                <div class="modal-header bg-dark text-white py-3">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Edit Model Barang</h6>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -430,22 +397,7 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
                     <div class="mb-2">
                         <label class="small fw-bold">KATEGORI</label>
                         <select name="tipe_barang" id="edit_tipe" class="form-select form-select-sm" required>
-                            <option value="ADAPTOR">ADAPTOR</option>
-                            <option value="BATTERY">BATTERY</option>
-                            <option value="CABLE HDMI">CABLE HDMI</option>
-                            <option value="CABLE UTP">CABLE UTP</option>
-                            <option value="CONNECTOR">CONNECTOR</option>
-                            <option value="HARDDISK">HARDDISK</option>
-                            <option value="KEYBOARD">KEYBOARD</option>
-                            <option value="MEMORY">MEMORY</option>
-                            <option value="MOUSE">MOUSE</option>
-                            <option value="PATCH CORD">PATCH CORD</option>
-                            <option value="PRINTER">PRINTER</option>
-                            <option value="ROLLER">ROLLER</option>
-                            <option value="SCANNER">SCANNER</option>
-                            <option value="SWITCH">SWITCH</option>
-                            <option value="WIRELESS">WIRELESS</option>
-                            <option value="PROJECTOR">PROJECTOR</option>
+                            <?php include 'peripheral_category.php'; ?>
                         </select>
                     </div>
 
@@ -468,9 +420,9 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
 
     <div class="modal fade" id="modalMasuk" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
-            <form class="modal-content border-0" method="POST" action="proses-peripherals.php" id="formMasuk">
-                <div class="modal-header bg-primary text-white p-2 px-3">
-                    <h6>Input Barang Masuk Per PO</h6>
+            <form class="modal-content border-0 shadow-lg" method="POST" action="proses-peripherals.php" id="formMasuk">
+                <div class="modal-header bg-dark text-white py-3">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-arrow-down-circle me-2"></i>Input Barang Masuk Per PO</h6>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-light">
@@ -499,15 +451,25 @@ $f_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : date('Y');
     </div>
 
     <div class="modal fade" id="modalKeluar" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered"><form class="modal-content border-0" method="POST">
-            <div class="modal-header bg-danger text-white p-2 px-3"><h6>Barang Keluar</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <label class="small fw-bold">S/N</label><input type="text" name="serial_number" class="form-control form-control-sm text-uppercase mb-2" required autofocus>
-                <label class="small fw-bold">No. Ticket</label><input type="text" name="no_ticket" class="form-control form-control-sm text-uppercase mb-2" required>
-                <label class="form-label small fw-bold">No. PR</label><input type="text" name="no_pr" class="form-control form-control-sm">
-                <label class="small fw-bold">Keterangan</label><textarea name="keterangan" class="form-control form-control-sm text-uppercase" rows="2" placeholder="Contoh: Ganti Mouse..."></textarea>
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content border-0 shadow-lg" method="POST" action="proses-peripherals.php">
+            <div class="modal-header bg-danger text-white py-3">
+                <h6 class="modal-title fw-bold"><i class="bi bi-arrow-up-circle me-2"></i>Barang Keluar</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-footer p-2"><button type="submit" name="simpan_keluar" class="btn btn-sm btn-danger w-100">Konfirmasi Keluar</button></div>
+            <div class="modal-body">
+                <label class="small fw-bold">SERIAL NUMBER (S/N)</label>
+                <input type="text" name="serial_number" class="form-control form-control-sm text-uppercase mb-3 shadow-sm" required autofocus>
+                <label class="small fw-bold">NOMOR TICKET / SRV</label>
+                <input type="text" name="no_ticket" class="form-control form-control-sm text-uppercase mb-3 shadow-sm" required placeholder="SRV-2023xxxx">
+                <label class="form-label small fw-bold">NOMOR PR (PURCHASE REQUISITION)</label>
+                <input type="text" name="no_pr" class="form-control form-control-sm mb-3 shadow-sm">
+                <label class="small fw-bold">KETERANGAN / USER</label>
+                <textarea name="keterangan" class="form-control form-control-sm text-uppercase shadow-sm" rows="2" placeholder="Contoh: GANTI MOUSE USER NIK 123..."></textarea>
+            </div>
+            <div class="modal-footer border-0 p-3">
+                <button type="submit" name="simpan_keluar" class="btn btn-danger w-100 fw-bold py-2 shadow-sm">KONFIRMASI PENGELUARAN BARANG</button>
+            </div>
         </form></div>
     </div>
 
@@ -538,6 +500,43 @@ while ($row = mysqli_fetch_assoc($all_types)) {
     const urlParams = new URLSearchParams(window.location.search);
     const msg = urlParams.get('msg');
     const res = urlParams.get('res');
+
+    // --- CATEGORY MODAL LOGIC ---
+    const detailModalElem = document.getElementById('modalDetailCategory');
+    const detailModal = new bootstrap.Modal(detailModalElem);
+    const modalTitle = document.getElementById('modal-category-title');
+    const modalContent = document.getElementById('modal-category-content');
+    const modalSearch = document.getElementById('searchCategoryDetail');
+    let currentActiveTipe = '';
+
+    window.openCategoryDetail = function(tipe) {
+        currentActiveTipe = tipe;
+        modalTitle.innerText = tipe === 'ALL' ? 'ALL CATEGORIES' : tipe;
+        modalSearch.value = '';
+        loadAjaxData(tipe, '');
+        detailModal.show();
+    };
+
+    modalSearch.addEventListener('input', function() {
+        loadAjaxData(currentActiveTipe, this.value);
+    });
+
+    function loadAjaxData(tipe, query) {
+        modalContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Searching database...</p></div>';
+        fetch(`ajax_peripheral_monitoring.php?tipe=${encodeURIComponent(tipe)}&q=${encodeURIComponent(query)}`)
+            .then(response => response.text())
+            .then(html => {
+                modalContent.innerHTML = html;
+            })
+            .catch(err => modalContent.innerHTML = '<div class="alert alert-danger m-3">Connection error.</div>');
+    }
+
+    // Auto-open category if parameter exists
+    document.addEventListener('DOMContentLoaded', function() {
+        if (urlParams.get('cat') && urlParams.get('halaman') == '1') {
+            openCategoryDetail(urlParams.get('cat'));
+        }
+    });
 </script>
 </body>
 </html>

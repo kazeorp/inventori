@@ -95,7 +95,7 @@ function sort_link($column, $current_sort, $current_order, $next_order)
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="text-dark fw-bold m-0">
-          Data Inventori <?= ($status_filter === 'all') ? '' : ' <small class="text-muted">/ ' . htmlspecialchars($status_filter) . '</small>' ?>
+          Inventory Data <?= ($status_filter === 'all') ? '' : ' <small class="text-muted">/ ' . htmlspecialchars($status_filter) . '</small>' ?>
         </h2>
     </div>
 

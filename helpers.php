@@ -2,6 +2,14 @@
 
 // helpers.php
 
+// Autoritative list of peripheral categories
+if (!function_exists('getPeripheralCategories')) {
+    function getPeripheralCategories()
+    {
+        return ["ADAPTOR", "BATTERY", "CABLE HDMI", "CABLE UTP", "CONNECTOR", "HARDDISK", "KEYBOARD", "MEMORY", "MOUSE", "PATCH CORD", "PRINTER", "PROJECTOR", "ROLLER", "SCANNER", "SWITCH", "WIRELESS"];
+    }
+}
+
 // Fungsi untuk keamanan (mencegah XSS)
 if (!function_exists('e')) {
     function e($text)

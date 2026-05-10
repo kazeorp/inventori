@@ -27,6 +27,14 @@ $dash_items = [
     "Scrap" => ["v" => $counts['scrap'], "s" => "Scrap"],
 ];
 
+// 3. Peripheral Summary
+$q_peri_counts = mysqli_query($koneksi, "SELECT t.tipe_barang, COUNT(p.id_barang) as total 
+                                         FROM peripheral_types t
+                                         LEFT JOIN peripheral_items p ON t.kode_barang = p.kode_barang AND p.status = 'Stock'
+                                         GROUP BY t.tipe_barang");
+$peri_totals = [];
+while($row = mysqli_fetch_assoc($q_peri_counts)) { $peri_totals[$row['tipe_barang']] = $row['total']; }
+
 // 2. Service Lists
 $sql_base = "SELECT sl.*, i.id AS id_inv, i.nama AS user_inv, i.divisi AS div_inv, u.nama_lengkap AS pic FROM service_list sl
              LEFT JOIN inventori i ON sl.hostname = i.hostname LEFT JOIN admin u ON sl.current_admin_id = u.id ";
@@ -61,6 +69,22 @@ include 'sidebar.php'; ?>
             </div>
             <?php endforeach; ?>
         </div>
+
+        <h5 class="mt-4 mb-3 text-muted small fw-bold text-uppercase" style="letter-spacing: 1px;">Peripheral Stock Overview</h5>
+        <div class="row g-1">
+            <?php foreach (getPeripheralCategories() as $cat): 
+                $total = $peri_totals[$cat] ?? 0; ?>
+            <div class="col-xl-2 col-lg-2 col-md-4 col-6">
+                <a href="peripherals.php?halaman=1&cat=<?= urlencode($cat) ?>" class="dash-card-link">
+                    <div class="card dash-card stat-peripheral"><div class="card-body">
+                        <div class="dash-card-label" style="font-size: 0.5rem;"><?= e($cat) ?></div>
+                        <div class="dash-card-value" style="font-size: 0.9rem;"><?= number_format($total) ?><span class="dash-card-unit">Unit</span></div>
+                    </div></div>
+                </a>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
         <hr class="my-3">
         <ul class="nav nav-pills mb-3 shadow-sm p-1 bg-light rounded" id="serviceTab" style="width: fit-content;">
             <li class="nav-item"><button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#antrean-content"><i class="bi bi-megaphone-fill me-1"></i> Antrean</button></li>
