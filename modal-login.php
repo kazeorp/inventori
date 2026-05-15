@@ -9,6 +9,8 @@
         </div>
 
         <div class="modal-body">
+          <div id="loginErrorAlert" class="alert alert-danger d-none mb-3" style="font-size: 0.85rem;"></div>
+
           <div class="mb-3">
             <label for="modal_username" class="fw-bold">Username</label>
             <input type="text" name="username" id="modal_username" class="form-control" style="border-radius: var(--radius-md);" required>

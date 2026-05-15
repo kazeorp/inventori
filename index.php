@@ -2,15 +2,6 @@
 include 'session.php';
 include "koneksi.php";
 
-// Login error handling
-if (isset($_GET['error'])) {
-    $errors = ['empty' => "Username/Password kosong!", 'user' => "User tidak ditemukan.", 'pass' => "Password salah."];
-    $msg = $errors[$_GET['error']] ?? "";
-    if ($msg) {
-        echo "<div class='alert alert-danger alert-dismissible fade show'>$msg<button class='btn-close' data-bs-dismiss='alert'></button></div>";
-    }
-}
-
 $is_admin_logged_in = isset($_SESSION['admin_id']) && !empty($_SESSION['admin_id']);
 $user_role = $is_admin_logged_in ? ($_SESSION['role'] ?? 'normal') : 'normal';
 
@@ -149,6 +140,30 @@ $('manual-check-button').onclick = () => handleAssetCheck(input.value);
 input.onkeydown = (e) => { if (e.keyCode === 13) handleAssetCheck(input.value); };
 </script>
 <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>
+// Auto-show login modal if there's a login error in URL
+document.addEventListener("DOMContentLoaded", function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const msg = urlParams.get('msg');
+    const res = urlParams.get('res');
+
+    // Detect if we have a "danger" response with a message (typical of login errors)
+    if (res === 'danger' && msg) {
+        const errorAlert = document.getElementById('loginErrorAlert');
+        const loginModalEl = document.getElementById('loginModal');
+
+        if (errorAlert && loginModalEl) {
+            // Populate and show the error inside the modal
+            errorAlert.textContent = decodeURIComponent(msg.replace(/\+/g, ' '));
+            errorAlert.classList.remove('d-none');
+
+            // Trigger the Bootstrap Modal to open automatically
+            bootstrap.Modal.getOrCreateInstance(loginModalEl).show();
+        }
+    }
+});
+</script>
+<?php include 'toast.php'; ?>
 <?php include 'modal-register-aset.php'; ?>
 <?php include 'virtual-keyboard.php'; ?>
 </body>
