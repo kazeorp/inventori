@@ -24,9 +24,9 @@ if (isset($_GET['manual']) && $_GET['manual'] == 'true') {
     }
 
     $devices[1] = [
-        'type' => htmlspecialchars($aset['type'] ?? '&nbsp;'),
-        'sn'   => htmlspecialchars($aset['serial_number'] ?? '&nbsp;'),
-        'host' => htmlspecialchars($aset['hostname'] ?? '&nbsp;'),
+        'type' => htmlspecialchars($aset['type'] ?? ''),
+        'sn'   => htmlspecialchars($aset['serial_number'] ?? ''),
+        'host' => htmlspecialchars($aset['hostname'] ?? ''),
     ];
     for ($i = 2; $i <= 5; $i++) {
         $devices[$i] = ['type' => '&nbsp;', 'sn' => '&nbsp;', 'host' => '&nbsp;'];
