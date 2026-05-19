@@ -1,4 +1,5 @@
 <?php
+
 // Wajib ada untuk memuat PhpSpreadsheet (asumsi sudah diinstal via Composer)
 require 'vendor/autoload.php';
 
@@ -24,65 +25,79 @@ $sheet = $spreadsheet->getActiveSheet();
 // 1. Ambil Data dari Database
 // ===================================
 
-// PASTIKAN URUTAN KOLOM SAMA PERSIS DENGAN FILE IMPORT!
-// Urutan kolom SQL: Hostname, Status, Rak, Domain, Type, Device Category, RAM, Storage, OS(Win), Keterangan, Kelengkapan, Tgl Masuk, Tgl Keluar, NIK, Nama, Divisi
-$query = "SELECT 
-    hostname, status, rak, domain, type, device_category, ram, storage, win, keterangan, kelengkapan, 
+// Capture filters from URL
+$status_filter = $_GET['status'] ?? 'all';
+$cari          = mysqli_real_escape_string($koneksi, $_GET['cari'] ?? '');
+$divisi_filter = mysqli_real_escape_string($koneksi, $_GET['divisi'] ?? '');
+$type_filter   = mysqli_real_escape_string($koneksi, $_GET['type'] ?? '');
+
+$where = [];
+if ($status_filter !== 'all') {
+    $where[] = "status = '$status_filter'";
+}
+if (!empty($cari)) {
+    $where[] = "(hostname LIKE '%$cari%' OR nama LIKE '%$cari%' OR nik LIKE '%$cari%')";
+}
+if (!empty($divisi_filter)) {
+    $where[] = "divisi = '$divisi_filter'";
+}
+if (!empty($type_filter)) {
+    $where[] = "type = '$type_filter'";
+}
+
+$where_clause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
+
+// URUTAN SQL DISESUAIKAN DENGAN STRUKTUR IMPORT (A-Q) - Rak replaced by Warna
+$sql = "SELECT
+    hostname, status, domain, type, serial_number, device_category, warna, ram, storage, win, keterangan, kelengkapan,
     tanggal_masuk, tanggal_keluar, nik, nama, divisi
-    FROM inventori ORDER BY hostname ASC";
-$result = mysqli_query($koneksi, $query);
+    FROM inventori
+    $where_clause
+    ORDER BY hostname ASC";
+
+$result = mysqli_query($koneksi, $sql);
 
 // ===================================
-// 2. Tulis Header Kolom
+// 2. Tulis Header Kolom (Urutan A-Q)
 // ===================================
 
 $header = [
-    // Kolom A
-    'Hostname',
-    // Kolom B
-    'Status',
-    // Kolom C
-    'Rak', // ◀️ BERGESER KE KOLOM C
-    // Kolom D
-    'Domain', // ◀️ BERGESER KE KOLOM D
-    // Kolom E
-    'Type', // ◀️ BERGESER KE KOLOM E
-    // Kolom F
-    'Device Category', // ◀️ BERGESER KE KOLOM F
-    // Kolom G - K
-    'RAM', 
-    'Storage', 
-    'OS (Win)', 
-    'Keterangan', 
-    'Kelengkapan', 
-    // Kolom L - M (Tanggal)
-    'Tgl Masuk', 
-    'Tgl Keluar', 
-    // Kolom N - P (Identitas Pengguna)
-    'NIK', 
-    'Nama', 
-    'Divisi' 
+    'Hostname',        // A
+    'Status',          // B
+    'Domain',          // C
+    'Type',            // D
+    'Serial Number',   // E ◀️ TAMBAHAN BARU
+    'Device Category', // F
+    'Warna',           // G
+    'RAM',             // H
+    'Storage',         // I
+    'OS (Win)',        // J
+    'Keterangan',      // K
+    'Kelengkapan',     // L
+    'Tgl Masuk',       // M
+    'Tgl Keluar',      // N
+    'NIK',             // O
+    'Nama',            // P
+    'Divisi',           // Q
 ];
 
-$sheet->fromArray($header, NULL, 'A1');
+$sheet->fromArray($header, null, 'A1');
 
 // ===================================
 // 3. Aplikasikan Styling pada Header
 // ===================================
 
-$kolomAkhir = 'P';
+$kolomAkhir = 'Q'; // ◀️ BERUBAH KE Q
 $headerRange = 'A1:' . $kolomAkhir . '1';
 
-// Terapkan Bold, Warna Latar Belakang, dan Alignment
 $sheet->getStyle($headerRange)->applyFromArray([
     'font' => [
         'bold' => true,
     ],
     'fill' => [
-        // Menggunakan warna biru muda/hijau (contoh: Light Turquoise)
         'fillType' => Fill::FILL_SOLID,
         'startColor' => [
-            'argb' => 'FFA9D08E', // Kode warna Hex untuk warna latar
+            'argb' => 'FFA9D08E',
         ],
     ],
     'alignment' => [
@@ -95,7 +110,7 @@ $sheet->getStyle($headerRange)->applyFromArray([
     ],
 ]);
 
-// Atur lebar kolom agar konten terbaca (Opsional)
+// Atur lebar kolom agar konten terbaca
 foreach (range('A', $kolomAkhir) as $columnID) {
     $sheet->getColumnDimension($columnID)->setAutoSize(true);
 }
@@ -105,49 +120,30 @@ foreach (range('A', $kolomAkhir) as $columnID) {
 // 4. Tulis Data ke Spreadsheet
 // ===================================
 
-$row = 2; // Data dimulai dari baris ke-2
+$rowNum = 2; // Data dimulai dari baris ke-2
 while ($data = mysqli_fetch_assoc($result)) {
-    // Membangun array data baris (urutan harus sinkron dengan header)
     $rowData = [
-        // A
-        $data['hostname'],
-        // B
-        $data['status'],
-        // C
-        $data['rak'],
-        // D
-        $data['domain'],
-        // E
-        $data['type'],
-        // F
-        $data['device_category'],
-        // G
-        $data['ram'],
-        // H
-        $data['storage'],
-        // I
-        $data['win'],
-        // J
-        $data['keterangan'],
-        // K
-        $data['kelengkapan'],
-        
-        // L
-        $data['tanggal_masuk'],
-        // M
-        $data['tanggal_keluar'],
-        
-        // N
-        $data['nik'],
-        // O
-        $data['nama'],
-        // P
-        $data['divisi']
+        $data['hostname'],        // A
+        $data['status'],          // B
+        $data['domain'],          // C
+        $data['type'],            // D
+        $data['serial_number'],   // E
+        $data['device_category'], // F
+        $data['warna'],           // G
+        $data['ram'],             // H
+        $data['storage'],         // I
+        $data['win'],             // J
+        $data['keterangan'],      // K
+        $data['kelengkapan'],     // L
+        $data['tanggal_masuk'],   // M
+        $data['tanggal_keluar'],  // N
+        $data['nik'],             // O
+        $data['nama'],            // P
+        $data['divisi'],           // Q
     ];
-    
-    // Tulis array data ke baris saat ini
-    $sheet->fromArray($rowData, NULL, 'A' . $row);
-    $row++;
+
+    $sheet->fromArray($rowData, null, 'A' . $rowNum);
+    $rowNum++;
 }
 
 
@@ -155,10 +151,8 @@ while ($data = mysqli_fetch_assoc($result)) {
 // 5. Proses Download File
 // ===================================
 
-// Set nama file Excel
 $filename = 'data_inventori_' . date('Ymd_His') . '.xlsx';
 
-// Set header HTTP untuk download file
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="' . $filename . '"');
 header('Cache-Control: max-age=0');
@@ -166,4 +160,3 @@ header('Cache-Control: max-age=0');
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
 exit;
-?>

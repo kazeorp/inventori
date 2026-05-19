@@ -1,10 +1,11 @@
 <?php
+
 // logout.php - Final Version
 session_start(); // Wajib: Mulai sesi untuk mengakses variabel sesi
 
 // 1. Amankan data scan terakhir (last_scan)
 // Data ini perlu dipertahankan agar aset terakhir tetap tampil di index.php
-$last_scan_data = $_SESSION['last_scan'] ?? null; 
+$last_scan_data = $_SESSION['last_scan'] ?? null;
 
 // 2. Hapus SEMUA variabel sesi yang terkait dengan admin/login secara spesifik
 // Pastikan semua kunci yang dipakai saat login dimasukkan di sini.
@@ -25,4 +26,3 @@ if ($last_scan_data) {
 // 4. Redirect user kembali ke index.php
 header("Location: index.php");
 exit;
-?>

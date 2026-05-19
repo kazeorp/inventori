@@ -1,30 +1,38 @@
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel">
   <div class="modal-dialog modal-lg">
     <form method="POST" action="tambah.php">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Tambah Inventori</h5>
+          <h5 class="modal-title">Tambah Asset</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body row">
-          
+          <input type="hidden" name="service_id_to_update" id="service-id-to-update" value="">
+
           <div class="col-md-6 mb-3">
-            <label>Hostname</label>
+            <label class="fw-bold">Hostname</label>
             <input type="text" name="hostname" id="add-hostname" class="form-control" required>
           </div>
-          <div class="col-md-6 mb-3">
-            <label>Rak</label>
-            <input type="text" name="rak" id="add-rak" class="form-control" readonly>
-          </div>
-          
-          <div class="col-md-6 mb-3">
-            <label>Status</label>
+          <div class="col-md-3 mb-3">
+            <label class="fw-bold">Status</label>
             <select name="status" id="add-status" class="form-control" required>
               <?php include 'status.php'; ?>
             </select>
           </div>
+          <div class="col-md-3 mb-3">
+            <label class="fw-bold">Warna</label>
+            <select name="warna" id="add-warna" class="form-control">
+                 <option value="">- Pilih Warna -</option>
+                 <option value="Merah">Merah</option>
+                 <option value="Kuning">Kuning</option>
+                 <option value="Hijau">Hijau</option>
+                 <option value="Biru">Biru</option>
+                 <option value="Hitam">Hitam</option>
+                 <option value="Putih">Putih</option>
+            </select>
+          </div>
           <div class="col-md-6 mb-3">
-            <label>Domain</label>
+            <label class="fw-bold">Domain</label>
             <select name="domain" id="add-domain" class="form-control" required>
               <option value="APP">APP</option>
               <option value="SMF">SMF</option>
@@ -35,7 +43,7 @@
           </div>
 
           <div class="col-md-6 mb-3">
-            <label>Kategori Perangkat</label>
+            <label class="fw-bold">Kategori Perangkat</label>
             <select name="device_category" id="add-device_category" class="form-control" required>
               <option value="">-- Pilih Kategori --</option>
               <option value="Laptop">Laptop</option>
@@ -45,31 +53,45 @@
             </select>
           </div>
           <div class="col-md-6 mb-3">
-            <label>Tipe (Merk/Model)</label>
+            <label class="fw-bold">Tipe (Merk/Model)</label>
             <select name="type" id="add-type" class="form-control" required>
               <?php include 'tipe-laptop.php'; ?>
             </select>
           </div>
-          
+
           <div class="col-md-4 mb-3">
-            <label>RAM</label>
+            <label class="fw-bold">Serial Number</label>
+            <input type="text" name="serial_number" id="add-serial_number" class="form-control">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="fw-bold">RAM</label>
             <input type="text" name="ram" id="add-ram" class="form-control">
           </div>
           <div class="col-md-4 mb-3">
-            <label>Storage</label>
-            <input type="text" name="storage" id="add-storage" class="form-control">
+            <label class="fw-bold">Storage</label>
+            <div class="input-group">
+                <select class="form-select" id="add-storage-type">
+                    <option value="">-- Tipe --</option>
+                    <option value="HDD">HDD</option>
+                    <option value="SSD">SSD</option>
+                </select>
+                <input type="number" id="add-storage-size" class="form-control" placeholder="Ukuran (GB)">
+                <span class="input-group-text">GB</span>
+            </div>
+            <!-- Hidden input to store the combined value -->
+            <input type="hidden" name="storage" id="add-storage-combined">
           </div>
           <div class="col-md-4 mb-3">
-            <label>Windows</label>
+            <label class="fw-bold">Windows</label>
             <input type="text" name="win" id="add-win" class="form-control">
           </div>
-          
+
           <div class="col-md-6 mb-3">
-            <label>Keterangan</label>
+            <label class="fw-bold">Keterangan</label>
             <textarea name="keterangan" id="add-keterangan" class="form-control"></textarea>
           </div>
           <div class="col-md-6 mb-3">
-            <label>Kelengkapan</label>
+            <label class="fw-bold">Kelengkapan</label>
             <select name="kelengkapan" id="add-kelengkapan" class="form-control">
               <option value="">-- Pilih Kelengkapan --</option>
               <option value="TAS">TAS</option>
@@ -82,28 +104,28 @@
               <option value="TAS, ADAPTOR, CONVERTER LAN & VGA">TAS, ADAPTOR, CONVERTER LAN & VGA</option>
             </select>
           </div>
-          
+
 		  <div class="col-md-6 mb-3">
             <label class="fw-bold">Tanggal Masuk</label>
-            <input type="date" name="tanggal_masuk" id="add-tanggal_masuk" class="form-control" style="border-radius: var(--radius-md);" required>
+            <input type="date" name="tanggal_masuk" id="add-tanggal_masuk" class="form-control" style="border-radius: var(--radius-md);" >
           </div>
           <div class="col-md-6 mb-3">
-            <label>Tanggal Keluar</label>
+            <label class="fw-bold">Tanggal Keluar</label>
             <input type="date" name="tanggal_keluar" id="add-tanggal_keluar" class="form-control">
           </div>
           <div class="col-md-6 mb-3">
-            <label>NIK</label>
+            <label class="fw-bold">NIK</label>
             <input type="text" name="nik" id="add-nik" class="form-control">
           </div>
           <div class="col-md-6 mb-3">
-            <label>Nama</label>
+            <label class="fw-bold">Nama</label>
             <input type="text" name="nama" id="add-nama" class="form-control">
           </div>
           <div class="col-md-6 mb-3">
-            <label>Divisi</label>
+            <label class="fw-bold">Divisi</label>
             <input type="text" name="divisi" id="add-divisi" class="form-control">
           </div>
-          
+
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-success">Simpan</button>

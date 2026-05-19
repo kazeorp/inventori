@@ -1,42 +1,44 @@
-<div class="modal fade" id="reassignModal" tabindex="-1" aria-labelledby="reassignModalLabel" aria-hidden="true">
+<?php
+if (!isset($koneksi)) {
+    require_once "koneksi.php";
+}
+if (!function_exists('e')) {
+    require_once "helpers.php";
+}
+?>
+<div class="modal fade" id="reassignModal" tabindex="-1" aria-labelledby="reassignModalLabel">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="reassignModalLabel">Reassign Servis ID: <span id="reassign-service-id"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Servis saat ini ditugaskan ke: <strong id="current-handler-name"></strong>.</p>
-                <form id="form-reassign">
+        <form id="form-reassign">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="reassignModalLabel">Reassign Servis ID: <span id="reassign-service-id"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Servis saat ini ditugaskan ke: <strong id="current-handler-name"></strong>.</p>
                     <input type="hidden" name="service_id" id="reassign-service-input">
                     <div class="mb-3">
                         <label for="new_admin_id" class="form-label">Pilih Admin Baru:</label>
-                        <select name="new_admin_id" id="new_admin_id" class="form-select" required>
-                            <option value="">-- Pilih Admin --</option>
-                            <?php
-                            // ASUMSI: $koneksi sudah tersedia dari index2.php
-                            // Query untuk mendapatkan daftar Admin/Superadmin
-                            // Menggunakan kolom ID di tabel 'admin' adalah 'id'
-                            $query_users = mysqli_query($koneksi, "SELECT id, username, role FROM admin WHERE role IN ('admin', 'superadmin') ORDER BY username ASC");
+                            <select name="new_admin_id" id="new_admin_id" class="form-select" required>
+                                <option value="">-- Pilih Admin Baru --</option>
+                                <?php
+                                $query_users = mysqli_query($koneksi, "SELECT id, nama_lengkap, role FROM admin WHERE role IN ('admin', 'superadmin') ORDER BY nama_lengkap ASC");
 
-                            if (!$query_users) {
-                                // Tampilkan error jika query gagal (DEBUGGING)
-                                echo "<option value='' disabled>--- ERROR QUERY USERS: " . mysqli_error($koneksi) . " ---</option>";
-                            } else {
-                                // Looping data user
-                                while ($u = mysqli_fetch_assoc($query_users)): ?>
-                                    <option value="<?= e($u['id']) ?>"><?= e($u['username']) ?> (<?= e($u['role']) ?>)</option>
-                                <?php endwhile;
-                            }
-                            ?>
-                        </select>
+if ($query_users):
+    while ($u = mysqli_fetch_assoc($query_users)): ?>
+                                        <option value="<?= e($u['id']) ?>" data-username="<?= e($u['nama_lengkap']) ?>">
+                                            <?= e($u['nama_lengkap']) ?> (<?= e($u['role']) ?>)
+                                        </option>
+                                    <?php endwhile;
+endif; ?>
+                            </select>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-danger">Reassign</button>
-                    </div>
-                </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Reassign</button>
+                </div>
             </div>
-        </div>
+        </form>
     </div>
 </div>

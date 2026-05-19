@@ -1,4 +1,5 @@
 <?php
+
 // WAJIB: Memulai sesi
 session_start();
 include 'koneksi.php';
@@ -9,15 +10,15 @@ $password = $_POST['password'];
 
 // Cek 1: Validasi input kosong
 if (empty($username) || empty($password)) {
-    // Gunakan header redirect agar konsisten
-    header("Location: index.php?error=empty");
+    // Redirect with a clear message using the toast system parameters
+    header("Location: index.php?res=danger&msg=" . urlencode("Username dan Password wajib diisi!"));
     exit;
 }
 
 // Cek 2: Cari user berdasarkan username
 $query = mysqli_query($koneksi, "SELECT * FROM admin WHERE username='$username'");
 if (!$query || mysqli_num_rows($query) === 0) {
-    header("Location: index.php?error=user");
+    header("Location: index.php?res=danger&msg=" . urlencode("Akun tidak ditemukan. Silakan hubungi Superadmin."));
     exit;
 }
 
@@ -29,15 +30,13 @@ if (password_verify($password, $user['password'])) {
     $_SESSION['admin_id']  = $user['id'];
     $_SESSION['username'] = $user['username'];
     $_SESSION['role']     = $user['role']; // Role sudah ter-set dengan benar
-	$_SESSION['nama_lengkap'] = $user['nama_lengkap'];
-    
-	// Redirect ke Dashboard (index.php)
+    $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
+
+    // Redirect ke Dashboard (index.php)
     header("Location: index.php");
     exit;
 } else {
     // Password salah
-    header("Location: index.php?error=pass");
+    header("Location: index.php?res=danger&msg=" . urlencode("Password yang Anda masukkan salah."));
     exit;
 }
-
-?>

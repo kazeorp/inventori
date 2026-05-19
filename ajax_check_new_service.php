@@ -1,8 +1,9 @@
 <?php
+
 // ajax_check_new_service.php (di root folder)
 
-include 'session.php'; 
-include 'koneksi.php'; 
+include 'session.php';
+include 'koneksi.php';
 header('Content-Type: application/json');
 
 // Cek hanya jika Admin/Superadmin login
@@ -19,7 +20,7 @@ $last_checked_id = $_SESSION['last_service_id'] ?? 0;
 
 // Ambil jumlah entri yang ID-nya lebih besar dari ID terakhir yang dilihat admin
 $sql = "SELECT COUNT(id_service) as total_new, MAX(id_service) as max_id
-        FROM service_list 
+        FROM service_list
         WHERE id_service > ?";
 
 if ($stmt = $koneksi->prepare($sql)) {
@@ -28,13 +29,13 @@ if ($stmt = $koneksi->prepare($sql)) {
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
     $stmt->close();
-    
-    $total_new = (int)$data['total_new'];
-    $max_id = (int)$data['max_id'];
+
+    $total_new = (int) $data['total_new'];
+    $max_id = (int) $data['max_id'];
 
     $response = [
         'new_entries' => $total_new,
-        'max_id' => $max_id
+        'max_id' => $max_id,
     ];
 
     // Jika ada entri baru, update session ID yang dilihat admin
@@ -49,5 +50,4 @@ if ($stmt = $koneksi->prepare($sql)) {
 }
 
 // Tidak perlu menutup koneksi jika file PHP lain menggunakannya
-// $koneksi->close(); 
-?>
+// $koneksi->close();

@@ -1,160 +1,611 @@
 /* ======================================================= */
-/* GLOBAL STYLING UNTUK APLIKASI INVENTORI (MODERN & KORPORAT) */
+/* GLOBAL STYLING INVENTORI - VERSI KOMPAK & RAPI */
 /* ======================================================= */
 
 :root {
-    /* Warna Brand berdasarkan Logo Sinarmas APP */
-    --app-red: #E51A22; /* Merah Utama untuk Aksen/Brand */
-    --app-dark: #212529; /* Hitam/Dark Gray untuk Teks dan Sidebar */
-    --app-blue: #004899; /* Biru Korporat untuk Link Sekunder/Primary Action */
-    --bg-light: #f8f9fa;
-    --text-muted: #6c757d;
-
-    /* Styling Modern */
-    --radius-md: 8px;
-    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+	--app-red: #dc3545;
+	--app-dark: #1e293b; /* slate-800 */
+	--app-blue: #0f172a; /* deeper professional slate */
+	--app-primary: #3b82f6; /* blue-500 */
+	--bg-light: #f8f9fa;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--header-height: 60px;
+	--shadow-soft:
+		0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--shadow-md:
+		0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-/* --- Global Styles --- */
+.category-card { transition: all 0.3s ease; cursor: pointer; border: 1px solid #e2e8f0; }
+.category-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; border-color: var(--app-primary); }
+.category-icon { font-size: 1.25rem; margin-bottom: 0.25rem; }
+.modal-body-scroll { max-height: 70vh; overflow-y: auto; }
+.bg-category-all { background: linear-gradient(45deg, #1e293b, #334155); color: white; }
+.cursor-pointer { cursor: pointer; }
+
 body {
-    font-family: 'Inter', 'Segoe UI', sans-serif; /* Menggunakan font modern */
-    background-color: var(--bg-light);
-    color: var(--app-dark);
-    margin: 0;
-    padding-top: 0; /* Hilangkan padding body */
+	font-family:
+		"Inter",
+		system-ui,
+		-apple-system,
+		sans-serif;
+	background-color: var(--bg-light);
+	font-size: 0.875rem;
+	margin: 0;
+	color: #334155;
 }
 
-/* --- Header Styling --- */
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: #cbd5e1;
+	border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: #94a3b8;
+}
+
+/* Card Polishing */
+.card {
+	border: 1px solid #e2e8f0;
+	box-shadow: var(--shadow-soft);
+	border-radius: var(--radius-md);
+	overflow: hidden;
+}
+
+.card-header {
+	background-color: #fff;
+	border-bottom: 1px solid #e2e8f0;
+	padding: 1rem 1.25rem;
+	font-weight: 600;
+	color: var(--app-dark);
+}
+
+/* Professional Button Standard */
+.btn {
+	font-weight: 500;
+	letter-spacing: 0.3px;
+	padding: 0.4rem 1rem;
+	transition: all 0.2s ease-in-out;
+	border-radius: var(--radius-md);
+}
+
+.btn-sm {
+	padding: 0.25rem 0.75rem;
+	font-size: 0.75rem;
+}
+
+.shadow-sm {
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+/* --- Header Styling (Full Width) --- */
 .logo-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    /* Gunakan z-index tinggi agar tidak tertutup */
-    z-index: 1001; 
-    /* Style sudah ditangani oleh Bootstrap di header.php */
-    /* Tambahkan tinggi eksplisit agar sidebar dan main-content bisa mengacu */
-    height: 120px; 
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Efek shadow modern */
-    background-color: #ffffff;
-    display: flex; /* Tambahkan flex untuk memastikan konten terpusat vertikal */
-    align-items: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: var(--header-height);
+	z-index: 1050;
+	box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+	background-color: #ffffff;
+	display: flex;
+	align-items: center;
+	padding: 0 20px;
 }
 
 .logo-img {
-    max-height: 120px; 
-    display: block;
+	height: 35px;
+	width: auto;
 }
 
-/* --- Sidebar Styling --- */
 .sidebar {
-    position: fixed;
-    top: 120px; /* DIMULAI TEPAT DI BAWAH HEADER 120PX */
-    left: 0;
-    width: 220px;
-    height: calc(100vh - 120px); /* Kurangi tinggi header 120px */
-    background-color: var(--app-dark); /* Sidebar gelap */
-    color: white;
-    padding: 20px;
-    overflow-y: auto;
-    z-index: 1000;
+	position: fixed;
+	top: var(--header-height);
+	left: 0;
+	width: 220px;
+	height: calc(100vh - var(--header-height));
+	background-color: #0f172a;
+	color: white;
+	padding: 20px 10px;
+	overflow-y: auto;
+	z-index: 1000;
+	transition: left 0.3s ease-in-out;
 }
 
 .sidebar a {
-    color: white;
-    text-decoration: none;
-    display: block;
-    padding: 8px 12px; /* Padding lebih baik */
-    margin-bottom: 8px;
-    font-weight: 500;
-    border-radius: var(--radius-md); /* Sudut membulat */
-    transition: background-color 0.2s, color 0.2s;
+	color: #94a3b8;
+	text-decoration: none;
+	display: block;
+	padding: 8px 12px;
+	margin-bottom: 5px;
+	font-size: 0.8rem;
+	font-weight: 500;
+	border-radius: var(--radius-md);
+	transition: all 0.2s;
 }
 
-.sidebar a:hover,
+.sidebar a:hover {
+	background-color: rgba(255, 255, 255, 0.05);
+	color: #fff;
+}
 .sidebar a.active {
-    text-decoration: none;
-    background-color: var(--app-red); /* Aksen Merah Korporat (tetap untuk sidebar aktif) */
-    color: #ffffff;
-    font-weight: 600;
+	background-color: var(--app-blue);
+	color: #ffffff;
 }
 
-/* --- Main Content Styling --- */
 .main-content {
-    margin-left: 240px; /* Ruang untuk sidebar + sedikit margin */
-    margin-top: 120px; /* DIMULAI DARI 120PX DI BAWAH HEADER FIXED */
-    padding: 30px;
+	margin-left: 220px;
+	margin-top: var(--header-height);
+	padding: 30px;
+	min-height: calc(100vh - var(--header-height));
+	transition: margin-left 0.3s ease-in-out;
 }
 
-/* --- Utility Class & Komponen Modern --- */
-.container-full {
-    width: 100%;
-    padding-right: 15px;
-    padding-left: 15px;
-    margin-right: auto;
-    margin-left: auto;
+/* --- Responsive Enhancements --- */
+@media (max-width: 767px) {
+	.sidebar {
+		left: -220px; /* Hide sidebar by default */
+		z-index: 1150;
+	}
+	.sidebar.active {
+		left: 0; /* Slide in when toggled */
+	}
+	.main-content {
+		margin-left: 0 !important;
+		padding: 20px 15px;
+		width: 100%;
+	}
 }
 
-/* ======================================================= */
-/* STYLING TOMBOL BOOTSTRAP */
-/* ======================================================= */
-
-/* Tombol Primary (Aksi Utama), Success (Simpan/Tambah), Info, Secondary, Warning -> Biru Korporat (Blue Brand) */
-.btn-primary, .btn-success, .btn-info, .btn-secondary, .btn-warning {
-    background-color: var(--app-blue);
-    border-color: var(--app-blue);
-    color: white; /* Pastikan teks putih untuk btn-warning */
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    transition: background-color 0.2s, border-color 0.2s;
+.table {
+	font-size: 0.8rem;
+	border-radius: var(--radius-md);
+	overflow: hidden;
+	border: 1px solid #e2e8f0;
 }
 
-.btn-primary:hover, .btn-success:hover, .btn-info:hover, .btn-secondary:hover, .btn-warning:hover {
-    background-color: #00377A; /* Biru sedikit lebih gelap */
-    border-color: #00377A;
-}
-
-
-/* Tombol Danger (Aksi Hapus/Bahaya) -> Merah Standar Bootstrap */
-.btn-danger {
-    background-color: #dc3545; /* Merah Standar Bootstrap untuk bahaya (Hapus) */
-    border-color: #dc3545;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    transition: background-color 0.2s, border-color 0.2s;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
-    border-color: #c82333;
-}
-
-
-/* Styling Card & Kontainer */
-.card {
-    border: none;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.3s;
-}
-
-.card:hover {
-    box-shadow: var(--shadow-md);
-}
-
-/* Styling Tabel */
 .table thead th {
-    background-color: var(--app-dark);
-    color: #ffffff;
-    font-weight: 600;
-    border-bottom: 2px solid var(--app-red);
+	background-color: #f1f5f9;
+	color: #475569;
+	padding: 10px 15px;
+	text-align: left;
+	border-bottom: 1px solid #e2e8f0;
+	font-weight: 600;
 }
 
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(0, 0, 0, 0.03);
+.table td {
+	padding: 10px 15px;
+	text-align: left;
+	border-bottom: 1px solid #f1f5f9;
 }
 
-.table tbody tr:hover {
-    background-color: rgba(229, 26, 34, 0.05); /* Highlight baris dengan warna merah transparan */
+/* Utilitas untuk kolom yang ingin tetap di tengah (misal: No, Aksi) */
+.text-center {
+	text-align: center !important;
+}
+
+/* Menjaga konsistensi lebar kolom jika diperlukan */
+.table-fixed {
+	table-layout: fixed;
+}
+
+/* Hover Effect agar lebih interaktif */
+.table-hover tbody tr:hover {
+	background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* --- Penyesuaian Modal Stacking --- */
+.modal-backdrop {
+	z-index: 1150 !important;
+}
+.modal {
+	z-index: 1200 !important;
+}
+
+/* Tambahan: Jika Anda menggunakan Offcanvas untuk notifikasi */
+.offcanvas {
+	z-index: 1300 !important;
+}
+.offcanvas-backdrop {
+	z-index: 1250 !important;
+}
+
+/* Tambahan untuk menjaga spesifikasi tetap rapi */
+.spec-container {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.2;
+}
+
+.badge {
+	font-weight: 600;
+	padding: 0.35em 0.65em;
+	border-radius: 4px;
+}
+
+.badge.rounded-pill {
+	padding-right: 0.85em;
+	padding-left: 0.85em;
+	border-radius: 50rem;
+}
+
+/* Spesifik untuk tabel di dalam Modal Pencarian agar tidak miring */
+#searchAssetModal .table {
+	table-layout: fixed; /* Mengunci lebar kolom */
+	width: 100% !important;
+}
+
+#searchAssetModal .table thead th {
+	text-align: left !important; /* Paksa header ke kiri mengikuti isi */
+	padding-left: 15px !important;
+}
+
+#searchAssetModal .table td {
+	text-align: left !important; /* Pastikan isi tetap di kiri */
+	padding-left: 15px !important;
+	vertical-align: middle;
+}
+
+/* Kolom terakhir (Aksi) tetap di tengah agar rapi */
+#searchAssetModal .table th:last-child,
+#searchAssetModal .table td:last-child {
+	text-align: center !important;
+	padding-left: 0 !important;
+}
+
+/* Update CSS Timeline agar mendukung Icon Bootstrap */
+.timeline {
+	border-left: 3px solid #dee2e6;
+	padding-left: 30px;
+	margin-left: 10px;
+	position: relative;
+}
+
+.timeline-item {
+	position: relative;
+}
+
+.timeline-item::before {
+	content: ""; /* Lingkaran titik tetap ada */
+	position: absolute;
+	left: -39px;
+	top: 5px;
+	width: 15px;
+	height: 15px;
+	background: #fff;
+	border: 3px solid #007bff;
+	border-radius: 50%;
+	z-index: 1;
+}
+
+/* Warna lingkaran berdasarkan aksi (opsional jika ingin lebih berwarna) */
+.timeline-item:has(.bg-success)::before {
+	border-color: #198754;
+}
+.timeline-item:has(.bg-danger)::before {
+	border-color: #dc3545;
+}
+.timeline-item:has(.bg-warning)::before {
+	border-color: #ffc107;
+}
+
+.timeline-date {
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: #6c757d;
+	margin-bottom: 8px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+#btnNotifLonceng {
+	z-index: 1101 !important; /* Harus lebih tinggi dari .logo-header (1100) */
+	position: relative; /* Wajib agar z-index berfungsi */
+	cursor: pointer !important;
+	pointer-events: auto !important; /* Memastikan event klik tertangkap */
+}
+
+#badge-notif {
+	pointer-events: none; /* Klik akan 'tembus' melewati angka badge langsung ke tombol */
+	z-index: 1102;
+}
+
+/* Memastikan kontainer tombol tidak tertutup elemen lain */
+.d-flex.justify-content-end.mb-3 {
+	position: relative;
+	z-index: 1101;
+}
+
+/* Container Dashboard Card */
+.dash-card-link {
+	text-decoration: none !important;
+	display: block;
+	transition: all 0.2s ease;
+}
+
+.dash-card {
+	border: none !important;
+	/* Kembali ke border-left agar hemat ruang vertikal */
+	border-left: 3px solid #dee2e6 !important;
+	border-radius: 4px !important;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	background-color: #fff;
+	margin-bottom: 0; /* Menghilangkan gap bawah berlebih */
+}
+
+.dash-card .card-body {
+	padding: 8px 12px !important; /* Padding sangat kecil agar card tipis */
+}
+
+.dash-card-label {
+	font-size: 0.6rem; /* Ukuran teks label diperkecil */
+	font-weight: 700;
+	color: #868e96; /* Abu-abu profesional */
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+	margin-bottom: 2px;
+}
+
+.dash-card-value {
+	font-size: 1.1rem; /* Angka tidak terlalu besar */
+	font-weight: 700;
+	color: #343a40;
+	line-height: 1;
+}
+
+.dash-card-unit {
+	font-size: 0.6rem;
+	color: #adb5bd;
+	margin-left: 2px;
+	font-weight: 400;
+}
+
+/* Skema Warna Monokrom (Profesional & Netral) */
+.stat-total-asset {
+	border-left-color: #212529 !important;
+}
+.stat-ready-to-assign,
+.stat-spare {
+	border-left-color: #495057 !important;
+}
+.stat-assign,
+.stat-mt,
+.stat-loan,
+.stat-grace-period {
+	border-left-color: #adb5bd !important;
+}
+.stat-pending-service,
+.stat-scrap {
+	border-left-color: #dee2e6 !important;
+}
+.stat-peripheral {
+	border-left-color: var(--app-primary) !important;
+}
+
+/* Hover: Hanya sedikit menggelap agar tetap elegan */
+.dash-card-link:hover .dash-card {
+	background-color: #f1f3f5;
+	border-left-color: #0d6efd !important; /* Aksen biru hanya saat hover */
+}
+
+/* Styling Nav Pills agar lebih elegan */
+#serviceTab {
+	border: 1px solid #dee2e6;
+}
+
+#serviceTab .nav-link {
+	color: #6c757d;
+	font-size: 0.85rem;
+	padding: 8px 20px;
+	border-radius: 5px;
+	transition: all 0.2s;
+}
+
+#serviceTab .nav-link.active {
+	background-color: #212529; /* Warna gelap profesional */
+	color: #fff;
+}
+
+#serviceTab .nav-link:not(.active):hover {
+	background-color: #e9ecef;
+	color: #343a40;
+}
+
+/* Animasi halus saat pindah tab */
+.tab-pane {
+	transition: opacity 0.15s linear;
+}
+
+/* Khusus Halaman Peripheral untuk mengatasi tombol susah diklik */
+
+.peripheral-nav .page-link {
+	position: relative;
+	z-index: 5;
+	cursor: pointer !important;
+}
+
+.peripheral-action-group {
+	position: relative !important;
+	z-index: 1020 !important; /* Memastikan di atas elemen konten */
+	display: flex !important;
+}
+
+.peripheral-action-group .btn {
+	pointer-events: auto !important;
+	white-space: nowrap;
+}
+
+/* Memastikan Accordion di Hal 1 tidak menutupi tombol saat scroll */
+#accordionStok {
+	position: relative;
+	z-index: 1;
+}
+
+/* Timeline Style agar rapi di Hal 2 */
+.peripheral-timeline {
+	border-left: 3px solid #dee2e6;
+	padding: 0 0 20px 20px;
+	margin-left: 20px;
+}
+
+/* Toast di kanan bawah */
+.toast-container.bottom-0 {
+	bottom: 20px !important;
+	right: 20px !important;
+	top: auto !important; /* Memastikan koordinat top tidak aktif */
+}
+
+/* Memastikan area kosong tetap bisa diklik */
+.toast-container {
+	pointer-events: none !important;
+}
+
+.toast {
+	pointer-events: auto !important;
+	border-radius: 8px;
+	min-width: 250px;
+}
+
+/* Memastikan tombol notifikasi di atas tetap prioritas klik */
+#btnNotifLonceng {
+	z-index: 1060;
+}
+
+/* Global Font Size Adjustment */
+body {
+	font-size: 0.875rem; /* Sekitar 14px */
+	background-color: #f8f9fa;
+}
+
+/* Table Specific Styling for Compactness */
+.table thead th {
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	white-space: nowrap; /* Header tidak turun baris */
+	vertical-align: middle;
+	padding: 0.6rem 0.5rem;
+}
+
+.table td {
+	font-size: 0.825rem; /* Font isi tabel lebih kecil */
+	vertical-align: middle;
+	padding: 0.4rem 0.5rem; /* Padding diperkecil agar baris lebih pendek */
+}
+
+/* Filter & Buttons */
+.filter-buttons .btn {
+	margin-right: 3px;
+	margin-bottom: 3px;
+	font-size: 0.75rem; /* Tombol filter lebih kecil */
+	padding: 0.25rem 0.5rem;
+}
+
+.filter-container {
+	padding: 1rem !important;
+}
+
+.main-content h2 {
+	font-size: 1.5rem; /* Judul tidak terlalu besar */
+}
+
+/* Utility */
+.gap-2 {
+	gap: 0.5rem !important;
+}
+
+.color-indicator {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	display: inline-block;
+	margin-right: 8px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	flex-shrink: 0; /* Agar lingkaran tidak gepeng jika teks panjang */
+}
+
+/* Mapping Warna */
+.bg-merah {
+	background-color: #d32f2f;
+}
+.bg-kuning {
+	background-color: #fbc02d;
+}
+.bg-hijau {
+	background-color: #1b5e20;
+} /* Hijau Tua */
+.bg-biru {
+	background-color: #0d47a1;
+} /* Biru Tua */
+.bg-hitam {
+	background-color: #212121;
+}
+.bg-putih {
+	background-color: #ffffff;
+}
+
+/* --- Merged from legacy style.css --- */
+.user-profile-sidebar {
+	padding-bottom: 15px;
+	margin-bottom: 15px;
+	border-bottom: 1px solid #343a40;
+}
+
+.user-profile-sidebar .fw-bold {
+	font-size: 0.85rem;
+}
+
+.border-bottom-light {
+	border-bottom: 1px solid #eee;
+}
+
+.sn-tag-container {
+	cursor: text;
+	min-height: 45px;
+	align-content: center;
+	transition: border-color 0.2s;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+	padding: 5px;
+}
+
+.sn-tag-container:focus-within {
+	border-color: #0d6efd !important;
+	box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.sn-tag-container .badge {
+	font-size: 0.85rem;
+	font-weight: 500;
+	letter-spacing: 0.5px;
+}
+
+.sn-tag-container .sn-input {
+	flex-grow: 1;
+	border: none;
+	outline: none;
+	background: transparent;
+}
+
+/* Modern UI Utilities */
+.hover-lift {
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+}
+.border-transparent {
+	border-color: transparent !important;
 }

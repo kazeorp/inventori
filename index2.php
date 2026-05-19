@@ -1,135 +1,47 @@
 <?php
-// =======================================================
-// 1. KONEKSI, SESI, DAN FUNGSI HELPER
-// =======================================================
+include 'session.php';
+include 'koneksi.php';
+include 'helpers.php';
 
-require 'session.php';
-require 'koneksi.php';
-require 'helpers.php';
-
-
-// 2. PROTEKSI ROLE
-$user_role_login = $_SESSION['role'] ?? 'normal';
-if ($user_role_login !== 'admin' && $user_role_login !== 'superadmin') {
-    header("Location: index.php"); // Redirect ke dashboard non-admin
+if (!in_array($_SESSION['role'] ?? '', ['admin', 'superadmin'])) {
+    header("Location: index.php");
     exit;
 }
+$admin_id = $_SESSION['admin_id'] ?? 0;
 
-// Ambil ID admin yang sedang login
-$admin_id_login = $_SESSION['admin_id'] ?? 0;
+// 1. Summary Counts
+$counts = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(id) AS total,
+    SUM(status='Spare') AS spare, SUM(status='Scrap') AS scrap, SUM(status='Pending Service') AS pending,
+    SUM(status='Loan') AS loan, SUM(status='Grace Period') AS grace, SUM(status='Ready To Assign') AS ready,
+    SUM(status='Assign') AS assign, SUM(status='MT (Management Trainee)') AS mt FROM inventori"));
 
-// =======================================================
-// 3. LOGIKA QUERY PHP (PAGINATION, SUMMARY, SERVICE)
-// =======================================================
-
-// --- LOGIKA PAGINATION (Untuk Inventori Utama) ---
-$data_per_page = 10;
-$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-if ($current_page < 1) $current_page = 1;
-
-$start_from = ($current_page - 1) * $data_per_page;
-
-$total_query = mysqli_query($koneksi, "SELECT COUNT(id) AS total FROM inventori");
-$total_rows = mysqli_fetch_assoc($total_query)['total'] ?? 0;
-$total_pages = ceil($total_rows / $data_per_page);
-
-if ($current_page > $total_pages && $total_pages > 0) {
-    $current_page = $total_pages;
-    $start_from = ($current_page - 1) * $data_per_page;
-}
-
-$inventori_query = mysqli_query($koneksi,
-    "SELECT * FROM inventori ORDER BY hostname ASC LIMIT $start_from, $data_per_page"
-);
-
-// --- LOGIKA SUMMARY CARDS ---
-$stok_total = $stok_spare = $stok_loan = $stok_pending = 0;
-
-if (isset($koneksi)) {
-    $summary_query = mysqli_query($koneksi, "
-        SELECT
-            SUM(CASE WHEN status='Spare' THEN 1 ELSE 0 END) AS stok_spare,
-            SUM(CASE WHEN status='Loan' THEN 1 ELSE 0 END) AS stok_loan,
-            SUM(CASE WHEN status='Pending Service' THEN 1 ELSE 0 END) AS stok_pending,
-            COUNT(id) AS stok_total
-        FROM inventori
-    ");
-
-    if ($summary_query && mysqli_num_rows($summary_query) > 0) {
-        $summary_data = mysqli_fetch_assoc($summary_query);
-        $stok_total     = (int)$summary_data['stok_total'];
-        $stok_spare     = (int)$summary_data['stok_spare'];
-        $stok_loan      = (int)$summary_data['stok_loan'];
-        $stok_pending   = (int)$summary_data['stok_pending'];
-    }
-}
-
-$data = [
-    "📦 Total Asset"                 => ["jumlah" => $stok_total, "status" => "all"],
-    "🧊 Spare"                       => ["jumlah" => $stok_spare, "status" => "Spare"],
-    "📥 Loan"                        => ["jumlah" => $stok_loan, "status" => "Loan"],
-    "🛠️ Pending Service"             => ["jumlah" => $stok_pending, "status" => "Pending Service"],
+$dash_items = [
+    "Total Asset" => ["v" => $counts['total'], "s" => "all"],
+    "Ready To Assign" => ["v" => $counts['ready'], "s" => "Ready To Assign"],
+    "Spare" => ["v" => $counts['spare'], "s" => "Spare"],
+    "Assign" => ["v" => $counts['assign'], "s" => "Assign"],
+    "Loan" => ["v" => $counts['loan'], "s" => "Loan"],
+    "Pending Service" => ["v" => $counts['pending'], "s" => "Pending Service"],
+    "Grace Period" => ["v" => $counts['grace'], "s" => "Grace Period"],
+    "MT" => ["v" => $counts['mt'], "s" => "MT (Management Trainee)"],
+    "Scrap" => ["v" => $counts['scrap'], "s" => "Scrap"],
 ];
 
-// --- LOGIKA QUERY SERVICE (SESUAI VISIBILITAS) ---
-$is_superadmin = ($user_role_login === 'superadmin');
+// 3. Peripheral Summary
+$q_peri_counts = mysqli_query($koneksi, "SELECT t.tipe_barang, COUNT(p.id_barang) as total 
+                                         FROM peripheral_types t
+                                         LEFT JOIN peripheral_items p ON t.kode_barang = p.kode_barang AND p.status = 'Stock'
+                                         GROUP BY t.tipe_barang");
+$peri_totals = [];
+while($row = mysqli_fetch_assoc($q_peri_counts)) { $peri_totals[$row['tipe_barang']] = $row['total']; }
 
-if ($is_superadmin) {
-    // Superadmin melihat SEMUA service yang belum selesai
-    $visibility_condition = " 1 ";
-} else {
-    // Admin biasa hanya melihat:
-    // 1. Yang belum diklaim (NULL/0)
-    // 2. Yang diklaim oleh dirinya sendiri
-    $visibility_condition = "
-        (sl.current_admin_id IS NULL OR sl.current_admin_id = 0)
-        OR
-        (sl.current_admin_id = $admin_id_login)
-    ";
-}
+// 2. Service Lists
+$sql_base = "SELECT sl.*, i.id AS id_inv, i.nama AS user_inv, i.divisi AS div_inv, u.nama_lengkap AS pic FROM service_list sl
+             LEFT JOIN inventori i ON sl.hostname = i.hostname LEFT JOIN admin u ON sl.current_admin_id = u.id ";
 
-$sql_service = "
-    SELECT
-        sl.*,
-        u1.nama_lengkap AS current_admin_name,
-        i.nama AS nama_user,
-        i.divisi AS divisi
-    FROM service_list sl
-
-    LEFT JOIN admin u1 ON sl.current_admin_id = u1.id
-    LEFT JOIN inventori i ON sl.hostname = i.hostname
-
-    WHERE
-        ($visibility_condition)
-    AND
-        sl.finish_status IS NULL
-    ORDER BY sl.tanggal_masuk DESC
-    LIMIT 10
-";
-
-$result_service = mysqli_query($koneksi, $sql_service);
-
-if (!$result_service) {
-    // Fatal error jika query gagal
-    die("❌ GAGAL MENJALANKAN QUERY SERVICE: " . mysqli_error($koneksi));
-}
-
-// --- LOGIKA LAPORAN BULANAN SERVIS ---
-$current_month_name = date('F Y');
-$sql_laporan = "SELECT
-                                admin_finish_name,
-                                COUNT(id_service) AS total_servis_selesai
-                            FROM service_list
-                            WHERE
-                                finish_status IS NOT NULL AND
-                                YEAR(finish_timestamp) = YEAR(CURDATE()) AND
-                                MONTH(finish_timestamp) = MONTH(CURDATE())
-                            GROUP BY
-                                admin_finish_name
-                            ORDER BY
-                                total_servis_selesai DESC";
-
-$result_laporan = mysqli_query($koneksi, $sql_laporan);
+$q_antrean = mysqli_query($koneksi, $sql_base . "WHERE (sl.current_admin_id IS NULL OR sl.current_admin_id = 0) AND sl.finish_status IS NULL ORDER BY sl.tanggal_masuk ASC");
+$prog_cond = ($_SESSION['role'] === 'superadmin') ? "sl.current_admin_id IS NOT NULL" : "sl.current_admin_id = $admin_id";
+$q_progress = mysqli_query($koneksi, $sql_base . "WHERE $prog_cond AND sl.claim_status='On Service' AND sl.finish_status IS NULL ORDER BY sl.tanggal_masuk ASC");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -141,224 +53,95 @@ $result_laporan = mysqli_query($koneksi, $sql_laporan);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
 <body>
-
-    <?php include 'header.php'; ?>
-    <?php include 'sidebar.php'; ?>
-
+    <?php include 'header.php';
+include 'sidebar.php'; ?>
     <main class="main-content">
-        <?php include 'notifikasi.php'; ?>
-
         <h2 class="mb-4">Dashboard Administrator</h2>
-
-        <div class="row">
-            <?php foreach ($data as $label => $info):
-                $link = ($info['status'] === "all") ? "tampil.php" : "tampil.php?status=" . urlencode($info['status']);
-            ?>
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <a href="<?= e($link) ?>" style="text-decoration: none;">
-                        <div class="card border-start border-4 border-primary shadow-sm h-100" style="border-radius: var(--radius-md);">
-                            <div class="card-body text-dark text-center">
-                                <h6 class="card-title fw-bold" style="color: var(--app-blue);"><?= $label ?></h6>
-                                <p class="card-text fs-4 fw-bold"><?= $info['jumlah'] ?> Unit</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+        <div class="row g-2">
+            <?php foreach ($dash_items as $lbl => $inf): $slug = strtolower(preg_replace('/[^a-z0-9]/', '-', $lbl)); ?>
+            <div class="col-xl-2 col-lg-3 col-md-4 col-6">
+                <a href="tampil.php?status=<?= urlencode($inf['s']) ?>" class="dash-card-link">
+                    <div class="card dash-card stat-<?= $slug ?>"><div class="card-body">
+                        <div class="dash-card-label"><?= $lbl ?></div>
+                        <div class="dash-card-value"><?= number_format($inf['v'] ?? 0) ?><span class="dash-card-unit">Unit</span></div>
+                    </div></div>
+                </a>
+            </div>
             <?php endforeach; ?>
         </div>
 
-        <hr>
-
-
-        <h4 class="mt-5 mb-3 text-danger">🚨 Service Aset Masuk Terbaru</h4>
-
-        <div id="service-notification-area" class="mb-4"></div>
-
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Hostname</th>
-                        <th>Nama User (Pelapor)</th>
-                        <th>Divisi</th>
-                        <th>Waktu Masuk</th>
-                        <th>Catatan User</th>
-                        <th>Status Klaim</th>
-                        <th style="width: 150px;">Aksi</th>
-                    </tr>
-                </thead>
-					<tbody id="service-list-body">
-						<?php if ($result_service && mysqli_num_rows($result_service) > 0): ?>
-							<?php while($row = mysqli_fetch_assoc($result_service)):
-
-								$is_claimed = !empty($row['current_admin_id']) && $row['current_admin_id'] != 0;
-								$is_my_claim = $is_claimed && ((int)$row['current_admin_id'] === (int)($admin_id_login ?? 0));
-								$is_superadmin_user = $user_role_login === 'superadmin';
-								$can_reassign = $is_claimed && $is_superadmin_user;
-
-								$claim_badge_text = $is_claimed ? 'DIKLAIM' : 'PENDING';
-								$claim_badge_class = $is_claimed ? 'bg-success' : 'bg-warning text-dark';
-
-								$admin_klaim_info = $is_claimed
-													? ('<small class="text-muted">Oleh: ' . e($row['current_admin_name'] ?? 'N/A') . '</small>')
-													: '---';
-
-							?>
-							<tr id="service-row-<?= e($row['id_service']) ?>">
-
-								<td><?= e($row['id_service']) ?></td>
-
-								<td>
-									<strong><?= e($row['hostname']) ?></strong><br>
-									<?= $admin_klaim_info ?>
-								</td>
-
-								<td><?= e($row['nama_user'] ?? 'N/A') ?></td>
-
-								<td><?= e($row['divisi'] ?? 'N/A') ?></td>
-
-								<td><?= date('d/m/Y H:i', strtotime($row['tanggal_masuk'])) ?></td>
-
-								<td><?= e($row['catatan_user'] ?? '-') ?></td>
-
-								<td>
-									<span class="badge <?= $claim_badge_class ?>">
-										<?= $claim_badge_text ?>
-									</span>
-								</td>
-
-								<td>
-									<div class="d-flex flex-column gap-1 mx-auto" style="max-width: 140px;">
-
-										<?php if (!$is_claimed): ?>
-											<button type="button" class="btn btn-sm btn-success btn-claim"
-												data-id="<?= e($row['id_service']) ?>"
-												data-hostname="<?= e($row['hostname']) ?>"
-												title="Claim & Mulai Proses Service">
-												<i class="bi bi-person-fill-up"></i> Claim
-											</button>
-										<?php endif; ?>
-
-										<?php if ($is_claimed): ?>
-
-											<?php if ($is_superadmin_user): ?>
-												<button type="button" class="btn btn-sm btn-danger btn-reassign"
-													data-bs-toggle="modal" data-bs-target="#reassignModal"
-													data-id="<?= e($row['id_service']) ?>"
-													data-current-admin-name="<?= e($row['current_admin_name'] ?? 'N/A') ?>"
-													title="Reassign ke Admin Lain">
-													<i class="bi bi-person-replace"></i> Reassign
-												</button>
-											<?php endif; ?>
-
-											<?php if ($is_my_claim): ?>
-
-												<a href="detail-aset.php?hostname=<?= e($row['hostname']) ?>&action=service_claim"
-													class="btn btn-sm btn-info text-white"
-													title="Lanjutkan Input Aktivitas Service">
-													<i class="bi bi-pencil-square"></i> Proses
-												</a>
-
-												<button type="button" class="btn btn-sm btn-dark btn-selesai"
-													data-id="<?= e($row['id_service']) ?>"
-													data-hostname="<?= e($row['hostname']) ?>"
-													title="Tandai Service Ini Selesai">
-													<i class="bi bi-check-circle"></i> Selesaikan
-												</button>
-											<?php endif; ?>
-
-										<?php endif; ?>
-									</div>
-								</td>
-							</tr>
-							<?php endwhile; ?>
-						<?php else: ?>
-							<tr>
-								<td colspan="8" class="text-center">
-									<?php if ($user_role_login === 'admin'): ?>
-										Tidak ada aset service yang diklaim/pending untuk Anda.
-									<?php else: ?>
-										Tidak ada aset service yang masuk saat ini.
-									<?php endif; ?>
-								</td>
-							</tr>
-						<?php endif; ?>
-					</tbody>
-            </table>
+        <h5 class="mt-4 mb-3 text-muted small fw-bold text-uppercase" style="letter-spacing: 1px;">Peripheral Stock Overview</h5>
+        <div class="row g-1">
+            <?php foreach (getPeripheralCategories() as $cat): 
+                $total = $peri_totals[$cat] ?? 0; ?>
+            <div class="col-xl-2 col-lg-2 col-md-4 col-6">
+                <a href="peripherals.php?halaman=1&cat=<?= urlencode($cat) ?>" class="dash-card-link">
+                    <div class="card dash-card stat-peripheral"><div class="card-body">
+                        <div class="dash-card-label" style="font-size: 0.5rem;"><?= e($cat) ?></div>
+                        <div class="dash-card-value" style="font-size: 0.9rem;"><?= number_format($total) ?><span class="dash-card-unit">Unit</span></div>
+                    </div></div>
+                </a>
+            </div>
+            <?php endforeach; ?>
         </div>
 
-        <h4 class="mt-5 mb-3">📋 Data Asset</h4>
-
-        <?php if ($inventori_query && mysqli_num_rows($inventori_query) > 0): ?>
-            <div class="table-responsive mb-4">
-                <table class="table table-bordered table-striped table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>No.</th>
-                            <th>Hostname</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Nama User</th>
-                            <th>Divisi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $no = $start_from + 1;
-                        while ($row = mysqli_fetch_assoc($inventori_query)):
-                        ?>
-                        <tr>
-                            <td><?= $no++ ?></td>
-                            <td><a href="detail-aset.php?id=<?= e($row['id']) ?>" class="text-primary text-decoration-none fw-bold"><?= e($row['hostname']) ?></a></td>
-                            <td><?= e($row['type']) ?></td>
-                            <td><span class="badge bg-secondary"><?= e($row['status']) ?></span></td>
-                            <td><?= e($row['nama']) ?></td>
-                            <td><?= e($row['divisi']) ?></td>
-                        </tr>
-                        <?php endwhile; ?>
+        <hr class="my-3">
+        <ul class="nav nav-pills mb-3 shadow-sm p-1 bg-light rounded" id="serviceTab" style="width: fit-content;">
+            <li class="nav-item"><button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#antrean-content"><i class="bi bi-megaphone-fill me-1"></i> Antrean</button></li>
+            <li class="nav-item"><button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#progress-content"><i class="bi bi-gear-fill me-1"></i> On Progress</button></li>
+        </ul>
+        <div class="tab-content" id="serviceTabContent">
+            <div class="tab-pane fade show active" id="antrean-content">
+                <table class="table table-bordered table-hover bg-white">
+                    <thead class="table-dark"><tr><th>No.</th><th>Hostname</th><th>User</th><th>Divisi</th><th>Waktu</th><th>Info</th><th>Aksi</th></tr></thead>
+                    <tbody id="service-list-body">
+                        <?php $no = 1;
+while ($r = mysqli_fetch_assoc($q_antrean)): $reg = !empty($r['id_inv']); ?>
+                        <tr><td><?= $no++ ?></td><td><strong><?= e($r['hostname']) ?></strong></td><td><?= e($r['nama_user'] ?? $r['user_inv'] ?? '-') ?></td><td><?= e($r['divisi'] ?? $r['div_inv'] ?? '-') ?></td><td><small><?= date('d/m/y H:i', strtotime($r['tanggal_masuk'])) ?></small></td><td><?= e($r['catatan'] ?? '-') ?></td><td>
+                            <?php if ($reg): ?><button class="btn btn-sm btn-primary btn-claim" data-id="<?= $r['id_service'] ?>" data-hostname="<?= e($r['hostname']) ?>"><i class="bi bi-hand-index"></i> Pick Up</button>
+                            <?php else: ?><button class="btn btn-sm btn-outline-primary btn-register-service" data-bs-toggle="modal" data-bs-target="#addModal" data-service-id="<?= $r['id_service'] ?>" data-hostname="<?= e($r['hostname']) ?>" data-user="<?= e($r['nama_user'] ?? '') ?>" data-divisi="<?= e($r['divisi'] ?? '') ?>"><i class="bi bi-plus"></i> Register</button><?php endif; ?>
+                        </td></tr>
+                        <?php endwhile;
+if ($no === 1) {
+    echo '<tr><td colspan="7" class="text-center">Kosong</td></tr>';
+} ?>
                     </tbody>
                 </table>
             </div>
-            <nav>
-                <ul class="pagination justify-content-center">
-                    <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=<?= $current_page - 1 ?>">Previous</a>
-                    </li>
-
-                    <?php
-                    $page_range = 5;
-                    $start_loop = max(1, $current_page - floor($page_range / 2));
-                    $end_loop = min($total_pages, $current_page + floor($page_range / 2));
-
-                    if ($end_loop - $start_loop + 1 < $page_range) {
-                        $start_loop = max(1, $end_loop - $page_range + 1);
-                    }
-
-                    for ($i = $start_loop; $i <= $end_loop; $i++):
-                    ?>
-                    <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>">
-                        <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
-                    </li>
-                    <?php endfor; ?>
-
-                    <li class="page-item <?= ($current_page >= $total_pages) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=<?= $current_page + 1 ?>">Next</a>
-                    </li>
-                </ul>
-            </nav>
-
-        <?php else: ?>
-            <div class="alert alert-warning">Tidak ada data inventori yang ditemukan.</div>
-        <?php endif; ?>
-        </main>
-
-    <?php
-    include 'modal-reassign.php';
-    ?>
-
+            <div class="tab-pane fade" id="progress-content">
+                <table class="table table-bordered table-hover bg-white">
+                    <thead class="table-light"><tr><th>No.</th><th>Hostname</th><th>PIC</th><th>Waktu</th><th class="text-center">Aksi</th></tr></thead>
+                    <tbody>
+                        <?php $no = 1;
+while ($r = mysqli_fetch_assoc($q_progress)): ?>
+                        <tr><td><?= $no++ ?></td><td><strong><?= e($r['hostname']) ?></strong></td><td><span class="badge bg-info text-dark"><?= e($r['pic']) ?></span></td><td><small><?= date('d/m/y H:i', strtotime($r['tanggal_masuk'])) ?></small></td><td class="text-center"><div class="btn-group">
+                            <a href="detail-aset.php?id=<?= $r['id_inv'] ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-search"></i></a>
+                            <?php if ($r['current_admin_id'] == $admin_id): ?><a href="detail-aset.php?id=<?= $r['id_inv'] ?>&id_service=<?= $r['id_service'] ?>&trigger=aktivitas" class="btn btn-sm btn-dark" title="Selesaikan"><i class="bi bi-check2-circle"></i></a><?php endif; ?>
+                            <?php if ($_SESSION['role'] === 'superadmin'): ?><button class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#reassignModal" data-id="<?= $r['id_service'] ?>" data-current-admin-name="<?= e($r['pic']) ?>" title="Reassign"><i class="bi bi-person-gear"></i></button><?php endif; ?>
+                        </div></td></tr>
+                        <?php endwhile;
+if ($no === 1) {
+    echo '<tr><td colspan="5" class="text-center">Kosong</td></tr>';
+} ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <?php include 'modal-tambahdata.php';
+include 'modal-reassign.php'; ?>
     <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="main.js"></script>
-
+    <script src="http://172.16.3.60:3000/socket.io/socket.io.js"></script>
+    <script src="main.js"></script> <!-- Pastikan main.js dimuat sebelum script ini -->
+<script>
+    // index2.php utilizes global logic in main.js for claiming and redirecting.
+    <?php if (isset($_GET['msg'])): ?>
+        const toast = new bootstrap.Toast(document.getElementById('liveToast')); // Assuming liveToast is defined in toast.php
+        document.getElementById('toast-body').innerText = "<?= $_GET['msg'] ?>";
+        document.getElementById('liveToast').classList.add('bg-<?= $_GET['res'] ?? 'primary' ?>');
+        toast.show();
+        if (window.history.replaceState) history.replaceState(null, null, window.location.pathname);
+    <?php endif; ?>
+</script>
 </body>
 </html>

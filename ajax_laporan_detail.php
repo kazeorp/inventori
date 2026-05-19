@@ -1,9 +1,11 @@
 <?php
+
 include 'session.php';
 include 'koneksi.php';
 
 // Fungsi untuk keamanan
-function e($text) {
+function e($text)
+{
     return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
 }
 
@@ -14,8 +16,8 @@ if (($_SESSION['role'] ?? 'normal') !== 'superadmin') {
 }
 
 $admin_name = $_POST['admin_name'] ?? '';
-$month = (int)($_POST['bulan'] ?? date('m'));
-$year = (int)($_POST['tahun'] ?? date('Y'));
+$month = (int) ($_POST['bulan'] ?? date('m'));
+$year = (int) ($_POST['tahun'] ?? date('Y'));
 
 if (empty($admin_name) || $month < 1 || $month > 12 || $year < 2020) {
     echo '<div class="alert alert-danger">Parameter tidak valid.</div>';
@@ -23,21 +25,21 @@ if (empty($admin_name) || $month < 1 || $month > 12 || $year < 2020) {
 }
 
 $sql_detail = "
-    SELECT  
+    SELECT
         sl.id_service,
         sl.hostname,
         sl.tanggal_masuk,
         -- KOREKSI: Mengganti sl.catatan_user menjadi sl.catatan
-        sl.catatan AS catatan_user, 
+        sl.catatan AS catatan_user,
         sl.finish_timestamp,
         i.type,
         i.nama AS nama_user
     FROM service_list sl
     LEFT JOIN inventori i ON sl.hostname = i.hostname
-    WHERE 
-        sl.finish_status IS NOT NULL AND  
+    WHERE
+        sl.finish_status IS NOT NULL AND
         sl.admin_finish_name = ? AND
-        YEAR(sl.finish_timestamp) = ? AND  
+        YEAR(sl.finish_timestamp) = ? AND
         MONTH(sl.finish_timestamp) = ?
     ORDER BY sl.finish_timestamp DESC
 ";
@@ -92,4 +94,3 @@ echo '</table>';
 echo '</div>';
 
 mysqli_close($koneksi);
-?>
